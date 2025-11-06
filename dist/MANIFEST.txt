@@ -8,7 +8,7 @@ Hash: SHA512
   "signedByOrgName": "The OpenNMS Group Inc.",
   "plugin": "opennms-opennms-app",
   "version": "10.0.0-SNAPSHOT",
-  "time": 1761838911200,
+  "time": 1762453394420,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "CHANGELOG.md": "65fa5f4b82e027f1248ceb8f8116d19e495ad3b63c1cdb6d901999ea20d6f6d4",
@@ -75,11 +75,11 @@ Hash: SHA512
 }
 -----BEGIN PGP SIGNATURE-----
 
-wsA+BAETCgBtBYJpA4c/CZB+TQxqcIhm50UUAAAAAAAcACBzYWx0QG5vdGF0
-aW9ucy5vcGVucGdwanMub3Jnj2/7kVTf59CVtztzvv74XYv0Cmt32ih3xpIc
-9C8Sr3wWIQTzOyW2kQdOhGNlcPN+TQxqcIhm5wAAUhICCQFvUDPTWJ6C70qU
-/KcnMhhFCItKufO/vnUDfrRgcSAPFsTw+M5BIQe5lNxb39ybnTdagb9TTG8R
-W/pqsGzLyOaRQAIECQllwFswJRYj6tGobaj71mAV+L2bPsOMm6GhQWe4B1LP
-MwQ14xCct4NxD9TueeVdeY9JwJE+2Ss5bmn1EsLIewU=
-=cBU8
+wsA9BAETCgBtBYJpDOeSCZB+TQxqcIhm50UUAAAAAAAcACBzYWx0QG5vdGF0
+aW9ucy5vcGVucGdwanMub3Jnv0bmoO/wNelsuloZfRJMzB9HLdw1hc/OZrOz
+LprGoxYWIQTzOyW2kQdOhGNlcPN+TQxqcIhm5wAAtLwCBAsPSeWKzuWiYC30
+VQkBkMG8jDX2eZcX2bTyR3ApZFbTt2lyDNXtoBv41QT1nNi9pMRQuW7YpnTY
+TqiuRwyfBHV9AgicOwdeZe3M+eyinTY2o7dz5+nNrC+xWRilEdL/VetwrvEg
+AmUb1IJJsCACVRZgtHQliquvRQzqzvKhLE6eE+yOUQ==
+=cTSm
 -----END PGP SIGNATURE-----
