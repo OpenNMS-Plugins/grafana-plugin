@@ -1,3 +1,12 @@
+### v9.0.16
+
+Grafana Plugin for OpenNMS version 9.0.16 release contains a number of bug fixes.
+
+* [OPG-496](https://opennms.atlassian.net/browse/OPG-496) Variable interpolation regression
+* [OPG-497](https://opennms.atlassian.net/browse/OPG-497) Attribute node search / auto-fill limited to 1000 results
+* [OPG-503](https://opennms.atlassian.net/browse/OPG-503) Fix various issues due to TypeError issue in Json serialization
+* [OPG-509](https://opennms.atlassian.net/browse/OPG-509) Update OPG v9 to use opennms-js v2.6.1
+
 ### v9.0.15
 
 Grafana Plugin for OpenNMS version 9.0.15 release contains a number of bug fixes.
