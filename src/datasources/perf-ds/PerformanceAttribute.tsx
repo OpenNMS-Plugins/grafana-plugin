@@ -71,8 +71,8 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isResourceOverride, resourceOverrideValue])
 
-    const loadNodesAndVariables = async () => {
-      const nodeItems = await loadNodes()
+    const loadNodesAndVariables = async (query?: string) => {
+      const nodeItems = await loadNodes(query)
       const variables = getTemplateVariables()
       const result = variables.map(x => { return { id: `$${x.name}`, label: `$${x.name}` }})
       nodeItems.forEach(x => result.push(x as any))
@@ -101,11 +101,17 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
      * doesn't have the same resources, so clear them
      */
     const setPerformanceStateNode = async (propertyValue: unknown) => {
-      const node = propertyValue as PerformanceAttributeItemState
-
-      if (!node) {
+      if (!propertyValue) {
         return
       }
+
+    const propertyValueAny = propertyValue as any
+
+    const node = {
+        id: String(propertyValueAny.id ?? ''),
+        label: String(propertyValueAny.label ?? '')
+    	} as PerformanceAttributeItemState	
+     
 
       const resourceOptions: OnmsResourceDto[] = await loadResourcesByNode(node.id || node.label)
       const existingLabel = performanceState?.resource?.label
@@ -154,6 +160,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                     value={performanceState?.node}
                     placeholder='Select Node'
                     loadOptions={loadNodesAndVariables}
+                    reloadOptionsOnChange={true}
                     onChange={(value) => {
                       (async () => {
                         await setPerformanceStateNode(value)

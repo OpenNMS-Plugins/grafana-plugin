@@ -413,3 +413,10 @@ export const isUndefined = (value) => {
 export const valueOrDefault = (value, def) => {
   return isUndefined(value) ? def : value
 }
+
+/**
+ * Remove any characters that causes issues with FIQL queries.
+ */
+export const sanitizeFiqlQuery = (value: string) => {
+  return value.replaceAll(/[^A-Za-z0-9=_ -]/g, '')
+}

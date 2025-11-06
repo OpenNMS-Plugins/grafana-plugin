@@ -8,6 +8,11 @@ import { PerformanceDataSource } from './PerformanceDataSource'
 export interface PerformanceDataSourceOptions extends DataSourceJsonData {
   path?: string
   enableInputValueOverrideComponents?: boolean
+  // overrideAttributeQueryNodeLimit?: number
+  attributeQueryNodeLimit?: {
+    unlimited: boolean
+    limit: number
+  }
 }
 
 // TODO: check which of these are required

@@ -30,10 +30,6 @@ export const InputValueOverrideConfig: React.FC<Props> = ({ onOptionsChange, opt
       <style>
         {
           `
-          .spacer {
-            margin-top: 10px;
-            margin-bottom: 10px;
-          }
           .perf-config-editor-switch {
               display: flex;
               align-items: center;
@@ -47,8 +43,6 @@ export const InputValueOverrideConfig: React.FC<Props> = ({ onOptionsChange, opt
           `
       }
       </style>
-      <h3 className='spacer'>Additional Options</h3>
-
       <InlineField className='perf-config-editor-switch-field' label='Enable input value override components:' tooltip={tooltipText}>
         <div className='perf-config-editor-switch'>
           <InlineSwitch

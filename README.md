@@ -26,7 +26,7 @@ Acknowledge, escalate, create, and clear tickets for alarms directly from the da
 
 ### Storage engine agnostic
 
-Retrieve time series metrics stored in persistence engines, including [OpenNMS Time Series DB](https://www.opennms.com/time-series-db/), [Newts](https://github.com/OpenNMS/newts), [Cortex](http://cortex.io/), [RRDtool](https://oss.oetiker.ch/rrdtool/), or [JRobin](https://github.com/OpenNMS/jrobin).
+Retrieve time series metrics stored in persistence engines, including [OpenNMS Time Series DB](https://www.opennms.com/time-series-db/), [Newts](https://github.com/OpenNMS/newts), [Cortex](https://cortexmetrics.io/), [RRDtool](https://oss.oetiker.ch/rrdtool/), or [JRobin](https://github.com/OpenNMS/jrobin).
 
 ### Flows deep-dive dashboard
 

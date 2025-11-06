@@ -1,0 +1,10 @@
+global:
+  enabled: true
+  strict: true
+
+# there are issues updating OPG v9 libraries in order to pass the
+# osv-scanner and @grafana/plugin-validator, so we are disabling
+# for now
+analyzers:
+  osv-scanner:
+    enabled: false

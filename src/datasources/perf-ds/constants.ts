@@ -5,3 +5,5 @@ export const PerformanceTypeOptions = {
     Filter: { label: 'Filter', value: 3 },
     StringProperty: { label: 'String Property', value: 4 },
 }
+
+export const DefaultOverrideAttributeQueryNodeLimit = 1000

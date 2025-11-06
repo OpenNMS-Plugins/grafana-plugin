@@ -1,7 +1,7 @@
 import { DataFrame, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings, MetricFindValue } from '@grafana/data'
 import { TemplateSrv, getTemplateSrv, getBackendSrv } from '@grafana/runtime'
 import cloneDeep from 'lodash/cloneDeep'
-import { PerformanceTypeOptions } from './constants'
+import { DefaultOverrideAttributeQueryNodeLimit, PerformanceTypeOptions } from './constants'
 import { measurementResponseToDataFrame } from './PerformanceHelpers'
 import { ClientDelegate } from 'lib/client_delegate'
 import { findFunctions, formatNodeToMetricFindValue, parseFunctionAttributes } from 'lib/function_formatter'
@@ -35,6 +35,7 @@ export class PerformanceDataSource extends DataSourceApi<PerformanceQuery> {
     url?: string
     name: string
     enableInputValueOverrideComponents: boolean
+    attributeQueryNodeLimit: { unlimited: boolean, limit: number }
     client: ClientDelegate
     simpleRequest: SimpleOpenNMSRequest
     templateSrv: TemplateSrv
@@ -45,6 +46,7 @@ export class PerformanceDataSource extends DataSourceApi<PerformanceQuery> {
         this.url = instanceSettings.url
         this.name = instanceSettings.name
         this.enableInputValueOverrideComponents = instanceSettings.jsonData.enableInputValueOverrideComponents || false
+        this.attributeQueryNodeLimit = instanceSettings.jsonData.attributeQueryNodeLimit ?? { unlimited: false, limit: DefaultOverrideAttributeQueryNodeLimit }
 
         this.client = new ClientDelegate(instanceSettings, getBackendSrv())
         this.simpleRequest = new SimpleOpenNMSRequest(getBackendSrv(), this.url)

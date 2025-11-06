@@ -60,6 +60,61 @@ image::pc-node-Final.png["Example panel configuration settings.", 500]
 +
 image::pc-select-nodes.png["{product-name} panel displaying a node selection list.", 700]
 
+
+== Template variable syntax
+
+If the template variable is used in an expression, you can use `$node` syntax if the variable is
+a separate word (surrounding by whitespace).
+If the variable is being used as part of an expression and is not surrounded by whitespace,
+then you must use `$\{node\}` syntax.
+
+Given a template variable `node`, where the valid of `node` is currently `1`:
+
+[caption=]
+.Template variable syntax examples
+[cols="1,2,2,2"]
+|===
+| Status | Variable syntax | Result | Explanation
+
+| Valid
+| `$node`
+| `1`
+| Single variable, alone or surrounded by whitespace
+
+| Valid (but not preferred)
+| `index_$node`
+| `index_1`
+| Variable interpolation, at end of a word
+
+| Valid (preferred)
+| `index_$\{node\}`
+| `index_1`
+| Variable interpolation, explicit and unambiguous
+
+| Invalid
+| `$node_index`
+| **error**
+| This will be an error since OPG interprets this as the template variable `node_index`
+
+| Valid
+| `$\{node\}_index`
+| `1_index`
+| Valid and unambiguous variable interpolation
+
+| Valid
+| `$\{node\}_index$\{node\}`
+| `1_index1`
+| Valid and unambiguous variable interpolation
+|===
+
+Example:
+
+If you want to display the disk IO reads for various nodes using a template variable, and also display
+the label in the Grafana graph as `1_reads`, `61_reads`, etc., you can set
+the variable to `$node` and the label to `$\{node\}_reads`.
+
+image::opg-variable-syntax.png["Template variable syntax examples.", 700]
+
 [[pc-filter-panel]]
 == Create a filter panel
 

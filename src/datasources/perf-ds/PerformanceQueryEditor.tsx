@@ -3,7 +3,7 @@ import { Segment } from '@grafana/ui'
 import { getTemplateSrv } from '@grafana/runtime'
 import { API } from 'opennms'
 import { SegmentSectionWithIcon } from 'components/SegmentSectionWithIcon'
-import { PerformanceTypeOptions } from './constants'
+import { DefaultOverrideAttributeQueryNodeLimit, PerformanceTypeOptions } from './constants'
 import { PerformanceAttribute } from './PerformanceAttribute'
 import { PerformanceExpression } from './PerformanceExpression'
 import { PerformanceFilter } from './PerformanceFilter'
@@ -14,7 +14,7 @@ import { getRemoteResourceId } from './queries/queryBuilder'
 import { getStringProperties } from './PerformanceHelpers'
 import { getTemplateVariable, isTemplateVariable } from '../../lib/variableHelpers'
 import { OnmsResourceDto, OnmsRrdGraphAttribute } from '../../lib/api_types'
-import { getMultiValues, isInteger } from 'lib/utils'
+import { getMultiValues, isInteger, sanitizeFiqlQuery } from 'lib/utils'
 
 export const PerformanceQueryEditor: React.FC<PerformanceQueryEditorProps> = ({ onChange, query, onRunQuery, datasource, ...rest }) => {
     const [performanceType, setPerformanceType] = useState<QuickSelect>(query.performanceType)
@@ -66,8 +66,34 @@ export const PerformanceQueryEditor: React.FC<PerformanceQueryEditorProps> = ({ 
         return false
     }
 
-    const loadNodes = async () => {
-      const nodes = await datasource.client.findNodes(new API.Filter(), true)
+    // Limit for nodes searched can be set via Datasource Configuration.
+    // See PerformanceConfigEditor and NodeAttributeLimitOverrideConfig
+    // query: Optional search term, will perform a 'like' (wildcard) search on the node label.
+    // Note, due to limitations in our FIQL implementation, this is case-sensitive, we
+    // do not currently support API.Comparators.ILIKE
+    const loadNodes = async (query?: string) => {
+      let limit = DefaultOverrideAttributeQueryNodeLimit
+
+      if (datasource.attributeQueryNodeLimit?.unlimited === true) {
+        limit = 0
+      } else if (datasource.attributeQueryNodeLimit?.limit !== undefined && datasource.attributeQueryNodeLimit.limit >= 0) {
+        limit = datasource.attributeQueryNodeLimit.limit
+      }
+
+      let baseFilter: API.Filter
+
+      if (query && query?.length > 0) {
+        const sanitizedQuery = sanitizeFiqlQuery(query)
+        const restriction = new API.Restriction('label', API.Comparators.LIKE, `*${sanitizedQuery}*`)
+        baseFilter = new API.Filter().withAndRestriction(restriction)
+      }
+
+      const filter = {
+        ...(baseFilter ?? new API.Filter()),
+        limit
+      } as API.Filter
+
+      const nodes = await datasource.client.findNodes(filter, true)
       return nodes
     }
 
