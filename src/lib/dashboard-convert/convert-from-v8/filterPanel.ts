@@ -1,4 +1,4 @@
-import { DatasourceMetadata, DsType } from './types'
+import { DatasourceMetadata, DsType } from '../types'
 
 export const isLegacyFilterPanel = (panel: any) => {
   return panel && panel.type && panel.type === 'opennms-helm-filter-panel'

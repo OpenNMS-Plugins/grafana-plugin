@@ -1,7 +1,7 @@
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data'
-import { DatasourceMetadata, DsType } from './types'
+import { DatasourceMetadata, DsType } from '../types'
 import { getDatasourceTypeFromPluginId } from './utils'
-import { isString } from '../utils'
+import { isString } from '../../utils'
 
 // Datasource info found in panel or target/query
 export interface SourceDatasourceInfo {

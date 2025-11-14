@@ -1,4 +1,4 @@
-import { AlarmDirections, AlarmGroups } from '../../panels/alarm-histogram/constants'
+import { AlarmDirections, AlarmGroups } from '../../../panels/alarm-histogram/constants'
 
 export const isLegacyAlarmHistogramPanel = (panel: any) => {
   return panel && panel.type && panel.type === 'opennms-helm-alarm-histogram-panel'

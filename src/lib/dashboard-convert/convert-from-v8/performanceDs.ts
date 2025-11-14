@@ -1,5 +1,5 @@
-import { PerformanceTypeOptions } from '../../datasources/perf-ds/constants'
-import { PerformanceQuery, PerformanceQueryFilterParameter } from '../../datasources/perf-ds/types'
+import { PerformanceTypeOptions } from '../../../datasources/perf-ds/constants'
+import { PerformanceQuery, PerformanceQueryFilterParameter } from '../../../datasources/perf-ds/types'
 
 export const updatePerformanceQuery = (source: any) => {
   // Note, target.datasource will be set in caller

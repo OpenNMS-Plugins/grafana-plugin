@@ -1,7 +1,7 @@
-import { onmsColorArray } from '../../components/OnmsColors'
-import { getAlarmColumns } from '../../datasources/entity-ds/queries'
-import { AlarmTableAlarmDataState, AlarmTablePaginationState } from '../../panels/alarm-table/AlarmTableTypes'
-import { alarmSeverityThemeOptions, fontSizeOptions } from '../../panels/alarm-table/constants'
+import { onmsColorArray } from '../../../components/OnmsColors'
+import { getAlarmColumns } from '../../../datasources/entity-ds/queries'
+import { AlarmTableAlarmDataState, AlarmTablePaginationState } from '../../../panels/alarm-table/AlarmTableTypes'
+import { alarmSeverityThemeOptions, fontSizeOptions } from '../../../panels/alarm-table/constants'
 
 // map to alarmSeverityThemeOptions
 const legacyAlarmSeverityThemes = [

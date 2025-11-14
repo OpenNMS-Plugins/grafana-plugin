@@ -1,6 +1,6 @@
-import { getColumns } from '../../datasources/entity-ds/EntityHelper'
-import { getAttributeMapping } from '../../datasources/entity-ds/queries/attributeMappings'
-import { OnmsEntityNestType, OnmsEntityType } from '../../datasources/entity-ds/types'
+import { getColumns } from '../../../datasources/entity-ds/EntityHelper'
+import { getAttributeMapping } from '../../../datasources/entity-ds/queries/attributeMappings'
+import { OnmsEntityNestType, OnmsEntityType } from '../../../datasources/entity-ds/types'
 
 // Legacy Entity target looks something like this:
 // {

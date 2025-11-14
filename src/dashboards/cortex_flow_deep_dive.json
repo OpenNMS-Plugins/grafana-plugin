@@ -153,7 +153,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -296,7 +296,7 @@
         "showHeader": true,
         "sortBy": []
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -507,7 +507,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -650,7 +650,7 @@
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -869,7 +869,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1001,7 +1001,7 @@
             "showHeader": true,
             "sortBy": []
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1264,6 +1264,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Cortex Flow Deep Dive | OpenNMS Plugin for Grafana",
-  "version": 42,
+  "version": 43,
   "weekStart": ""
 }

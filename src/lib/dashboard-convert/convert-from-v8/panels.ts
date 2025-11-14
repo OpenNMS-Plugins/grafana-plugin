@@ -7,7 +7,7 @@ import { updateEntityQuery } from './entityDs'
 import { convertLegacyFilterPanel, isLegacyFilterPanel } from './filterPanel'
 import { updateFlowQuery } from './flowDs'
 import { updatePerformanceQuery } from './performanceDs'
-import { DatasourceMetadata, DsType } from './types'
+import { DatasourceMetadata, DsType } from '../types'
 import { updateTargetDatasource } from './utils'
 
 // Convert Dashboard panels

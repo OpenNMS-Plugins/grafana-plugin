@@ -1,4 +1,4 @@
-import { FlowSegments, FlowSegmentStringsLowercase } from '../../datasources/flow-ds/constants'
+import { FlowSegments, FlowSegmentStringsLowercase } from '../../../datasources/flow-ds/constants'
 
 export const updateFlowQuery = (source: any) => {
   // items that are the same:

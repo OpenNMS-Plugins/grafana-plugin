@@ -4,8 +4,8 @@ import {
   ModeOptions,
   PositionOptions,
   UnitOptions
-} from '../../panels/flow-histogram/FlowHistogramConstants'
-import { FlowHistogramOptionsProps } from '../../panels/flow-histogram/FlowHistogramTypes'
+} from '../../../panels/flow-histogram/FlowHistogramConstants'
+import { FlowHistogramOptionsProps } from '../../../panels/flow-histogram/FlowHistogramTypes'
 
 export const isLegacyFlowHistogramPanel = (panel: any) => {
   return panel && panel.type && panel.type === 'opennms-helm-flow-histogram-panel'
