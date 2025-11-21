@@ -268,6 +268,10 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
+          name: Add GitHub to known_hosts
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
           name: Build Docker Image
           command: |
             echo "version: $(.circleci/get-version.sh)"
