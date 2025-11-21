@@ -1,7 +1,7 @@
-import { DatasourceMetadata, DsType } from './types'
+import { DatasourceMetadata, DsType } from '../types'
 
 export const isLegacyFilterPanel = (panel: any) => {
-  return panel && panel.type && panel.type === 'opennms-helm-filter-panel'
+  return panel?.type === 'opennms-helm-filter-panel'
 }
 
 // NOTE: Selected Filter Panel values will be lost, as they are now saved in

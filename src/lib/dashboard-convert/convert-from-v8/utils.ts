@@ -1,9 +1,9 @@
 import { SourceDatasourceInfo } from './datasources';
-import { DatasourceMetadata, DsType } from './types'
+import { DatasourceMetadata, DsType } from '../types'
 
 // add 'name', '$name' and '${name}' variations
 export const addVariationsToMap = (varName: string, dsType: DsType,  datasourceMap: Map<string,DsType>) => {
-  const rawName = varName.replace(/[${}]/gi, '')
+  const rawName = varName.replaceAll(/[${}]/i, '')
 
   datasourceMap.set(rawName, dsType)
   datasourceMap.set('$' + rawName, dsType)
@@ -47,6 +47,30 @@ export const getDashboardTitle = (json: string) => {
   return ''
 }
 
+// Returns true if the given datasource is of the given type and is an 'updated'
+// one, i.e. version 9-12 (as opposed to OPG v8).
+// dsType is 'entity', 'performance', 'flows'
+export const isUpdatedDatasourceOfType = (d: DatasourceMetadata, dsType: string) => {
+  const updatedDatasourceVersions = [9, 10, 11, 12]
+
+  // d.version is a string for the Datasource plugin version
+  let datasourceVersion = 0
+
+  let dsVersionString = String(d.version ?? '')
+
+  if (dsVersionString && dsVersionString.length > 0) {
+    if (dsVersionString.includes('.')) {
+      const arr = dsVersionString.split('.')
+
+      dsVersionString = arr[0]
+    }
+
+    datasourceVersion = Number.parseInt(dsVersionString, 10)
+  }
+
+  return d.datasourceType === dsType && d.version && updatedDatasourceVersions.includes(datasourceVersion)
+}
+
 // Checks if the datasource for a source (panel, panel target, etc.) is an OpenNMS one and if so,
 // updates the type and uid
 // Will retain the original uid if it's a template variable, e.g. pointing to a datasource in '__inputs'.
@@ -54,7 +78,7 @@ export const getDashboardTitle = (json: string) => {
 // source may be a panel, panel.target, etc. which contains a 'datasource' field
 export const updateTargetDatasource = (source: any, sourceDsInfo: SourceDatasourceInfo, dsMetas: DatasourceMetadata[]) => {
   if (sourceDsInfo.isOpenNmsDatasource && sourceDsInfo.datasourceType) {
-    const dsMeta = dsMetas.find(d => d.datasourceType === sourceDsInfo.datasourceType && d.pluginVersion === 9)
+    const dsMeta = dsMetas.find(d => isUpdatedDatasourceOfType(d, sourceDsInfo.datasourceType))
 
     if (dsMeta) {
       // retain the uid if it's a template variable

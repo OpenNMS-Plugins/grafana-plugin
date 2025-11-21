@@ -1,4 +1,4 @@
-import { FlowSegments, FlowSegmentStringsLowercase } from '../../datasources/flow-ds/constants'
+import { FlowSegments, FlowSegmentStringsLowercase } from '../../../datasources/flow-ds/constants'
 
 export const updateFlowQuery = (source: any) => {
   // items that are the same:
@@ -72,7 +72,7 @@ const convertFunctionParameters = (target: any) => {
 }
 
 const convertParameterOptions = (target: any) => {
-  // TODO
+  // need to parse these
   const options = target.functions?.map(f => {
     return {}
   })

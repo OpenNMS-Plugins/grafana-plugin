@@ -1,3 +1,5 @@
+import { Dashboard } from '@grafana/schema'
+
 export type DsType = 'entity' | 'performance' | 'flow'
 
 export interface DatasourceMetadata {
@@ -22,4 +24,20 @@ export interface DatasourceMetadata {
 
   /** 'entity', 'performance', 'flow' */
   datasourceType?: DsType
+}
+
+export interface ConvertResponse {
+  dashboardV9?: any
+  dashboardV12?: Dashboard
+  json: string
+  isError: boolean
+  errorMessage?: string
+  targetPluginVersion: number // 9 or 12
+  // version: string    // '9' or '12'
+}
+
+export interface ConvertOptions {
+  incrementDashboardVersion: boolean
+  unhideAllQueries: boolean
+  convertGraphToTimeSeries: boolean
 }

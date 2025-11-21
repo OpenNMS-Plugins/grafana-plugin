@@ -155,7 +155,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "N": "",
@@ -414,7 +414,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -590,7 +590,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "attribute": {
@@ -789,7 +789,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "attribute": {
@@ -1075,7 +1075,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1324,7 +1324,7 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1524,7 +1524,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1773,7 +1773,7 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1973,7 +1973,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -2217,7 +2217,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -2421,6 +2421,6 @@
   },
   "timezone": "",
   "title": "Flow Deep Dive | OpenNMS Plugin for Grafana",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }

@@ -1,5 +1,5 @@
 import { dashboardConvert } from './convert'
-import { getDashboardTitle } from './utils'
+import { getDashboardTitle } from './convert-from-v8/utils'
 
 export {
   dashboardConvert,

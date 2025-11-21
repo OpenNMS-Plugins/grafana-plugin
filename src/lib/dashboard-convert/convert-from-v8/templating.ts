@@ -1,6 +1,6 @@
 import { getSourceDatasourceInfo } from './datasources'
-import { DatasourceMetadata, DsType } from './types'
-import { addVariationsToMap, getDatasourceTypeFromPluginId, updateTargetDatasource } from './utils'
+import { DatasourceMetadata, DsType } from '../types'
+import { addVariationsToMap, getDatasourceTypeFromPluginId, isUpdatedDatasourceOfType, updateTargetDatasource } from './utils'
 
 // Parse the Dashboard 'templating' section, extracting any Datasource mappings and
 // updating those items to use Version 9 versions
@@ -40,14 +40,14 @@ export const parseTemplating = (source: any, datasourceMap: Map<string,DsType>, 
   const sourceList: any[] = source?.list || []
 
   for (const s of sourceList) {
-    if (s.type === 'datasource' && s.query && s.query.startsWith('opennms')) {
+    if (s.type === 'datasource' && s.query?.startsWith('opennms')) {
       const target = { ...s }
       const name = s.name
       const pluginId = s.query
 
       // find corresponding Version 9 datasource info and substitute
       const { datasourceType } = getDatasourceTypeFromPluginId(pluginId)
-      let dsMeta = dsMetas.find(d => d.datasourceType && d.datasourceType === datasourceType && d.pluginVersion === 9)
+      let dsMeta = dsMetas.find(d => isUpdatedDatasourceOfType(d, datasourceType))
 
       if (!dsMeta) {
         console.log(`Dashboard convert: did not find Version 9 datasource for '${datasourceType}', falling back to first available:`)
