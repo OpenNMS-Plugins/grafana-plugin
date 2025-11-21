@@ -40,7 +40,7 @@ export const parseTemplating = (source: any, datasourceMap: Map<string,DsType>, 
   const sourceList: any[] = source?.list || []
 
   for (const s of sourceList) {
-    if (s.type === 'datasource' && s.query && s.query.startsWith('opennms')) {
+    if (s.type === 'datasource' && s.query?.startsWith('opennms')) {
       const target = { ...s }
       const name = s.name
       const pluginId = s.query

@@ -8,7 +8,7 @@ import {
 import { FlowHistogramOptionsProps } from '../../../panels/flow-histogram/FlowHistogramTypes'
 
 export const isLegacyFlowHistogramPanel = (panel: any) => {
-  return panel && panel.type && panel.type === 'opennms-helm-flow-histogram-panel'
+  return panel?.type === 'opennms-helm-flow-histogram-panel'
 }
 
 export const convertLegacyFlowHistogramPanel = (source: any) => {

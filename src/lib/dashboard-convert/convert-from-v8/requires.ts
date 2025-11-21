@@ -21,29 +21,12 @@ export const parseRequires = (source: any[], datasourceMap: Map<string,DsType>, 
   const results: any[] = []
 
   for (const s of source) {
-    if (s.type === 'datasource' && s.id && s.id.startsWith('opennms-')) {
-      const target = { ...s }
-      const name = s.name
-      const pluginId = s.id
+    if (isOpenNmsDatasource(s)) {
+      const target = parseSource(s, datasourceMap, dsMetas)
 
-      if (name && pluginId) {
-        // find corresponding v9 datasource info and substitute
-        const { datasourceType } = getDatasourceTypeFromPluginId(pluginId)
-        let dsMeta = dsMetas.find(d => isUpdatedDatasourceOfType(d, datasourceType))
-
-        if (!dsMeta) {
-          console.log(`Dashboard convert: did not find Version 9 datasource for '${datasourceType}', falling back to first available:`)
-          dsMeta = dsMetas.find(d => d.datasourceType && d.datasourceType === datasourceType)
-        }
-
-        if (dsMeta) {
-          target.id = dsMeta.type
-          target.name = dsMeta.name
-          target.version = dsMeta.version
-
-          results.push(target)
-          continue
-        }
+      if (target) {
+        results.push(target)
+        continue
       }
     }
 
@@ -52,4 +35,37 @@ export const parseRequires = (source: any[], datasourceMap: Map<string,DsType>, 
   }
 
   return results
+}
+
+const isOpenNmsDatasource = (s: any) => {
+  return s.type === 'datasource' && s.id?.startsWith('opennms-')
+}
+
+const parseSource = (s: any, datasourceMap: Map<string,DsType>, dsMetas: DatasourceMetadata[]) => {
+  const target = { ...s }
+  const name = s.name
+  const pluginId = s.id
+
+  if (name && pluginId) {
+    // find corresponding v9 datasource info and substitute
+    const { datasourceType } = getDatasourceTypeFromPluginId(pluginId)
+    let dsMeta = dsMetas.find(d => isUpdatedDatasourceOfType(d, datasourceType))
+
+    if (!dsMeta) {
+      console.log(`Dashboard convert: did not find Version 9 datasource for '${datasourceType}', falling back to first available:`)
+      dsMeta = dsMetas.find(d => d.datasourceType && d.datasourceType === datasourceType)
+    }
+
+    if (dsMeta) {
+      target.id = dsMeta.type
+      target.name = dsMeta.name
+      target.version = dsMeta.version
+
+      return target
+      // results.push(target)
+      // continue
+    }
+  }
+
+  return null
 }

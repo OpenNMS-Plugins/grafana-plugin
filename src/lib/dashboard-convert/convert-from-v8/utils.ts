@@ -3,7 +3,7 @@ import { DatasourceMetadata, DsType } from '../types'
 
 // add 'name', '$name' and '${name}' variations
 export const addVariationsToMap = (varName: string, dsType: DsType,  datasourceMap: Map<string,DsType>) => {
-  const rawName = varName.replace(/[${}]/gi, '')
+  const rawName = varName.replaceAll(/[${}]/i, '')
 
   datasourceMap.set(rawName, dsType)
   datasourceMap.set('$' + rawName, dsType)
@@ -65,7 +65,7 @@ export const isUpdatedDatasourceOfType = (d: DatasourceMetadata, dsType: string)
       dsVersionString = arr[0]
     }
 
-    datasourceVersion = parseInt(dsVersionString, 10)
+    datasourceVersion = Number.parseInt(dsVersionString, 10)
   }
 
   return d.datasourceType === dsType && d.version && updatedDatasourceVersions.includes(datasourceVersion)

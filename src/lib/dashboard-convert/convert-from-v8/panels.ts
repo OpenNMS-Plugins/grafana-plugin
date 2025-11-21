@@ -94,7 +94,7 @@ const convertPanelDatasources = (panel: any, datasourceMap: Map<string, DsType>,
       targets.push(updatedTarget)
     }
 
-    // TODO: if p.datasource is a pluginId
+    // may need to handle if p.datasource is a pluginId
 
     panel.targets = targets
   }

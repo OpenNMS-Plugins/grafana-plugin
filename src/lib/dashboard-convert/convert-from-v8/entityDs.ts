@@ -78,7 +78,6 @@ export const updateEntityQuery = (source: any) => {
       comparedString: c.restriction.value,
       // Clearing this, using comparedString only for now
       comparedValue: '',
-      // TODO: figure out nestingType
       nestingType: OnmsEntityNestType.TOP,
       type: entityType
     }

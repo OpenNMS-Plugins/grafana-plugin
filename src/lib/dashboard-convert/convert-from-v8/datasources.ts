@@ -41,7 +41,7 @@ export interface SourceDatasourceInfo {
 // ]
 //
 export const getSourceDatasourceInfo = (source: any, datasourceMap: Map<string,DsType>): SourceDatasourceInfo => {
-  if (source && source.datasource) {
+  if (source?.datasource) {
     if (isString(source.datasource) && datasourceMap.has(source.datasource)) {
       // 1. datasource is a string
       const dsType = datasourceMap.get(source.datasource) || ''
@@ -91,7 +91,7 @@ export const getDatasourceMetadata = (data: Array<DataSourceInstanceSettings<Dat
   const metas: DatasourceMetadata[] = []
 
   for (const ds of data) {
-    if (ds.type && ds.type.startsWith('opennms-')) {
+    if (ds.type?.startsWith('opennms-')) {
       const meta = {
         name: ds.name,
         id: ds.id,
@@ -104,8 +104,9 @@ export const getDatasourceMetadata = (data: Array<DataSourceInstanceSettings<Dat
 
       if (meta.version) {
         const arr = meta.version.split('.')
+
         if (arr && arr.length > 0) {
-          meta.pluginVersion = parseInt(arr[0], 10)
+          meta.pluginVersion = Number.parseInt(arr[0], 10)
         }
       }
 

@@ -72,7 +72,7 @@ const convertFunctionParameters = (target: any) => {
 }
 
 const convertParameterOptions = (target: any) => {
-  // TODO
+  // need to parse these
   const options = target.functions?.map(f => {
     return {}
   })

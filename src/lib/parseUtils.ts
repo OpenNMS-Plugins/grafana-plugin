@@ -18,28 +18,28 @@ export const isEnumValueOfType = <T extends Record<string, string | number>>(
 }
 
 export const convertToInt = (source?: any, defaultValue?: number) => {
-  if (typeof source !== undefined) {
-    let val: number = defaultValue ?? 0
+  let val: number = defaultValue ?? 0
 
+  if (source !== undefined) {
     if (typeof source === 'string') {
-      val = parseInt(source, 10)
+      val = Number.parseInt(source, 10)
     } else {
       val = Number(source)
     }
 
-    if (!isNaN(val)) {
+    if (!Number.isNaN(val)) {
       return val
     }
   }
 
-  return defaultValue ?? 0
+  return val
 }
 
 export const convertToNumber = (source?: any, defaultValue?: number) => {
-  if (typeof source !== undefined) {
+  if (source !== undefined) {
     const val = Number(source)
 
-    if (!isNaN(val)) {
+    if (!Number.isNaN(val)) {
       return val
     }
   }
