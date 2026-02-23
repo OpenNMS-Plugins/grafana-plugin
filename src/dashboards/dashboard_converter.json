@@ -2,18 +2,20 @@
   "annotations": {
     "list": [
       {
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
         "builtIn": 1,
         "datasource": {
+          "apiVersion": "",
           "type": "datasource",
           "uid": "grafana"
         },
-        "enable": true,
         "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
         "target": {
-          "limit": 100,
+          "limit": 0,
           "matchAny": false,
+          "refId": "A",
           "tags": [],
           "type": "dashboard"
         },
@@ -24,6 +26,7 @@
   "description": "Convert Grafana dashboards containing OpenNMS data sources and/or panels to the latest version.",
   "editable": true,
   "fiscalYearStartMonth": 0,
+  "gnetId": "",
   "graphTooltip": 0,
   "id": null,
   "links": [],
@@ -31,11 +34,13 @@
   "panels": [
     {
       "datasource": {
+        "apiVersion": "",
         "type": "grafana",
         "uid": "grafana"
       },
       "gridPos": {
         "h": 20,
+        "static": false,
         "w": 12,
         "x": 0,
         "y": 0
@@ -50,16 +55,21 @@
           "refId": "A"
         }
       ],
-      "type": "opennms-dashboard-convert-panel"
+      "type": "opennms-dashboard-convert-panel",
+      "links": [],
+      "pluginVersion": "12",
+      "transformations": []
     },
     {
       "datasource": {
+        "apiVersion": "",
         "type": "grafana",
         "uid": "grafana"
       },
       "description": "",
       "gridPos": {
         "h": 20,
+        "static": false,
         "w": 12,
         "x": 12,
         "y": 0
@@ -84,13 +94,15 @@
           "refId": "A"
         }
       ],
-      "type": "text"
+      "type": "text",
+      "links": [],
+      "transformations": []
     }
   ],
+  "preload": true,
   "refresh": "",
   "revision": 1,
   "schemaVersion": 38,
-  "style": "dark",
   "tags": [],
   "templating": {
     "list": []
@@ -99,9 +111,12 @@
     "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "quick_ranges": [],
+    "refresh_intervals": []
+  },
   "timezone": "",
   "title": "Dashboard Converter | OpenNMS Plugin for Grafana",
-  "version": 5,
+  "version": 6,
   "weekStart": ""
 }

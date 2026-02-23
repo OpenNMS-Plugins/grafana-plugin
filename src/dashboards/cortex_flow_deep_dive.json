@@ -2,18 +2,19 @@
   "annotations": {
     "list": [
       {
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
         "builtIn": 1,
         "datasource": {
           "type": "datasource",
           "uid": "grafana"
         },
-        "enable": true,
         "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
         "target": {
-          "limit": 100,
+          "limit": 0,
           "matchAny": false,
+          "refId": "A",
           "tags": [],
           "type": "dashboard"
         },
@@ -21,8 +22,10 @@
       }
     ]
   },
+  "description": "Cortex Flow Deep Dive dashboard for OpenNMS Plugin for Grafana v12",
   "editable": true,
   "fiscalYearStartMonth": 0,
+  "gnetId": "",
   "graphTooltip": 0,
   "id": null,
   "links": [],
@@ -33,6 +36,7 @@
       "datasource": null,
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 0
@@ -136,6 +140,7 @@
       },
       "gridPos": {
         "h": 8,
+        "static": false,
         "w": 16,
         "x": 0,
         "y": 1
@@ -201,7 +206,9 @@
         }
       ],
       "title": "Throughput by Application (TopK)",
-      "type": "timeseries"
+      "type": "timeseries",
+      "links": [],
+      "transformations": []
     },
     {
       "datasource": {
@@ -279,6 +286,7 @@
       },
       "gridPos": {
         "h": 8,
+        "static": false,
         "w": 8,
         "x": 16,
         "y": 1
@@ -383,13 +391,15 @@
           }
         }
       ],
-      "type": "table"
+      "type": "table",
+      "links": []
     },
     {
       "collapsed": true,
       "datasource": null,
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 9
@@ -490,6 +500,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 16,
             "x": 0,
             "y": 10
@@ -555,7 +566,9 @@
             }
           ],
           "title": "Throughput by Host (TopK)",
-          "type": "timeseries"
+          "type": "timeseries",
+          "links": [],
+          "transformations": []
         },
         {
           "datasource": {
@@ -633,6 +646,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 8,
             "x": 16,
             "y": 10
@@ -737,7 +751,8 @@
               }
             }
           ],
-          "type": "table"
+          "type": "table",
+          "links": []
         }
       ],
       "title": "Hosts",
@@ -748,6 +763,7 @@
       "datasource": null,
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 10
@@ -848,6 +864,7 @@
           },
           "gridPos": {
             "h": 11,
+            "static": false,
             "w": 16,
             "x": 0,
             "y": 11
@@ -894,7 +911,9 @@
             }
           ],
           "title": "Throughput by DSCP",
-          "type": "timeseries"
+          "type": "timeseries",
+          "links": [],
+          "transformations": []
         },
         {
           "datasource": {
@@ -984,6 +1003,7 @@
           },
           "gridPos": {
             "h": 11,
+            "static": false,
             "w": 8,
             "x": 16,
             "y": 11
@@ -1089,17 +1109,18 @@
               }
             }
           ],
-          "type": "table"
+          "type": "table",
+          "links": []
         }
       ],
       "title": "DSCPs",
       "type": "row"
     }
   ],
+  "preload": true,
   "refresh": "",
   "revision": 1,
   "schemaVersion": 38,
-  "style": "dark",
   "tags": [],
   "templating": {
     "list": [
@@ -1119,6 +1140,7 @@
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
+        "staticOptions": [],
         "type": "datasource"
       },
       {
@@ -1145,8 +1167,9 @@
         "regex": "/\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 3,
-        "tagValuesQuery": "",
+        "staticOptions": [],
         "tagsQuery": "",
+        "tagValuesQuery": "",
         "type": "query",
         "useTags": false
       },
@@ -1174,8 +1197,9 @@
         "regex": "/\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 3,
-        "tagValuesQuery": "",
+        "staticOptions": [],
         "tagsQuery": "",
+        "tagValuesQuery": "",
         "type": "query",
         "useTags": false
       },
@@ -1207,8 +1231,9 @@
         "regex": "/\"([^\"]+)\"/",
         "skipUrlSync": false,
         "sort": 3,
-        "tagValuesQuery": "",
+        "staticOptions": [],
         "tagsQuery": "",
+        "tagValuesQuery": "",
         "type": "query",
         "useTags": false
       },
@@ -1253,6 +1278,7 @@
         "query": "3,5,10,15,20",
         "queryValue": "",
         "skipUrlSync": false,
+        "staticOptions": [],
         "type": "custom"
       }
     ]
@@ -1261,9 +1287,12 @@
     "from": "now-1h",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "quick_ranges": [],
+    "refresh_intervals": []
+  },
   "timezone": "",
   "title": "Cortex Flow Deep Dive | OpenNMS Plugin for Grafana",
-  "version": 43,
+  "version": 44,
   "weekStart": ""
 }
