@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { AlarmTableControlState } from '../AlarmTableTypes'
 
-export const useAlarmTableRowHighlighter = (state: AlarmTableControlState, table: React.MutableRefObject<HTMLDivElement | null>) => {
+export const useAlarmTableRowHighlighter = (state: AlarmTableControlState, table: React.RefObject<HTMLDivElement | null>) => {
 
     useEffect(() => {
         const rows = table.current?.querySelectorAll('.table-body div[role="row"]')
@@ -24,6 +24,5 @@ export const useAlarmTableRowHighlighter = (state: AlarmTableControlState, table
                 }
             })
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     })
 }

@@ -13,7 +13,6 @@ export const useDatasources = () => {
 
     useEffect(() => {
         updateDatasources();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     return { datasources }
 }

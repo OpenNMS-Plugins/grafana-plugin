@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { SelectableValue } from '@grafana/data'
 import {
     Button,
-    HorizontalGroup,
+    Combobox,
+    ComboboxOption,
     InlineField,
     InlineFieldRow,
     Label,
-    Select,
+    Stack,
     Switch
 } from '@grafana/ui'
 import { GrafanaDatasource } from 'hooks/useDataSources'
@@ -27,8 +27,8 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
     ({ datasource, activeFilters, client, onChange }) => {
 
     const { entities: entityOptions } = useEntities();
-    const [entity, setEntity] = useState<SelectableValue<string>>()
-    const [attribute, setAttribute] = useState<SelectableValue<{ id: string }>>()
+    const [entity, setEntity] = useState<ComboboxOption<string>>()
+    const [attribute, setAttribute] = useState<ComboboxOption<string>>()
     const [featuredAttributes, setFeaturedAttributes] = useState<boolean>(true)
     const { propertiesAsArray } = useEntityProperties(entity?.label || '', featuredAttributes, client as any)
     const { getFilterId, getFilterIdFromParts } = useFilterData()
@@ -39,7 +39,7 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
         }
 
         // prevent adding duplicate filters
-        const filterId = getFilterIdFromParts(entity, attribute)
+        const filterId = getFilterIdFromParts({ label: entity.label, value: entity.value }, { label: attribute.label, id: attribute.value, value: attribute.value })
         return activeFilters.some(f => getFilterId(f) === filterId)
     }
 
@@ -67,7 +67,7 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
         }
 
         onChange(newFilters)
-        setAttribute({ label: 'Select Attribute' })
+        setAttribute({ label: 'Select Attribute', value: '' })
     }
 
     return (
@@ -82,11 +82,11 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
              <Label style={{ marginTop: 12 }}>
                 Filters
             </Label>
-            <HorizontalGroup>
-                <Select placeholder='Entity' options={entityOptions} onChange={(e) => setEntity(e)} value={entity} />
-                <Select placeholder='Attribute' options={getAttributeOptions()} onChange={(e) => setAttribute(e)} value={attribute} />
+            <Stack direction='row'>
+                <Combobox placeholder='Entity' options={entityOptions.map(e => ({ label: e.label, value: e.value }))} onChange={(e) => setEntity(e)} value={entity} />
+                <Combobox placeholder='Attribute' options={getAttributeOptions().map(o => ({ label: o.label, value: o.id } ))} onChange={(e) => setAttribute(e)} value={attribute} />
                 <Button disabled={isDisabled()} onClick={addFilterRow}>Add Filter Row</Button>
-            </HorizontalGroup>
+            </Stack>
             <div className='spacer' />
             <InlineFieldRow>
                 <InlineField label='Featured attributes'>

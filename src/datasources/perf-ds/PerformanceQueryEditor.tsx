@@ -98,7 +98,7 @@ export const PerformanceQueryEditor: React.FC<PerformanceQueryEditorProps> = ({ 
       
       // Convert to SelectableValue<PerformanceAttributeItemState>
       // See DEVELOPMENT.md for an in-depth explanation of why we cannot pass OnmsNode[]
-      const selectableValues: SelectableValue<PerformanceAttributeItemState>[] = nodes.map(n => {
+      const selectableValues: Array<SelectableValue<PerformanceAttributeItemState>> = nodes.map(n => {
         return {
             id: n.id,
             label: n.label,

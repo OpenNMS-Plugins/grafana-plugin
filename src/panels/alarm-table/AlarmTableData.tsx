@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Select } from '@grafana/ui'
+import { Combobox } from '@grafana/ui'
 import { DragList } from 'components/DragList'
 import { OnmsInlineField } from 'components/OnmsInlineField'
 import { AlarmTableDataState } from './AlarmTableTypes'
@@ -36,7 +36,7 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
               * TODO: Double check if we need the ability to 'transform' in different ways
               * 
               * <OnmsInlineField label="Table Transform">
-                <Select
+                <Combobox
                     value={alarmTableData.transformType}
                     onChange={(val) => setAlarmTableState('transformType', val)}
                     options={[{ label: 'Table', value: 0 }]}
@@ -44,7 +44,7 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
             </OnmsInlineField> */}
 
             <OnmsInlineField label="Columns">
-                <Select
+                <Combobox
                     placeholder='Add Column'
                     value={''}
                     onChange={(val) => {

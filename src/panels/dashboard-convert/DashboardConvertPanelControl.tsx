@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { PanelProps, SelectableValue } from '@grafana/data'
+import { PanelProps } from '@grafana/data'
 import {
   Button,
+  Combobox,
+  ComboboxOption,
   Input,
-  Select,
   Stack,
   Switch,
   TextArea
@@ -28,9 +29,9 @@ const TargetPluginVersions = [
 ]
 
 export const DashboardConvertPanelControl: React.FC<PanelProps<DashboardConvertPanelProps>> = (props) => {
-  const [sourcePluginVersion, setSourcePluginVersion] = useState<SelectableValue<string>>(SourcePluginVersions[0])
+  const [sourcePluginVersion, setSourcePluginVersion] = useState<ComboboxOption<string>>(SourcePluginVersions[0])
   const [sourceDashboardJson, setSourceDashboardJson] = useState<string>()
-  const [targetPluginVersion, setTargetPluginVersion] = useState<SelectableValue<string>>(TargetPluginVersions[1])
+  const [targetPluginVersion, setTargetPluginVersion] = useState<ComboboxOption<string>>(TargetPluginVersions[1])
   const [targetDashboardJson, setTargetDashboardJson] = useState<string>()
   const [dashboardTitle, setDashboardTitle] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<string>()
@@ -137,10 +138,9 @@ export const DashboardConvertPanelControl: React.FC<PanelProps<DashboardConvertP
             <Stack direction={'column'} rowGap={2}>
               <Stack direction={'row'} columnGap={2}>
                 <FieldDisplay>{'Source Plugin Version:'}</FieldDisplay>
-                <Select
+                <Combobox
                     options={SourcePluginVersions}
                     value={sourcePluginVersion}
-                    menuShouldPortal={true}
                     onChange={(value) => setSourcePluginVersion(value)} />
               </Stack>
               <TextArea
@@ -154,10 +154,9 @@ export const DashboardConvertPanelControl: React.FC<PanelProps<DashboardConvertP
             <Stack direction={'column'} rowGap={2}>
               <Stack direction={'row'} columnGap={2}>
                 <FieldDisplay>{'Target Plugin Version:'}</FieldDisplay>
-                <Select
+                <Combobox
                     options={TargetPluginVersions}
                     value={targetPluginVersion}
-                    menuShouldPortal={true}
                     onChange={(value) => setTargetPluginVersion(value)} />
               </Stack>
               <TextArea

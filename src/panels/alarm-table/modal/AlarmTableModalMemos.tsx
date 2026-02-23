@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { config } from '@grafana/runtime'
-import { Button, HorizontalGroup, TextArea } from '@grafana/ui';
+import { Button, Stack, TextArea } from '@grafana/ui';
 import { ClientDelegate } from 'lib/client_delegate';
 import { OnmsAlarm } from 'opennms/src/model'
 
@@ -52,9 +52,6 @@ export const AlarmTableModalMemos: React.FC<AlarmTableModalMemosProps> = ({ alar
             <style>
                 {
                     `
-                    .sticky-memo {
-                        display:flex;
-                    }
                     .memo-header {
                         margin-top:24px;
                     }
@@ -67,21 +64,21 @@ export const AlarmTableModalMemos: React.FC<AlarmTableModalMemosProps> = ({ alar
             <div className='memo-wrapper'>
                 <h2 className='memo-header'>Sticky Memo</h2>
                 <TextArea value={localSticky?.body} onChange={stickyChange}></TextArea>
-                <HorizontalGroup className='sticky-memo'>
+                <Stack direction='row'>
                     {loading}
                     <Button onClick={saveSticky}><i className="fa fa-plus"></i>&nbsp;Save</Button>
                     <Button variant='destructive' onClick={deleteSticky}><i className="fa fa-minus"></i>&nbsp;Delete</Button>
-                </HorizontalGroup>
+                </Stack>
             </div>
 
             <div className='memo-wrapper'>
                 <h2 className='memo-header'>Journal Memo</h2>
                 <TextArea value={localJournal?.body} onChange={journalChange}></TextArea>
-                <HorizontalGroup className='sticky-memo'>
+                <Stack direction='row'>
                     {loading}
                     <Button onClick={saveJournal}><i className="fa fa-plus"></i>&nbsp;Save</Button>
                     <Button variant='destructive' onClick={deleteJournal}><i className="fa fa-minus"></i>&nbsp;Delete</Button>
-                </HorizontalGroup>
+                </Stack>
             </div>
 
         </div>

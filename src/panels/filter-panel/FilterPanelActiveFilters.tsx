@@ -1,8 +1,8 @@
 import React from 'react'
-import { Button, Label, SegmentInput, Select } from '@grafana/ui'
+import { SelectableValue } from '@grafana/data'
+import { Button, Combobox, ComboboxOption, Label, SegmentInput } from '@grafana/ui'
 import { FieldDisplay } from 'components/FieldDisplay'
 import { ActiveFilter } from '../../datasources/entity-ds/types'
-import { SelectableValue } from '@grafana/data'
 
 interface FilterPanelActiveFiltersProps {
     activeFilters: ActiveFilter[],
@@ -10,9 +10,9 @@ interface FilterPanelActiveFiltersProps {
 }
 
 export const FilterPanelActiveFilters: React.FC<FilterPanelActiveFiltersProps> = ({ activeFilters, onChange }) => {
-    const updateFilterSelectionType = (value: SelectableValue<string>, index: number) => {
+    const updateFilterSelectionType = (value: ComboboxOption<string | number>, index: number) => {
         const newFilters = [...activeFilters]
-        newFilters[index].selectionType = value
+        newFilters[index].selectionType = { label: value.label, value: String(value.value) } as SelectableValue<string>
         onChange(newFilters)
     }
 
@@ -79,14 +79,14 @@ export const FilterPanelActiveFilters: React.FC<FilterPanelActiveFiltersProps> =
                                             marginLeft: 'auto',
                                             columnGap: '12px'
                                         }}>
-                                        <Select
+                                        <Combobox
                                             options={[
                                                 { label: 'Single', value: 'single' },
                                                 { label: 'Multi', value: 'multi' },
                                                 { label: 'Text', value: 'text' }
                                             ]}
                                             onChange={(e) => updateFilterSelectionType(e, index)}
-                                            value={filter.selectionType || { label: 'Single', value: 'single' }}
+                                            value={{ label: filter.selectionType?.label || 'Single', value: filter.selectionType?.value || 'single' }}
                                         />
                                         <Button
                                             disabled={index === 0}

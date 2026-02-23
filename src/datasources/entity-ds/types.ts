@@ -1,7 +1,6 @@
 import { API } from 'opennms'
 import {
   Column,
-  DataQuery,
   DataQueryRequest,
   DataSourceJsonData,
   MetricFindValue,
@@ -9,6 +8,7 @@ import {
   QueryEditorProps,
   TableData
 } from '@grafana/data'
+import { DataQuery } from '@grafana/schema'
 import { EntityDataSource } from './EntityDataSource'
 import { GrafanaDatasource } from '../../hooks/useDataSources'
 

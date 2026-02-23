@@ -1,3 +1,4 @@
+import { ComboboxOption } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data'
 
 export interface AlarmTableControlState {
@@ -11,8 +12,8 @@ export interface AlarmTableAdditionalState {
 }
 
 export interface AlarmTableAlarmDataState {
-  styleWithSeverity?: SelectableValue<string | number>
-  severityTheme?: SelectableValue<string | number>
+  styleWithSeverity?: ComboboxOption<string | number>
+  severityTheme?: ComboboxOption<string | number>
 }
 
 export interface AlarmTableDataState {
@@ -24,7 +25,7 @@ export interface AlarmTablePaginationState {
   rowsPerPage?: number
   pauseRefresh: boolean
   scroll: boolean
-  fontSize?: SelectableValue<string | number>
+  fontSize?: ComboboxOption<string | number>
 }
 
 export interface AlarmTableColumnSizeItem {

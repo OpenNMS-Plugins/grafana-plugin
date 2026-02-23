@@ -233,11 +233,11 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
   }
 
   // full DataSourceRef object
-  if (isDefined(obj.type)) {
+  if (isDefined(obj.type) || isDefined(obj.uid) || isDefined(obj.apiVersion)) {
     const datasource = {
-      apiVersion: convertToString(obj?.apiVersion),
-      type: convertToString(obj?.type),
-      uid: convertToString(obj?.uid)
+      apiVersion: isDefined(obj.apiVersion) ? convertToString(obj?.apiVersion) : undefined,
+      type: isDefined(obj.type) ? convertToString(obj?.type) : undefined,
+      uid: isDefined(obj.uid) ? convertToString(obj?.uid) : undefined
     } as DataSourceRef
 
     return datasource
@@ -470,12 +470,16 @@ const mapVariableType = (obj: any): VariableType => {
 }
 
 // We don't do a lot of extensive parsing here, just make sure it has the same shape as a VariableModel
+// We do include some properties like definition, tagsQuery, tagValuesQuery which are not required but are used by our OPG variables,
+// so that they will be preserved in the conversion
+// It's possible in the future these will be removed if no longer needed.
 const mapVariableModel = (obj: any): VariableModel => {
   const model = {
     allValue: isDefined(obj.allValue) ? convertToString(obj.allValue) : undefined,
     allowCustomValue: isDefined(obj.allowCustomValue) ? convertToBoolean(obj.allowCustomValue) : undefined,
     current: isDefined(obj.current) ? mapVariableOption(obj.current) : undefined,
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
+    definition: isDefined(obj.definition) ? convertToString(obj.definition) : undefined,
     description: isDefined(obj.description) ? convertToString(obj.description) : undefined,
     hide: isDefined(obj.hide) && isEnumValueOfType(VariableHide, obj.hide) ? convertToInt(obj.hide) : undefined,
     includeAll: isDefined(obj.includeAll) ? convertToBoolean(obj.includeAll) : undefined,
@@ -483,14 +487,18 @@ const mapVariableModel = (obj: any): VariableModel => {
     multi: isDefined(obj.multi) ? convertToBoolean(obj.multi) : undefined,
     name: convertToString(obj.name),
     options: isNonEmptyArray(obj.options) ? obj.options.map(mapVariableOption) : [],
-    query: obj.query,  // not bothering to parse this further
+    query: obj.query,  // not bothering to parse this further,
+    queryValue: isDefined(obj.queryValue) ? convertToString(obj.queryValue) : undefined,
     refresh: isDefined(obj.refresh) && isEnumValueOfType(VariableRefresh, obj.refresh) ? convertToInt(obj.refresh) : undefined,
     regex: isDefined(obj.regex) ? convertToString(obj.regex) : undefined,
     skipUrlSync: isDefined(obj.skipUrlSync) ? convertToBoolean(obj.skipUrlSync) : undefined,
     sort: isDefined(obj.sort) && isEnumValueOfType(VariableSort, obj.sort) ? convertToInt(obj.sort) : undefined,
     staticOptions: isNonEmptyArray(obj.staticOptions) ? obj.staticOptions.map(mapVariableOption) : [],
     staticOptionsOrder: mapStaticOptionsOrder(obj.staticOptionsOrder),
-    type: isDefined(obj.type) ? mapVariableType(obj.type) : 'query'
+    tagsQuery: isDefined(obj.tagsQuery) ? convertToString(obj.tagsQuery) : undefined,
+    tagValuesQuery: isDefined(obj.tagValuesQuery) ? convertToString(obj.tagValuesQuery) : undefined,
+    type: isDefined(obj.type) ? mapVariableType(obj.type) : 'query',
+    useTags: isDefined(obj.useTags) ? convertToBoolean(obj.useTags) : undefined
   } as VariableModel
 
   return model

@@ -42,7 +42,7 @@ export const dashboardConvert = (sourceJson: string, sourceVersion: number, targ
   }
 
   // for any target version above 9 we convert it to 12
-  if ([10, 11, 12].includes(targetVersion) && response.dashboardV9) {
+  if ([10, 11, 12].includes(targetVersion) && (response.json || response.dashboardV9)) {
     let shouldIncrementDashboardVersion = options.incrementDashboardVersion
 
     // If we already incremented dashboard version because we did an 8 to 9 conversion above,
