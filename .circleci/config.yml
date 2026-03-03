@@ -56,13 +56,22 @@ commands:
       - restore_cache:
           name: Restore NPM Cache
           keys:
-            - npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
-            - npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}
-            - npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-
-            - npm-packages-v3-
+            - npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
+            - npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}
+            - npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-
+            - npm-packages-v4-{{ arch }}-
       - run:
           name: Install Dependencies
-          command: npm --no-progress ci
+          command: |
+            npm --no-progress ci --include=optional
+            # Ensure platform-specific SWC binary is installed
+            SWC_ARCH="$(node -p "process.arch")"
+            SWC_PLATFORM="$(node -p "process.platform")"
+            if [ "$SWC_PLATFORM" = "linux" ]; then
+              SWC_PKG="@swc/core-linux-${SWC_ARCH}-gnu"
+              echo "Installing ${SWC_PKG}..."
+              npm install "${SWC_PKG}" --save-optional --ignore-scripts
+            fi
   save-node-cache:
     steps:
       - generate-node-cache-checksum
@@ -74,7 +83,7 @@ commands:
               fi
       - save_cache:
           name: Save Package Cache
-          key: npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
+          key: npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
           paths:
             - ~/.npm
   validate-schema:
