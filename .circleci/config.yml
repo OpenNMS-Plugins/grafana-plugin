@@ -12,7 +12,7 @@ executors:
 
   node-executor:
     docker:
-      - image: cimg/node:20.19
+      - image: cimg/node:22.22
 
   docs-executor:
     docker:

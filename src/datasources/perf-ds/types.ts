@@ -1,4 +1,5 @@
-import { DataQuery, DataQueryRequest, DataSourceJsonData, QueryEditorProps, SelectableValue } from '@grafana/data'
+import { DataQueryRequest, DataSourceJsonData, QueryEditorProps, SelectableValue } from '@grafana/data'
+import { DataQuery } from '@grafana/schema'
 import { PerformanceDataSource } from './PerformanceDataSource'
 
 /**

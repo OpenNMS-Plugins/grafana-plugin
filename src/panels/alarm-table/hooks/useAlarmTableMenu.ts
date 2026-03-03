@@ -1,6 +1,6 @@
-import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import { RefObject, useEffect, useRef, useState } from 'react'
 
-export const useAlarmTableMenu = (indexes: MutableRefObject<boolean[]>, rowClicked, series, setState) => {
+export const useAlarmTableMenu = (indexes: RefObject<boolean[]>, rowClicked, series, setState) => {
     const [menu, setMenu] = useState({ x: 0, y: 0 })
     const [menuOpen, setMenuOpen] = useState(false)
 

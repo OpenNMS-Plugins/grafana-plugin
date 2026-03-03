@@ -93,7 +93,6 @@ export const useAlarmProperties = (oldProperties: DataFrame, alarmTable) => {
             setFilteredPropState(filteredProps)
             setTotalPages(Math.ceil(totalRows / rowsPerPage))
         }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
       oldProperties,
       page,

@@ -1,4 +1,5 @@
-import { DataQuery, DataQueryRequest, DataSourceJsonData, SelectableValue } from '@grafana/data'
+import { DataQueryRequest, DataSourceJsonData, SelectableValue } from '@grafana/data'
+import { DataQuery } from '@grafana/schema'
 import { ClientDelegate } from 'lib/client_delegate'
 import { SimpleOpenNMSRequest } from 'lib/simpleRequest'
 

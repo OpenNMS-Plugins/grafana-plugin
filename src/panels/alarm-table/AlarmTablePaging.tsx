@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Input, Switch, Select } from '@grafana/ui'
+import { Combobox, Input, Switch } from '@grafana/ui'
 import { OnmsInlineField } from 'components/OnmsInlineField'
 import { SwitchBox } from 'components/SwitchBox'
 import { AlarmTablePaginationState } from './AlarmTableTypes'
@@ -50,7 +50,7 @@ export const AlarmTablePaging: React.FC<AlarmTablePagingPanelProps> = ({ onChang
                 </SwitchBox>
             </OnmsInlineField>
             <OnmsInlineField label='Font size'>
-                <Select
+                <Combobox
                     value={alarmTablePaging.fontSize}
                     options={fontSizeOptions}
                     onChange={(val) => setAlarmTablePagingState('fontSize', val)}

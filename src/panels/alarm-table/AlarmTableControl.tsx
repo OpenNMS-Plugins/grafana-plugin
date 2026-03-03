@@ -87,7 +87,6 @@ export const AlarmTableControl: React.FC<PanelProps<AlarmTableControlProps>> = (
 
     useEffect(() => {
       alarmIndexes.current = state.indexes
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state])
 
     return (

@@ -37,15 +37,15 @@
     "@antora/cli": "^3.1.14",
     "@antora/site-generator-default": "^3.1.12",
     "@babel/core": "^7.28.3",
-    "@grafana/e2e-selectors": "^12.2.1",
+    "@grafana/e2e-selectors": "^12.3.3",
     "@grafana/eslint-config": "^8.2.0",
     "@grafana/plugin-e2e": "^2.2.3",
     "@grafana/tsconfig": "^2.0.1",
     "@opennms/style": "github:OpenNMS/opennms-style#v0.4.0",
     "@playwright/test": "^1.56.1",
     "@stylistic/eslint-plugin-ts": "^2.13.0",
-    "@swc/core": "^1.13.3",
-    "@swc/helpers": "^0.5.17",
+    "@swc/core": "^1.15.13",
+    "@swc/helpers": "^0.5.19",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -61,7 +61,7 @@
     "commander": "^11.0.0",
     "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^7.1.2",
-    "eslint": "^9.38.0",
+    "eslint": "^9.39.3",
     "eslint-plugin-jsdoc": "^51.4.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -82,13 +82,13 @@
     "sass-loader": "^16.0.5",
     "speculate": "^6.0.1",
     "style-loader": "^4.0.0",
-    "swc-loader": "^0.2.6",
+    "swc-loader": "^0.2.7",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.1.0",
     "tslib": "^2.3.1",
     "typescript": "^5.9.3",
     "urijs": "^1.19.11",
-    "webpack": "^5.102.1",
+    "webpack": "^5.105.2",
     "webpack-cli": "^5.1.4",
     "webpack-livereload-plugin": "^3.0.2",
     "webpack-subresource-integrity": "^5.1.0",
@@ -97,11 +97,11 @@
   },
   "dependencies": {
     "@emotion/css": "^11.13.5",
-    "@grafana/data": "^12.2.1",
-    "@grafana/i18n": "^12.2.1",
-    "@grafana/runtime": "^12.2.1",
-    "@grafana/schema": "^12.2.1",
-    "@grafana/ui": "^12.2.1",
+    "@grafana/data": "^12.3.3",
+    "@grafana/i18n": "^12.3.3",
+    "@grafana/runtime": "^12.3.3",
+    "@grafana/schema": "^12.3.3",
+    "@grafana/ui": "^12.3.3",
     "async": "^3.2.3",
     "flot": "^0.8.3",
     "flot-axislabels": "https://github.com/j-white/flot-axislabels#master",
@@ -112,10 +112,10 @@
     "perfect-scrollbar": "^1.5.5",
     "react": "~18.3.1",
     "react-dom": "~18.3.1",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.13.0"
   },
   "engines": {
-    "node": ">=20 <23"
+    "node": ">=22 <23"
   },
   "overrides": {
     "@antora/cli": {
@@ -124,11 +124,43 @@
     "@antora/logger": {
       "pino": "^10.1.0"
     },
-    "opennms": {
-      "striptags": "^3.2.0"
+    "copy-webpack-plugin": {
+      "schema-utils": "^4.3.3"
+    },
+    "@eslint/eslintrc": {
+      "ajv": "^6.14.0"
+    },
+    "@grafana/ui": {
+      "react": "~18.3.1",
+      "react-dom": "~18.3.1",
+      "react-router": "^7.13.0"
+    },
+    "@grafana/runtime": {
+      "react": "~18.3.1",
+      "react-dom": "~18.3.1",
+      "react-router": "^7.13.0"
     },
     "html-to-formatted-text": {
       "striptags": "^3.2.0"
+    },
+    "minimatch": {
+      "@isaacs/brace-expansion": "^5.0.1"
+    },
+    "opennms": {
+      "ajv": "^8.18.0",
+      "axios": "^1.13.5",
+      "qs": "^6.14.2",
+      "striptags": "^3.2.0"
+    },
+    "react-router-dom-v5-compat": {
+      "react-router": "^6.30.3",
+      "@remix-run/router": "^1.23.2"
+    },
+    "tiny-lr": {
+      "qs": "^6.15.0"
+    },
+    "webpack-livereload-plugin": {
+      "qs": "^6.15.0"
     }
   },
   "spec": {
@@ -138,5 +170,5 @@
       "grafana >= 12.0.0"
     ]
   },
-  "packageManager": "npm@10.8.1"
+  "packageManager": "npm@10.9.4"
 }
