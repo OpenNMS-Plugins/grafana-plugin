@@ -4,6 +4,7 @@ import { DragList } from 'components/DragList'
 import { OnmsInlineField } from 'components/OnmsInlineField'
 import { AlarmTableDataState } from './AlarmTableTypes'
 import { alarmTableDefaultColumns } from './constants'
+import { SelectableValue } from '@grafana/data'
 
 interface AlarmTableDataProps {
     onChange: Function;
@@ -25,6 +26,11 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
         newState[key] = value
         setAlarmTableData(newState)
    }
+
+    const shouldDisplayRemove = (val: SelectableValue<string | number>) => {
+        // do not allow 'iD' column to be removed, as this is necessary for selection and other functionality
+        return val?.label !== 'ID'
+    }
 
     return (
         <div>
@@ -52,10 +58,10 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
                         newColumns.push(val)
                         setAlarmTableState('columns', newColumns)
                     }}
-                    options={context?.data?.[0]?.fields.map((field, index) => ({ ...field, value: index, label: field.name }))}
+                    options={context?.data && context?.data?.[0]?.fields ? context?.data?.[0]?.fields.map((field, index) => ({ ...field, value: index, label: field.name })) : [] }
                 />
             </OnmsInlineField>
-            <DragList values={alarmTableData?.columns} onChange={(val) => { setAlarmTableState('columns', val) }} />
+            <DragList values={alarmTableData?.columns} onChange={(val) => { setAlarmTableState('columns', val) }} shouldDisplayRemove={shouldDisplayRemove} />
         </div>
     )
 }

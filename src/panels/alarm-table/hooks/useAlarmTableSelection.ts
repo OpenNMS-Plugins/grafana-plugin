@@ -1,57 +1,72 @@
 import { useState } from 'react'
+import { DataFrame } from '@grafana/data'
+import { getAlarmIdsForRows } from '../AlarmTableHelper'
 import { AlarmTableControlState } from '../AlarmTableTypes'
 
 export const useAlarmTableSelection = (doubleClicked) => {
+    const [alarmControlState, setAlarmControlState] = useState<AlarmTableControlState>(
+        { selectedAlarmIds: new Set<number>(), lastClickedAlarmId: -1 })
+ 
+    const [soloAlarmId, setSoloAlarmId] = useState(-1)
 
-    const [state, setState] = useState<AlarmTableControlState>({ indexes: [], lastClicked: -1 })
-    const [soloIndex, setSoloIndex] = useState(-1)
-
-    const clearIndexes = (oldIndexes: boolean[]) => {
-        return [...oldIndexes].map(() => false)
+    const toggleAlarmIdSelection = (id: number, alarmIds: Set<number>) => {
+        if (alarmIds.has(id)) {
+            alarmIds.delete(id)
+        } else {
+            alarmIds.add(id)
+        }
     }
 
-    const allIndexesAreFalse = (indexes: boolean[]) => {
-        return !indexes.some(i => i === true)
-    }
+    const rowClicked = (tableElem: HTMLElement, alarmId: number, e: MouseEvent, rows: Element[], frame: DataFrame, fromContext = false) => {
+        setAlarmControlState((previousState) => {
+            let newSelectedAlarmIds: Set<number> = new Set(previousState.selectedAlarmIds)            
 
-    const rowClicked = (index: number, e: MouseEvent, fromContext = false) => {
-        setState((previousState) => {
-            let newClickedIndexes = [...previousState.indexes]
-
-            if ((!fromContext || allIndexesAreFalse(newClickedIndexes)) && (!e.shiftKey || previousState.lastClicked === -1)) {
+            if ((!fromContext || !previousState.selectedAlarmIds.size) && (!e.shiftKey || previousState.lastClickedAlarmId < 1)) {
+                // nothing was previously selected and user clicked or double clicked on a valid row
                 if (!e.ctrlKey) {
-                    newClickedIndexes = clearIndexes(newClickedIndexes)
+                    newSelectedAlarmIds = new Set<number>()
                 }
 
-                newClickedIndexes[index] = newClickedIndexes[index] ? false : true
-                setSoloIndex(index)
+                toggleAlarmIdSelection(alarmId, newSelectedAlarmIds)
+                setSoloAlarmId(alarmId)
 
                 if (e.detail === 2) {
                     doubleClicked()
                 }
             } else if (!fromContext) {
-                let { start, end } = previousState.lastClicked > index ?
-                    { start: index, end: previousState.lastClicked } :
-                    { start: previousState.lastClicked, end: index }
+                // if some rows were already selected,
+                // find the range of rows selected between previous selection and the
+                // row user clicked on, and add those alarmIds to the selection list
+                
+                const rows = tableElem?.querySelectorAll('.table-body div[role="row"]')
+
+                const rowAlarmIds = getAlarmIdsForRows(Array.from(rows), frame)
+                const currentIndex = rowAlarmIds.findIndex(i => i === alarmId) ?? -1
+                const lastClickedIndex = rowAlarmIds.findIndex(i => i === previousState.lastClickedAlarmId) ?? -1
+
+                let { start, end } = lastClickedIndex > currentIndex ?
+                    { start: currentIndex, end: lastClickedIndex >= 0 ? lastClickedIndex : currentIndex } :
+                    { start: lastClickedIndex >= 0 ? lastClickedIndex : currentIndex, end: currentIndex }
 
                 for (let i = start; i <= end; i++) {
-                    newClickedIndexes[i] = true
+                    newSelectedAlarmIds.add(rowAlarmIds[i])
                 }
 
-                setSoloIndex(-1)
-            } else if (fromContext && index >= 0) {
-                const countSelected = previousState.indexes.filter(x => x === true).length
+                setSoloAlarmId(0)
+            } else if (fromContext && alarmId > 0) {
+                // user right-clicked on a row, toggling selection for that row
+                const countSelected = previousState.selectedAlarmIds.size
 
                 if (countSelected < 2) {
-                  newClickedIndexes = clearIndexes(newClickedIndexes)
-                  newClickedIndexes[index] = true
-                  setSoloIndex(index)
+                    newSelectedAlarmIds = new Set<number>()
+                    toggleAlarmIdSelection(alarmId, newSelectedAlarmIds)
+                    setSoloAlarmId(alarmId)                  
                 }
             }
 
-            return { indexes: newClickedIndexes, lastClicked: index }
+            return { selectedAlarmIds: newSelectedAlarmIds, lastClickedAlarmId: alarmId }
         })
     }
 
-    return { state, setState, clearIndexes, rowClicked, soloIndex }
+    return { alarmControlState, setAlarmControlState, rowClicked, soloAlarmId }
 }
