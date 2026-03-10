@@ -38,9 +38,7 @@ export const useAlarmTableSelection = (doubleClicked) => {
                 // find the range of rows selected between previous selection and the
                 // row user clicked on, and add those alarmIds to the selection list
                 
-                const rows = tableElem?.querySelectorAll('.table-body div[role="row"]')
-
-                const rowAlarmIds = getAlarmIdsForRows(Array.from(rows), frame)
+                const rowAlarmIds = getAlarmIdsForRows(rows, frame)
                 const currentIndex = rowAlarmIds.findIndex(i => i === alarmId) ?? -1
                 const lastClickedIndex = rowAlarmIds.findIndex(i => i === previousState.lastClickedAlarmId) ?? -1
 

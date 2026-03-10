@@ -147,7 +147,7 @@ export const AlarmTableControl: React.FC<PanelProps<AlarmTableControlProps>> = (
       refreshFilteredProps()
 
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props, props.data, props.options])
+    }, [props, props.data, props.options, page])
 
     useEffect(() => {
       selectedAlarmIds.current = new Set(alarmControlState.selectedAlarmIds)
@@ -156,6 +156,15 @@ export const AlarmTableControl: React.FC<PanelProps<AlarmTableControlProps>> = (
     useEffect(() => {
       filteredPropsRef.current = filteredPropState
     }, [filteredPropState])
+
+    useEffect(() => {
+      const scrollView = document.querySelector('.scrollbar-view') as HTMLElement | null
+      if (props.options?.alarmTable?.alarmTablePaging?.scroll) {
+        scrollView?.classList.remove('no-scroll')
+      } else {
+        scrollView?.classList.add('no-scroll')
+      }
+    }, [props.options?.alarmTable?.alarmTablePaging?.scroll])
 
     // apply click handlers to the table, but make sure they aren't applied to the Pagination component
     useEffect(() => {
