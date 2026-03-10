@@ -32,4 +32,5 @@ export const alarmTableDefaultColumns = [
   { label: 'Location', value: 8 },
   { label: 'Node Label', value: 14 },
   { label: 'Log Message', value: 9 },
+  { label: 'ID', value: 0 },
 ]
