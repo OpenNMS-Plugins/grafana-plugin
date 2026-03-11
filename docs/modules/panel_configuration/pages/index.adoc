@@ -135,6 +135,9 @@ NOTE: The query must include an `asTableSummary()` transform, otherwise the pane
 This sets the method by which data is grouped in the panel.
 *Stacked* displays cumulative data from all sources, grouped by incoming and outgoing data.
 ** (Optional) Update the legend settings as desired.
+*** *Show Legend* shows or hides the legend
+*** *Position* positions the legend either on the *Right Side* (the default), or else *Under Graph*
+*** *Height* is the height in `px` of the legend, default is 42. You can increase this if not all legend items are showing, perhaps if there are over 10 items.
 . Set other display options as desired.
 
 Using these settings, the flow histogram panel displays the following visualization:
