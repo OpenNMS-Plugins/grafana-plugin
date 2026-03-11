@@ -97,7 +97,7 @@ Follow these steps to customize an alarms table panel:
 After the panel is configured, you can right-click on an entry to access the context menu.
 From there, you can access an alarm's *Details* and *Acknowledge*, *Escalate*, or *Clear* it.
 
-You can hold down the *Shift* key and click on the table to select multiple rows to for example *Acknowledge* multiple alarms at once.
+You can hold down the *Shift* key and click on the table to select multiple rows to (for example) *Acknowledge* multiple alarms at once.
 
 There are also two additional features in the *Panel options* section:
 

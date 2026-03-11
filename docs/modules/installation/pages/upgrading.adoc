@@ -64,7 +64,7 @@ Dashboards that worked with {product-name} version 9 will most likely still work
 Dashboards used with {product-name} version 8 or earlier *will not* work with version 12 and must be upgraded.
 If they are not upgraded, they will not be displayed.
 
-The {product-name} version 12.x includes a dashboard conversion tool to upgrade dashboards created using a previous versions.
+The {product-name} version 12.x includes a dashboard conversion tool to upgrade dashboards created using previous versions.
 
 IMPORTANT: You must export your dashboards from a previous version of the plugin.
 You can export them before you upgrade your {page-component-title} installation, or from a separate Grafana instance that is running the previous version.
