@@ -6,7 +6,7 @@ asciidoc:
     full-display-version: '12.0.0-SNAPSHOT'
     grafana-version-required: '12.x'
     grafana-version-tested: '12.0'
-    node-js-build-version: '20.x'
+    node-js-build-version: '22.x'
     product-name: 'OpenNMS Plugin for Grafana'
 nav:
   - modules/ROOT/nav.adoc
