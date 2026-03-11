@@ -47,6 +47,9 @@ npm ci
 [source, shell]
 npm run dev
 
+Note that `npm run dev` will generate (mostly) non-minified code which is better when debugging in a browser.
+For a release build, you can run `npm run build` to create minified and optimized code.
+
 . Symlink your `dist` directory to Grafana's plugin path:
 +
 [source, shell]
