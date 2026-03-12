@@ -1,6 +1,6 @@
 # OpenNMS Plugin for Grafana [![CircleCI](https://circleci.com/gh/OpenNMS/grafana-plugin.svg?style=svg)](https://circleci.com/gh/OpenNMS/grafana-plugin)
 
-OpenNMS Plugin for Grafana (formerly known as Helm) is a Grafana application that allows users to create flexible monitoring dashboards using data from [OpenNMS® Horizon™](https://www.opennms.com/horizon/) and/or [OpenNMS® Meridian™](https://www.opennms.com/meridian/).
+OpenNMS Plugin for Grafana is a Grafana application plugin that allows users to create flexible monitoring dashboards using data from [OpenNMS® Horizon™](https://www.opennms.com/horizon/) and/or [OpenNMS® Meridian™](https://www.opennms.com/meridian/).
 
 Supported data:
 * Performance and response time (time series metrics)
@@ -43,20 +43,22 @@ Remove outliers and perform trending or forecasting using the built-in series fi
 ## Support Matrix
 
 * Performance data source
-  * OpenNMS Horizon 16 or greater
-  * OpenNMS Meridian 2016 or greater
+  * OpenNMS Horizon 33 or greater
+  * OpenNMS Meridian 2024 or greater
 * Entities data source
   * Alarms
-    * OpenNMS Horizon 20 or greater
-    * OpenNMS Meridian 2018 or greater
+    * OpenNMS Horizon 33 or greater
+    * OpenNMS Meridian 2024 or greater
   * IP and SNMP interfaces, outages, and services
-    * OpenNMS Horizon 26 or greater
-    * OpenNMS Meridian 2020 or greater
+    * OpenNMS Horizon 33 or greater
+    * OpenNMS Meridian 2024 or greater
 * Flows data source
-  * OpenNMS Horizon 24 or greater
-  * OpenNMS Meridian 2019 or greater
+  * OpenNMS Horizon 33 or greater
+  * OpenNMS Meridian 2024 or greater
 
-This plugin requires Grafana 9 or greater.
+It is possible that earlier versions of Horizon or Meridian may work with this version of OPG.
+
+This plugin requires Grafana 12 or greater.
 
 ## Issue Tracking
 
@@ -64,4 +66,4 @@ We use the OpenNMS Plugin for Grafana project in our [JIRA](https://opennms.atla
 
 ## Changelog
 
-The changelog has moved to [CHANGELOG.md](https://github.com/OpenNMS/grafana-plugin/blob/main-9/CHANGELOG.md).
+The changelog has moved to [CHANGELOG.md](https://github.com/OpenNMS/grafana-plugin/blob/release-12.x/CHANGELOG.md).

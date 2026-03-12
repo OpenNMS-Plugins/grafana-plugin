@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Select } from '@grafana/ui'
+import { Combobox } from '@grafana/ui'
 import { DragList } from 'components/DragList'
 import { OnmsInlineField } from 'components/OnmsInlineField'
 import { AlarmTableDataState } from './AlarmTableTypes'
 import { alarmTableDefaultColumns } from './constants'
+import { SelectableValue } from '@grafana/data'
 
 interface AlarmTableDataProps {
     onChange: Function;
@@ -26,6 +27,11 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
         setAlarmTableData(newState)
    }
 
+    const shouldDisplayRemove = (val: SelectableValue<string | number>) => {
+        // do not allow 'iD' column to be removed, as this is necessary for selection and other functionality
+        return val?.label !== 'ID'
+    }
+
     return (
         <div>
             {/** 
@@ -36,7 +42,7 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
               * TODO: Double check if we need the ability to 'transform' in different ways
               * 
               * <OnmsInlineField label="Table Transform">
-                <Select
+                <Combobox
                     value={alarmTableData.transformType}
                     onChange={(val) => setAlarmTableState('transformType', val)}
                     options={[{ label: 'Table', value: 0 }]}
@@ -44,7 +50,7 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
             </OnmsInlineField> */}
 
             <OnmsInlineField label="Columns">
-                <Select
+                <Combobox
                     placeholder='Add Column'
                     value={''}
                     onChange={(val) => {
@@ -52,10 +58,10 @@ export const AlarmTableData: React.FC<AlarmTableDataProps> = ({ onChange, contex
                         newColumns.push(val)
                         setAlarmTableState('columns', newColumns)
                     }}
-                    options={context?.data?.[0]?.fields.map((field, index) => ({ ...field, value: index, label: field.name }))}
+                    options={context?.data && context?.data?.[0]?.fields ? context?.data?.[0]?.fields.map((field, index) => ({ ...field, value: index, label: field.name })) : [] }
                 />
             </OnmsInlineField>
-            <DragList values={alarmTableData?.columns} onChange={(val) => { setAlarmTableState('columns', val) }} />
+            <DragList values={alarmTableData?.columns} onChange={(val) => { setAlarmTableState('columns', val) }} shouldDisplayRemove={shouldDisplayRemove} />
         </div>
     )
 }

@@ -3,10 +3,11 @@ import { SelectableValue } from '@grafana/data'
 
 interface DragListProps {
     values: Array<SelectableValue<string | number>>,
-    onChange: Function
+    onChange: (newValues: Array<SelectableValue<string | number>>) => void
+    shouldDisplayRemove?: (val: SelectableValue<string | number>) => boolean
 }
 
-export const DragList: React.FC<DragListProps> = ({ values, onChange }) => {
+export const DragList: React.FC<DragListProps> = ({ values, onChange, shouldDisplayRemove }) => {
     const moveUp = (e: React.UIEvent<HTMLSpanElement>, index: number) => {
         const newValues = [...values]
         const movingValue = newValues.splice(index, 1);
@@ -75,6 +76,12 @@ export const DragList: React.FC<DragListProps> = ({ values, onChange }) => {
                     .onms-drag-button.onms-drag-remove {
                         background-color:rgb(239, 25, 32);
                     }
+                    .onms-drag-button-placeholder {
+                        width:22px;
+                        height:22px;
+                        display:flex;
+                        margin-right:6px;
+                    }
                     .onms-drag-wrapper{
                         height: 40px;
                         margin-bottom:6px;
@@ -96,7 +103,10 @@ export const DragList: React.FC<DragListProps> = ({ values, onChange }) => {
                         <span className='onms-drag-button' tabIndex={0} onKeyUp={(e) => keyDown(e,index)} onClick={(e) => moveDown(e, index)}>
                             <i className='fa fa-arrow-down'></i>
                         </span>
-                        <span className='onms-drag-button onms-drag-remove' onKeyUp={(e) => keyDelete(e,index)} tabIndex={0} onClick={(e) => remove(e, index)}><i className='fa fa-ban'></i></span>
+                        {(shouldDisplayRemove === undefined || shouldDisplayRemove(val)) ? (
+                            <span className='onms-drag-button onms-drag-remove' onKeyUp={(e) => keyDelete(e,index)} tabIndex={0} onClick={(e) => remove(e, index)}><i className='fa fa-ban'></i></span>
+                        ) : <span className='onms-drag-button-placeholder'></span>
+                        }
                     </div>
                 </div>
             ))}

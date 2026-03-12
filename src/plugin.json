@@ -8,7 +8,7 @@
       "name": "The OpenNMS Group Inc.",
       "url": "https://www.opennms.com"
     },
-    "keywords": ["opennms", "opennms helm", "fault management", "performance management", "monitoring", "plugin", "snmp"],
+    "keywords": ["opennms", "grafana plugin", "fault management", "performance management", "monitoring", "plugin", "snmp"],
     "logos": {
       "small": "img/opennms-grafana-plugin.svg",
       "large": "img/opennms-grafana-plugin.svg"
@@ -24,8 +24,8 @@
       {"name": "Metrics", "path": "img/Helm_Screenshot_Metrics.png"},
       {"name": "Performance Data Source", "path": "img/Helm_Screenshot_Performance_Data_Source.png"}
     ],
-    "version": "9.0.16",
-    "updated": "2025-11-06"
+    "version": "12.0.0-SNAPSHOT",
+    "updated": "2026-03-11"
   },
   "includes": [
     {"type": "panel", "name": "Alarm Table","path":"panels/alarm-table/plugin.json"},
@@ -38,12 +38,11 @@
     {"type": "datasource", "name": "OpenNMS Flows","path":"datasources/flow-ds/plugin.json"},
     {"type": "dashboard", "name": "About | OpenNMS Plugin for Grafana", "path": "dashboards/about.json"},
     {"type": "dashboard", "name": "Flow Deep Dive | OpenNMS Plugin for Grafana", "path": "dashboards/flow_deep_dive.json"},
-    {"type": "dashboard", "name": "Cortex Flow Deep Dive | OpenNMS Plugin for Grafana", "path": "dashboards/cortex_flow_deep_dive.json"},
     {"type": "dashboard", "name": "Dashboard Converter | OpenNMS Plugin for Grafana", "path": "dashboards/dashboard_converter.json"}
   ],
   "dependencies": {
-    "grafanaDependency": ">=9.0.0",
-    "grafanaVersion": "9.0.0",
+    "grafanaDependency": ">=12.0.0",
+    "grafanaVersion": "12.4.0",
     "plugins": []
   },
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json"

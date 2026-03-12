@@ -1,5 +1,6 @@
 
 = Severities
+:description: View the matrix of severities in {product-name}: critical, major, minor, warning, normal, cleared, and indeterminate.
 
 This matrix defines the severities that OpenNMS uses:
 

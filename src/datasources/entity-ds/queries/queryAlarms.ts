@@ -4,6 +4,7 @@ import { OnmsColumn, OnmsTableData, OnmsRow } from '../types'
 import { ClientDelegate } from 'lib/client_delegate'
 import { ServerMetadata } from 'opennms/src/api/ServerMetadata'
 import { Client } from 'opennms/src/Client'
+import { OnmsQueryResultMeta } from 'datasources/types'
 
 const columns = Object.freeze([
     { text: 'ID', resource: 'id' },
@@ -164,7 +165,7 @@ export const queryAlarms = async (client: ClientDelegate, filter: API.Filter): P
         name: 'alarms',
         meta: {
             entity_metadata: metas,
-        },
+        } as OnmsQueryResultMeta,
         columns: cols.filter(column => column.visible !== false),
         rows: rows,
         type: 'table',

@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = Use Filters to Forecast Metrics
+:description: Learn how to use predefined filters in {product-name} to display forecast metrics in a network usage panel.
 
 Horizon and Meridian include several predefined filters that the {product-name} can use to display forecast metrics in a panel.
 

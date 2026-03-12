@@ -16,7 +16,7 @@ interface FlowHistogramControlOptions { flowHistogramOptions: FlowHistogramOptio
 interface Props extends PanelProps<FlowHistogramControlOptions> { }
 
 export const FlowHistogramControl: React.FC<Props> = ({ data, height, width, options }) => {
-    const ref: any = useRef();
+    const ref: any = useRef(undefined)
 
     useEffect(() => {
         if (validateFlowHistogramPanelData(data?.series)) {
@@ -29,7 +29,7 @@ export const FlowHistogramControl: React.FC<Props> = ({ data, height, width, opt
           // TODO: remove this fix once flot library is updated in grafana. Use container option in plotConfig instead
           setLegend(options)
         }
-    }, [data, width, height, ref, options]);
+    }, [data, width, height, ref, options])
 
     return (
         <>

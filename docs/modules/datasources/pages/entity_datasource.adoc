@@ -1,5 +1,6 @@
 
 = Entities Datasource
+:description: Learn how to use the {product-name} to retrieve alarms and nodes from OpenNMS.
 
 You can use the Entities datasource to retrieve entity model objects (alarms and nodes) from OpenNMS.
 For an example of the Entities datasource in use, see <<panel_configuration:dynamic-dashboard.adoc#pc-filter-panel, Create a Filter panel>>.

@@ -1,5 +1,6 @@
 
 = Get Started
+:description: Learn where to find information to familiarize yourself with OpenNMS and Grafana before using the {product-name} to visualize flow data.
 
 To use all of the features that the {product-name} offers, you should be familiar with both OpenNMS and Grafana.
 In-depth documentation about both is beyond the scope of this guide; however, the following materials can serve as a primer:

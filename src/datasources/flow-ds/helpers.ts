@@ -1,4 +1,4 @@
-import { ArrayVector, DataFrame, Field, FieldType, rangeUtil, SelectableValue } from '@grafana/data'
+import { DataFrame, Field, FieldType, rangeUtil, SelectableValue } from '@grafana/data'
 import { Model } from 'opennms'
 import { ClientDelegate } from 'lib/client_delegate'
 import { dscpLabel, dscpSelectOptions } from '../../lib/tos_helper'
@@ -762,7 +762,7 @@ const processRawSummaryData = (queryRow: FlowParsedQueryRow, options: FlowQueryR
             name: col.text,
             type: FieldType.number, // will be a number, a string representing a number or else null
             config: {},
-            values: new ArrayVector<string | number | null>(values)
+            values
         } as Field
         dataFrame.fields.push(field)
     })

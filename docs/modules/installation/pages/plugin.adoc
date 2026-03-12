@@ -1,7 +1,8 @@
 
 = Install {product-name} Plugin
+:description: Learn how to install the {product-name} via the UI and via a command line interface.
 
-This section describes how to install the {product-name} plugin for Grafana.
+This section describes how to install the {product-name}.
 
 IMPORTANT: These instructions assume that you already have Grafana installed on your target system.
 If you do not have an existing Grafana instance, see xref:package.adoc[].

@@ -10,6 +10,7 @@
     "logos": {
       "small": "img/alarm-table.svg",
       "large": "img/alarm-table.svg"
-    }
+    },
+    "version": "12"
   }
 }

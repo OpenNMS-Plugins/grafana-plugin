@@ -2,18 +2,19 @@
   "annotations": {
     "list": [
       {
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
         "builtIn": 1,
         "datasource": {
           "type": "datasource",
           "uid": "grafana"
         },
-        "enable": true,
         "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
         "target": {
-          "limit": 100,
+          "limit": 0,
           "matchAny": false,
+          "refId": "A",
           "tags": [],
           "type": "dashboard"
         },
@@ -21,8 +22,10 @@
       }
     ]
   },
+  "description": "Flow Deep Dive dashboard for OpenNMS Plugin for Grafana v12",
   "editable": true,
   "fiscalYearStartMonth": 0,
+  "gnetId": "",
   "graphTooltip": 0,
   "id": null,
   "links": [],
@@ -33,6 +36,7 @@
       "datasource": null,
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 0
@@ -133,6 +137,7 @@
       },
       "gridPos": {
         "h": 8,
+        "static": false,
         "w": 14,
         "x": 0,
         "y": 1
@@ -155,7 +160,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "N": "",
@@ -214,7 +219,8 @@
         }
       ],
       "title": "Throughput by Application",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transformations": []
     },
     {
       "datasource": {
@@ -397,6 +403,7 @@
       },
       "gridPos": {
         "h": 8,
+        "static": false,
         "w": 10,
         "x": 14,
         "y": 1
@@ -414,7 +421,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -467,6 +474,7 @@
       "datasource": null,
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 9
@@ -568,6 +576,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 14,
             "x": 0,
             "y": 10
@@ -590,7 +599,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "attribute": {
@@ -670,7 +679,8 @@
             }
           ],
           "title": "Interface Throughput",
-          "type": "timeseries"
+          "type": "timeseries",
+          "transformations": []
         },
         {
           "datasource": {
@@ -767,6 +777,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 10,
             "x": 14,
             "y": 10
@@ -789,7 +800,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "attribute": {
@@ -933,7 +944,8 @@
             }
           ],
           "title": "Errors and Discards",
-          "type": "timeseries"
+          "type": "timeseries",
+          "transformations": []
         }
       ],
       "targets": [
@@ -956,6 +968,7 @@
       },
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 10
@@ -1053,6 +1066,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 14,
             "x": 0,
             "y": 11
@@ -1075,7 +1089,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1125,7 +1139,8 @@
             }
           ],
           "title": "Throughput by Conversation (Top N)",
-          "type": "timeseries"
+          "type": "timeseries",
+          "transformations": []
         },
         {
           "datasource": {
@@ -1307,6 +1322,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 10,
             "x": 14,
             "y": 11
@@ -1324,7 +1340,7 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1405,6 +1421,7 @@
       },
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 11
@@ -1502,6 +1519,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 14,
             "x": 0,
             "y": 12
@@ -1524,7 +1542,7 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1574,7 +1592,8 @@
             }
           ],
           "title": "Throughput by Host (Top N)",
-          "type": "timeseries"
+          "type": "timeseries",
+          "transformations": []
         },
         {
           "datasource": {
@@ -1756,6 +1775,7 @@
           },
           "gridPos": {
             "h": 8,
+            "static": false,
             "w": 10,
             "x": 14,
             "y": 12
@@ -1773,7 +1793,7 @@
             },
             "showHeader": true
           },
-          "pluginVersion": "9.4.7",
+          "pluginVersion": "12",
           "targets": [
             {
               "datasource": {
@@ -1842,6 +1862,7 @@
       },
       "gridPos": {
         "h": 1,
+        "static": false,
         "w": 24,
         "x": 0,
         "y": 12
@@ -1951,6 +1972,7 @@
       },
       "gridPos": {
         "h": 8,
+        "static": false,
         "w": 14,
         "x": 0,
         "y": 13
@@ -1973,7 +1995,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -2018,7 +2040,8 @@
         }
       ],
       "title": "Throughput by DSCP",
-      "type": "timeseries"
+      "type": "timeseries",
+      "transformations": []
     },
     {
       "datasource": {
@@ -2200,6 +2223,7 @@
       },
       "gridPos": {
         "h": 8,
+        "static": false,
         "w": 10,
         "x": 14,
         "y": 13
@@ -2217,7 +2241,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "9.4.7",
+      "pluginVersion": "12",
       "targets": [
         {
           "datasource": {
@@ -2261,10 +2285,10 @@
       "type": "table"
     }
   ],
+  "preload": true,
   "refresh": "",
   "revision": 1,
   "schemaVersion": 38,
-  "style": "dark",
   "tags": [],
   "templating": {
     "list": [
@@ -2284,6 +2308,7 @@
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
+        "staticOptions": [],
         "type": "datasource"
       },
       {
@@ -2302,11 +2327,11 @@
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
+        "staticOptions": [],
         "type": "datasource"
       },
       {
         "current": {
-          "isNone": true,
           "selected": false,
           "text": "None",
           "value": ""
@@ -2327,14 +2352,14 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "tagValuesQuery": "",
+        "staticOptions": [],
         "tagsQuery": "",
+        "tagValuesQuery": "",
         "type": "query",
         "useTags": false
       },
       {
         "current": {
-          "isNone": true,
           "selected": false,
           "text": "None",
           "value": ""
@@ -2355,8 +2380,9 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "tagValuesQuery": "",
+        "staticOptions": [],
         "tagsQuery": "",
+        "tagValuesQuery": "",
         "type": "query",
         "useTags": false
       },
@@ -2383,8 +2409,9 @@
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
-        "tagValuesQuery": "",
+        "staticOptions": [],
         "tagsQuery": "",
+        "tagValuesQuery": "",
         "type": "query",
         "useTags": false
       }
@@ -2395,6 +2422,53 @@
     "to": "now"
   },
   "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "5m",
+        "from": "now-5m",
+        "to": "now"
+      },
+      {
+        "display": "15m",
+        "from": "now-15m",
+        "to": "now"
+      },
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now"
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now"
+      },
+      {
+        "display": "12h",
+        "from": "now-12h",
+        "to": "now"
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now"
+      },
+      {
+        "display": "2d",
+        "from": "now-2d",
+        "to": "now"
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "30d",
+        "from": "now-30d",
+        "to": "now"
+      }
+    ],
     "refresh_intervals": [
       "5s",
       "10s",
@@ -2406,21 +2480,10 @@
       "1h",
       "2h",
       "1d"
-    ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
     ]
   },
   "timezone": "",
   "title": "Flow Deep Dive | OpenNMS Plugin for Grafana",
-  "version": 3,
+  "version": 5,
   "weekStart": ""
 }

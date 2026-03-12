@@ -1,5 +1,6 @@
 
 :imagesdir: ../assets/images
+:description: Get tips and trick to plan your dashboard before creating one with the {product-name} to visualize and interact with data stored by OpenNMS.
 
 = Plan Your Dashboard
 

@@ -1,192 +1,213 @@
 {
-    "annotations": {
-      "list": [
-        {
-          "builtIn": 1,
-          "datasource": "-- Grafana --",
-          "enable": true,
-          "hide": true,
-          "iconColor": "rgba(0, 211, 255, 1)",
-          "name": "Annotations & Alerts",
-          "type": "dashboard"
-        }
-      ]
-    },
-    "editable": true,
-    "gnetId": null,
-    "graphTooltip": 0,
-    "id": null,
-    "links": [],
-    "panels": [
+  "annotations": {
+    "list": [
       {
+        "enable": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "builtIn": 1,
         "datasource": null,
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 11,
-          "w": 18,
-          "x": 0,
-          "y": 0
-        },
-        "id": 2,
-        "options": {
-          "content": "# About the OpenNMS Plugin for Grafana\n\nThe plugin is an application that allows users to create flexible dashboards to interact with data stored by OpenNMS. It works with Grafana to display and customize data from OpenNMS. You can create and customize dashboards to display the data you want to see - alarms, outages, key performance indicators - in a way that best meets the needs of your workflow and staff.\n\n## Datasources\n\n * Performance: Retrieve performance metrics (data collection and response time metrics) from the OpenNMS Measurements API.\n * Flow: Retrieve application- and conversation-related metrics derived from flow data stored by OpenNMS.\n * Entity: Retrieve entity model objects from OpenNMS. It currently supports alarms and nodes.\n\n## Dashboard Template Repositories\n\nYou can use these links to find some sample dashboard templates that can be imported into your Grafana instance:\n\n * https://grafana.com/grafana/dashboards?search=opennms\n * https://github.com/opennms-forge/grafana-dashboards\n ",
-          "mode": "markdown"
-        },
-        "targets": [
-          {
-            "format": "time_series",
-            "group": [],
-            "metricColumn": "none",
-            "rawQuery": false,
-            "rawSql": "SELECT\n  lastmodifieddate AS \"time\",\n  longitude\nFROM assets\nWHERE\n  $__timeFilter(lastmodifieddate)\nORDER BY 1",
-            "refId": "A",
-            "select": [
-              [
-                {
-                  "params": [
-                    "longitude"
-                  ],
-                  "type": "column"
-                }
-              ]
-            ],
-            "table": "assets",
-            "timeColumn": "lastmodifieddate",
-            "timeColumnType": "timestamp",
-            "where": [
-              {
-                "name": "$__timeFilter",
-                "params": [],
-                "type": "macro"
-              }
-            ]
-          }
-        ],
-        "title": "About OpenNMS Plugin for Grafana",
-        "type": "text"
-      },
-      {
-        "datasource": null,
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 21,
-          "w": 6,
-          "x": 18,
-          "y": 0
-        },
-        "id": 4,
-        "options": {
-          "content": "## Documentation and Support\n\n * Official documentation can be found at https://docs.opennms.com/grafana-plugin/latest\n * [OpenNMS Mattermost Chat](https://chat.opennms.com)\n * [OpenNMS Discourse Forums](https://opennms.discourse.group)",
-          "mode": "markdown"
-        },
-        "targets": [
-          {
-            "format": "time_series",
-            "group": [],
-            "metricColumn": "none",
-            "rawQuery": false,
-            "rawSql": "SELECT\n  lastmodifieddate AS \"time\",\n  longitude\nFROM assets\nWHERE\n  $__timeFilter(lastmodifieddate)\nORDER BY 1",
-            "refId": "A",
-            "select": [
-              [
-                {
-                  "params": [
-                    "longitude"
-                  ],
-                  "type": "column"
-                }
-              ]
-            ],
-            "table": "assets",
-            "timeColumn": "lastmodifieddate",
-            "timeColumnType": "timestamp",
-            "where": [
-              {
-                "name": "$__timeFilter",
-                "params": [],
-                "type": "macro"
-              }
-            ]
-          }
-        ],
-        "title": "More Info",
-        "type": "text"
-      },
-      {
-        "datasource": null,
-        "fieldConfig": {
-          "defaults": {},
-          "overrides": []
-        },
-        "gridPos": {
-          "h": 10,
-          "w": 18,
-          "x": 0,
-          "y": 11
-        },
-        "id": 6,
-        "options": {
-          "folderId": null,
-          "maxItems": 10,
-          "query": "OpenNMS",
-          "showHeadings": false,
-          "showRecentlyViewed": false,
-          "showSearch": true,
-          "showStarred": false,
-          "tags": []
-        },
-        "targets": [
-          {
-            "format": "time_series",
-            "group": [],
-            "metricColumn": "none",
-            "rawQuery": false,
-            "rawSql": "SELECT\n  lastmodifieddate AS \"time\",\n  longitude\nFROM assets\nWHERE\n  $__timeFilter(lastmodifieddate)\nORDER BY 1",
-            "refId": "A",
-            "select": [
-              [
-                {
-                  "params": [
-                    "longitude"
-                  ],
-                  "type": "column"
-                }
-              ]
-            ],
-            "table": "assets",
-            "timeColumn": "lastmodifieddate",
-            "timeColumnType": "timestamp",
-            "where": [
-              {
-                "name": "$__timeFilter",
-                "params": [],
-                "type": "macro"
-              }
-            ]
-          }
-        ],
-        "title": "OpenNMS Dashboards",
-        "type": "dashlist"
+        "hide": true,
+        "type": "dashboard"
       }
-    ],
-    "schemaVersion": 27,
-    "style": "dark",
-    "tags": [],
-    "templating": {
-      "list": []
+    ]
+  },
+  "description": "About dashboard for OpenNMS for Grafana v12",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "gnetId": "",
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "static": false,
+        "w": 18,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "content": "# About the OpenNMS Plugin for Grafana\n\nThe plugin is an application that allows users to create flexible dashboards to interact with data stored by OpenNMS. It works with Grafana to display and customize data from OpenNMS. You can create and customize dashboards to display the data you want to see - alarms, outages, key performance indicators - in a way that best meets the needs of your workflow and staff.\n\n## Datasources\n\n * Performance: Retrieve performance metrics (data collection and response time metrics) from the OpenNMS Measurements API.\n * Flow: Retrieve application- and conversation-related metrics derived from flow data stored by OpenNMS.\n * Entity: Retrieve entity model objects from OpenNMS. It currently supports alarms and nodes.\n\n## Dashboard Template Repositories\n\nYou can use these links to find some sample dashboard templates that can be imported into your Grafana instance:\n\n * https://grafana.com/grafana/dashboards?search=opennms\n * https://github.com/opennms-forge/grafana-dashboards\n ",
+        "mode": "markdown"
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  lastmodifieddate AS \"time\",\n  longitude\nFROM assets\nWHERE\n  $__timeFilter(lastmodifieddate)\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "assets",
+          "timeColumn": "lastmodifieddate",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "About OpenNMS Plugin for Grafana",
+      "type": "text",
+      "links": [],
+      "pluginVersion": "12",
+      "transformations": []
     },
-    "time": {
-      "from": "now-6h",
-      "to": "now"
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 21,
+        "static": false,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "content": "## Documentation and Support\n\n * Official documentation can be found at https://docs.opennms.com/grafana-plugin/latest\n * [OpenNMS Mattermost Chat](https://chat.opennms.com)\n * [OpenNMS Discourse Forums](https://opennms.discourse.group)",
+        "mode": "markdown"
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  lastmodifieddate AS \"time\",\n  longitude\nFROM assets\nWHERE\n  $__timeFilter(lastmodifieddate)\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "assets",
+          "timeColumn": "lastmodifieddate",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "More Info",
+      "type": "text",
+      "links": [],
+      "pluginVersion": "12",
+      "transformations": []
     },
-    "timepicker": {},
-    "timezone": "",
-    "title": "About | OpenNMS Plugin for Grafana",
-    "version": 1
-  }
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "static": false,
+        "w": 18,
+        "x": 0,
+        "y": 11
+      },
+      "id": 6,
+      "options": {
+        "folderId": null,
+        "maxItems": 10,
+        "query": "OpenNMS",
+        "showHeadings": false,
+        "showRecentlyViewed": false,
+        "showSearch": true,
+        "showStarred": false,
+        "tags": []
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  lastmodifieddate AS \"time\",\n  longitude\nFROM assets\nWHERE\n  $__timeFilter(lastmodifieddate)\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "longitude"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "assets",
+          "timeColumn": "lastmodifieddate",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "title": "OpenNMS Dashboards",
+      "type": "dashlist",
+      "links": [],
+      "pluginVersion": "12",
+      "transformations": []
+    }
+  ],
+  "preload": true,
+  "refresh": "1m",
+  "revision": 0,
+  "schemaVersion": 27,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [],
+    "refresh_intervals": []
+  },
+  "timezone": "",
+  "title": "About | OpenNMS Plugin for Grafana",
+  "version": 3,
+  "weekStart": "monday"
+}

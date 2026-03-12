@@ -1,6 +1,8 @@
 
 = Build from Source with Docker
 
+:description: Learn how to build {product-name} with Docker.
+
 This section describes how to build the {product-name} with Docker.
 
 == Simple build

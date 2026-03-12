@@ -1,5 +1,6 @@
 
 = Performance Datasource
+:description: Learn how to use the {product-name} to retrieve performance metrics (e.g., data collection and response time metrics) from the OpenNMS Measurements API.
 
 You can use the Performance datasource to retrieve performance metrics (for example, data collection and response time metrics) from the https://docs.opennms.com/horizon/latest/development/rest/measurements.html[OpenNMS Measurements API].
 For an example of the Performance datasource in use, see <<panel_configuration:dynamic-dashboard.adoc#pc-template-filters, Use variables to create dynamic dashboards>>.

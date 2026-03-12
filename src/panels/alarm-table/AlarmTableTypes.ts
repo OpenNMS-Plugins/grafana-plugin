@@ -1,8 +1,9 @@
+import { ComboboxOption } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data'
 
 export interface AlarmTableControlState {
-  indexes: boolean[]
-  lastClicked: number
+  selectedAlarmIds: Set<number>
+  lastClickedAlarmId: number
 }
 
 export interface AlarmTableAdditionalState {
@@ -11,8 +12,8 @@ export interface AlarmTableAdditionalState {
 }
 
 export interface AlarmTableAlarmDataState {
-  styleWithSeverity?: SelectableValue<string | number>
-  severityTheme?: SelectableValue<string | number>
+  styleWithSeverity?: ComboboxOption<string | number>
+  severityTheme?: ComboboxOption<string | number>
 }
 
 export interface AlarmTableDataState {
@@ -24,7 +25,7 @@ export interface AlarmTablePaginationState {
   rowsPerPage?: number
   pauseRefresh: boolean
   scroll: boolean
-  fontSize?: SelectableValue<string | number>
+  fontSize?: ComboboxOption<string | number>
 }
 
 export interface AlarmTableColumnSizeItem {
@@ -37,14 +38,16 @@ export interface AlarmTableColumnSizeState {
   columnSizes: AlarmTableColumnSizeItem[]
 }
 
+export interface AlarmTableOptionsState {
+  alarmTableAdditional: AlarmTableAdditionalState
+  alarmTableAlarms: AlarmTableAlarmDataState
+  alarmTableData: AlarmTableDataState
+  alarmTablePaging: AlarmTablePaginationState
+  alarmTableColumnSizes?: AlarmTableColumnSizeState
+}
+
 export interface AlarmTableControlProps {
-  alarmTable: {
-    alarmTableAdditional: AlarmTableAdditionalState
-    alarmTableAlarms: AlarmTableAlarmDataState
-    alarmTableData: AlarmTableAlarmDataState
-    alarmTablePaging: AlarmTablePaginationState
-    alarmTableColumnSizes?: AlarmTableColumnSizeState
-  }
+  alarmTable: AlarmTableOptionsState
 }
 
 export interface AlarmTableControlActions {

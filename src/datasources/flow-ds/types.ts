@@ -1,14 +1,7 @@
-import { DataQuery, DataQueryRequest, DataSourceJsonData, SelectableValue } from '@grafana/data'
+import { DataQueryRequest, DataSourceJsonData, SelectableValue } from '@grafana/data'
+import { DataQuery } from '@grafana/schema'
 import { ClientDelegate } from 'lib/client_delegate'
 import { SimpleOpenNMSRequest } from 'lib/simpleRequest'
-
-// Workaround for this not being available in all browsers.
-// We check for its use and fall back to a random number if it's not present.
-declare global {
-  interface Crypto {
-    randomUUID: () => string
-  }
-}
 
 /**
  * These are options configured for each DataSource instance

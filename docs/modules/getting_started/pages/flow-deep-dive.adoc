@@ -1,5 +1,6 @@
 
 = Flow Deep-Dive Dashboard
+:description: Learn more about the flow deep-dive dashboard in {product-name} that visualizes flow data.
 
 The {product-name} includes a predesigned flow deep-dive dashboard that visualizes flow data.
 You can access this dashboard from your Grafana home page, or from the menu:Dashboards[Manage] page.

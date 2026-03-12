@@ -3,6 +3,13 @@
 
 [[welcome-index]]
 = {product-name} Documentation
+:description: Learn how to get help with {product-name}.
+
+[options="autowidth"]
+|===
+|Version:     |{full-display-version}
+|Last update: |{docdatetime}
+|===
 
 :data-uri:
 :icons:

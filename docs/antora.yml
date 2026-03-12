@@ -1,12 +1,12 @@
 name: grafana-plugin
-version: '9'
+version: '12-SNAPSHOT'
 title: Plugin for Grafana
 asciidoc:
   attributes:
-    full-display-version: '9.0.16'
-    grafana-version-required: '9.x'
-    grafana-version-tested: '9.0'
-    node-js-build-version: '16.x'
+    full-display-version: '12.0.0-SNAPSHOT'
+    grafana-version-required: '12.x'
+    grafana-version-tested: '12.0'
+    node-js-build-version: '22.x'
     product-name: 'OpenNMS Plugin for Grafana'
 nav:
   - modules/ROOT/nav.adoc

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import {
   Collapse,
+  Combobox,
   InlineField,
   InlineFieldRow,
   Input,
-  Select,
-  Switch,
-  VerticalGroup
+  Stack,
+  Switch
 } from '@grafana/ui'
 import { FieldDisplay } from 'components/FieldDisplay'
 import { AlarmTableColumnSizeItem, AlarmTableColumnSizeState } from './AlarmTableTypes'
@@ -95,7 +95,7 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
       }
       </style>
       <div className="spacer"></div>
-      <Collapse label="Column Sizes" collapsible={true} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)}>
+      <Collapse label="Column Sizes" isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)}>
         <InlineFieldRow>
           <InlineField label='Set column sizes' tooltip={tooltipText}>
             <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
@@ -109,7 +109,7 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
         { columnState?.active &&
           <InlineFieldRow>
             <InlineField label='Add column'>
-              <Select
+              <Combobox
                 disabled={!columnState?.active}
                 placeholder='Add Column'
                 value={''}
@@ -122,7 +122,7 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
       
         { columnState?.active ?
           <div>
-            <VerticalGroup align='flex-start'>
+            <Stack direction={'column'} rowGap={2}>
               {columnState?.columnSizes?.map((item, index) => {
                 return (
                   <FieldDisplay key={item.fieldName}>
@@ -137,7 +137,7 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
                   </FieldDisplay>
                 )
               })}
-            </VerticalGroup>
+            </Stack>
           </div>
         :
           <div className='spacer'>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Select } from '@grafana/ui'
+import { Combobox } from '@grafana/ui'
 import { AlarmTableAlarmDataState } from './AlarmTableTypes'
 import { ColorThemeDisplay } from 'components/ColorThemeDisplay'
 import { OnmsInlineField } from 'components/OnmsInlineField'
@@ -33,14 +33,14 @@ export const AlarmTableAlarms: React.FC<AlarmTableAlarmProps> = ({ onChange, ala
                   * Support for row-level colours is not coded into the current version of Grafana: https://github.com/grafana/grafana/discussions/38151     
                   * If it's supported in the future, we can re-enable the option here.
                   *    */}
-                <Select
+                <Combobox
                     value={alarmTableAlarmData.styleWithSeverity}
                     onChange={(val) => setAlarmTableState('styleWithSeverity', val)}
                     options={[{ label: 'Column', value: 1 }, { label: 'Off', value: 2 }]}
                 />
             </OnmsInlineField>
             <OnmsInlineField label="Severity theme">
-                <Select
+                <Combobox
                     value={alarmTableAlarmData.severityTheme}
                     onChange={(val) => setAlarmTableState('severityTheme', val)}
                     options={alarmSeverityThemeOptions}

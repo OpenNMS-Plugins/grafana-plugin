@@ -8,6 +8,5 @@ module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...require('./.config/jest.config'),
    // Inform jest to only transform specific node_module packages.
-   transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'opennms'])],
-   setupFiles: ['<rootDir>/src/test/react/.config/setEnvVars.ts'],
+   transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'opennms'])]
 };

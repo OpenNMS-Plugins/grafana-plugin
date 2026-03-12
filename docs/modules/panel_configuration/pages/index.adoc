@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = Panel Configuration
+:description: Learn how to customize dashboards in {product-name}: alarm histogram and table, filter panel, and flow histogram.
 
 The {page-component-name} enables robust customization of dashboard panels, from updating their appearance and general information to configuring complex filters.
 You can configure a panel by interacting with its options in editing mode:
@@ -94,7 +95,23 @@ Follow these steps to customize an alarms table panel:
 . Set other display options as desired.
 
 After the panel is configured, you can right-click on an entry to access the context menu.
-From there, you can access an alarm's *Details* and *Acknowledge*, *Escalate*, or *Clear* it:
+From there, you can access an alarm's *Details* and *Acknowledge*, *Escalate*, or *Clear* it.
+
+You can hold down the *Shift* key and click on the table to select multiple rows to (for example) *Acknowledge* multiple alarms at once.
+
+There are also two additional features in the *Panel options* section:
+
+. *Use Grafana user.* 
+Used to control whether operations on alarms are performed by the data source user, or the user that is currently logged in to Grafana.
+Supported operations are escalating, clearing, un-acknowledging alarms as well as creating/updating a journal/memo.
+*NOTE:* The data source must be configured using an user with the "admin" role in order to perform actions as other users.
+Default is off.
+
+. *Display action notice.*
+Enables a notice to be displayed after performing an action such as acknowledge, clear or escalate
+which will notify the user whether the action succeeded and prompt them to refresh the panel.
+Default is on.
+
 
 image::alarms-table-example.png["Example of an alarms table panel in edit mode. Areas of note are outlined in red.", 850]
 
@@ -118,6 +135,9 @@ NOTE: The query must include an `asTableSummary()` transform, otherwise the pane
 This sets the method by which data is grouped in the panel.
 *Stacked* displays cumulative data from all sources, grouped by incoming and outgoing data.
 ** (Optional) Update the legend settings as desired.
+*** *Show Legend* shows or hides the legend
+*** *Position* positions the legend either on the *Right Side* (the default), or else *Under Graph*
+*** *Height* is the height in `px` of the legend, default is 42. You can increase this if not all legend items are showing, perhaps if there are over 10 items.
 . Set other display options as desired.
 
 Using these settings, the flow histogram panel displays the following visualization:

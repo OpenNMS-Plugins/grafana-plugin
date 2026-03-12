@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = Expressions
+:description: Learn how to use mathematical expressions in performance data queries in {product-name} with JEXL mathematical and conditional operators.
 
 The {product-name} supports https://commons.apache.org/proper/commons-jexl/index.html[JEXL] mathematical and conditional operators in performance data queries.
 You can use them to combine or otherwise transform one or more series into a new series.

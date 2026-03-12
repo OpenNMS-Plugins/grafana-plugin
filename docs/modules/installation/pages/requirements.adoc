@@ -1,5 +1,6 @@
 
 = Requirements
+:description: Learn the prerequisites to install the {product-name}, which lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
 
 This section describes the requirements to install the {product-name}.
 
@@ -10,6 +11,7 @@ You also need a http://docs.grafana.org/installation[Grafana instance] (version 
 
 NOTE: We have tested the plugin with Grafana version {grafana-version-tested}.
 It may work with older versions, but we have not tested them specifically.
+Most likely it will also work with Grafana 10 and 11.
 We recommend that you use matching versions of the plugin and Grafana (for example, {product-name} 9.x and Grafana 9.x).
 
 The OpenNMS Grafana Dashboard Report feature requires the https://grafana.com/grafana/plugins/grafana-image-renderer/[Grafana Image Renderer plugin] to be installed.

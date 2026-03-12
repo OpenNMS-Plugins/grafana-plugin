@@ -1,5 +1,6 @@
 
 = Flow Datasource
+:description: Learn how to use the {product-name} to retrieve application- and conversation-related metrics derived from OpenNMS flows data.
 
 You can use the Flow datasource to retrieve application- and conversation-related metrics derived from OpenNMS flows data.
 The query editor supports the following functions:

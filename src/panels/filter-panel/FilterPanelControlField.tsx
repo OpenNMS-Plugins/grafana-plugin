@@ -1,6 +1,6 @@
 import React from 'react'
 import { SelectableValue } from '@grafana/data'
-import { HorizontalGroup, Input, Select } from '@grafana/ui'
+import { Combobox, ComboboxOption, Stack, Input, MultiCombobox } from '@grafana/ui'
 import { FieldDisplay } from 'components/FieldDisplay'
 import { ALL_SELECTION_VALUE } from 'constants/constants'
 import { ActiveFilter, FilterSelectableValues, OnmsMetricFindValue } from '../../datasources/entity-ds/types'
@@ -42,7 +42,7 @@ export const FilterPanelControlField: React.FC<FilterPanelControlFieldProps> = (
         const filterId = props.getFilterId(filter)
         const selVals = props.selectableValues.find(v => v.filterId === filterId)
 
-        return selVals?.values || []
+        return selVals?.values ? selVals.values.map(v => ({ label: v.label, value: v.value } as ComboboxOption<string | number>)) : []
     }
 
     const generateFilterSelectOptions = (filter: ActiveFilter) => {
@@ -54,7 +54,7 @@ export const FilterPanelControlField: React.FC<FilterPanelControlFieldProps> = (
             const values = currentValues.map(v => ({
                 label: v.text,
                 value: v.value || ''
-            } as SelectableValue<string | number>))
+            } as ComboboxOption<string | number>))
 
             // Single select dropdown add 'All'
             // For multi-select, user would just not select anything
@@ -77,32 +77,36 @@ export const FilterPanelControlField: React.FC<FilterPanelControlFieldProps> = (
           .filter-panel-horizontal-layout div[class$='horizontal-group'] {
             align-items: baseline;
           }
-
-          .filter-panel-field {
-            min-width: 100px;
-          }
           `
         }
         </style>
 
         <div className={ props.isHorizontal ? 'filter-panel-horizontal-layout' : '' }>
-          <HorizontalGroup key={props.getFilterId(props.filter)}>
+          <Stack direction={props.isHorizontal ? 'row' : 'column'} key={props.getFilterId(props.filter)}>
               <FieldDisplay>{filterDisplayLabel(props.filter, props.index)}</FieldDisplay>
-              { props.filter.selectionType?.label === 'Text' ?
+              { props.filter.selectionType?.label === 'Text' &&
                 <Input
                   value={getInputSelectableValue(props.filter)}
                   onChange={(e) => props.inputChanged(e, props.filter)}
                 />
-                :
-                <Select
-                  className='filter-panel-field'
-                  isMulti={props.filter.selectionType?.label === 'Multi'}
+              }
+              { props.filter.selectionType?.label !== 'Text' && props.filter.selectionType?.label !== 'Multi' &&
+                <Combobox
+                  minWidth={100}
+                  width='auto'
+                  options={generateFilterSelectOptions(props.filter)}
+                  value={getInputSelectableValue(props.filter)}
+                  onChange={(value) => props.selectChanged(value as SelectableValue<string | number>, props.filter)} />
+              }
+              {  props.filter.selectionType?.label === 'Multi' && 
+                <MultiCombobox
+                  minWidth={100}
+                  width='auto'
                   options={generateFilterSelectOptions(props.filter)}
                   value={getSelectSelectableValues(props.filter)}
-                  menuShouldPortal={true}
                   onChange={(value) => props.selectChanged(value, props.filter)} />
               }
-          </HorizontalGroup>
+          </Stack>
         </div>
     </>
   )

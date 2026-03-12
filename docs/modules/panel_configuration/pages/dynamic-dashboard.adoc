@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = Dynamic Dashboards
+:description: Learn how to create dynamic and interactive dashboards in {product-name} to visualize and interact with data stored by OpenNMS.
 
 Rather than hard-coding specific information (such as node names or resource IDs) in a panel, the {product-name} offers several ways to create more dynamic and interactive dashboards.
 

@@ -12,11 +12,11 @@ executors:
 
   node-executor:
     docker:
-      - image: cimg/node:18.17
+      - image: cimg/node:22.22
 
   docs-executor:
     docker:
-      - image: opennms/antora:2.3.4-b7274
+      - image: opennms/antora:3.1.4-b10433
 
 orbs:
   cloudsmith: cloudsmith/cloudsmith@1.0.4
@@ -27,11 +27,11 @@ defaults: &defaults
     from_branch:
       description: the auto-merge source branch
       type: string
-      default: release-9.x
+      default: develop
     to_branch:
       description: the auto-merge target branch
       type: string
-      default: develop
+      default: master
 
 docker_container_config: &docker_container_config
   executor: node-executor
@@ -56,13 +56,22 @@ commands:
       - restore_cache:
           name: Restore NPM Cache
           keys:
-            - npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
-            - npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}
-            - npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-
-            - npm-packages-v3-
+            - npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
+            - npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}
+            - npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-
+            - npm-packages-v4-{{ arch }}-
       - run:
           name: Install Dependencies
-          command: npm --no-progress ci
+          command: |
+            npm --no-progress ci --include=optional
+            # Ensure platform-specific SWC binary is installed
+            SWC_ARCH="$(node -p "process.arch")"
+            SWC_PLATFORM="$(node -p "process.platform")"
+            if [ "$SWC_PLATFORM" = "linux" ]; then
+              SWC_PKG="@swc/core-linux-${SWC_ARCH}-gnu"
+              echo "Installing ${SWC_PKG}..."
+              npm install "${SWC_PKG}" --save-optional --ignore-scripts
+            fi
   save-node-cache:
     steps:
       - generate-node-cache-checksum
@@ -74,7 +83,7 @@ commands:
               fi
       - save_cache:
           name: Save Package Cache
-          key: npm-packages-v3-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
+          key: npm-packages-v4-{{ arch }}-{{ checksum "/tmp/filtered-package-lock.json" }}-{{ .Branch }}-{{ .Revision }}
           paths:
             - ~/.npm
   validate-schema:
@@ -86,7 +95,7 @@ commands:
             curl -L -o /tmp/plugin.schema.json https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json
             sudo apt-get update
             sudo apt-get -y --no-install-recommends install python3-pip
-            pip3 install check-jsonschema
+            pip3 install --break-system-packages check-jsonschema
             # the plugin.schema.json uses 'python' regex format, including backslashes before '-' and '%'
             check-jsonschema --regex-variant python --schemafile /tmp/plugin.schema.json src/plugin.json
   build-and-sign:
@@ -267,6 +276,11 @@ jobs:
       - setup_remote_docker
       - attach_workspace:
           at: ~/
+      - run:
+          name: Add GitHub to known_hosts
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
       - run:
           name: Build Docker Image
           command: |

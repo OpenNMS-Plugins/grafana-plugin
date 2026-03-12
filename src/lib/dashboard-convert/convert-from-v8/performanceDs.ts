@@ -1,5 +1,5 @@
-import { PerformanceTypeOptions } from '../../datasources/perf-ds/constants'
-import { PerformanceQuery, PerformanceQueryFilterParameter } from '../../datasources/perf-ds/types'
+import { PerformanceTypeOptions } from '../../../datasources/perf-ds/constants'
+import { PerformanceQuery, PerformanceQueryFilterParameter } from '../../../datasources/perf-ds/types'
 
 export const updatePerformanceQuery = (source: any) => {
   // Note, target.datasource will be set in caller
@@ -33,7 +33,7 @@ export const updatePerformanceQuery = (source: any) => {
 //   "type": "attribute"
 // }
 const convertAttributeQuery = (source: any): PerformanceQuery | any => {
-  // TODO: Handle where source.datasource is { type, uid }, not a template variable
+  // may need to handle where source.datasource is { type, uid }, not a template variable
   const query = {
     datasource: source.datasource,
     hide: source.hide || false,
@@ -79,7 +79,7 @@ const convertAttributeQuery = (source: any): PerformanceQuery | any => {
     }
   }
 
-  // TODO: Figure out "new" representation of these "time_series" attribute queries with "rawSql"
+  // May need to figure out "new" representation of these "time_series" attribute queries with "rawSql"
   // {
   //   ...
   //   "format": "time_series",

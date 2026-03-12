@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = Upgrade the {page-component-title}
+:description: Learn how to upgrade the {product-name}, which lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
 
 This section describes how to upgrade your {page-component-title} installation.
 Usually, upgrading simply involves installing the new package.
@@ -55,38 +56,42 @@ perl -pi -e 's/opennms-grafana-plugin-fault-datasource/opennms-grafana-plugin-en
 wizzy export datasources
 
 [[upgrade-dashboards]]
-== Upgrade dashboards for version 9.x
+== Upgrade dashboards for version 9.x and 12.x
 
-When you upgrade your {page-component-title} installation to version 9.x, you must upgrade any previously existing dashboards.
+When you upgrade your {page-component-title} installation to version 12.x, you should upgrade any previously existing dashboards.
+Dashboards that worked with {product-name} version 9 will most likely still work, but it is recommended that you upgrade them to version 12.x.
+
+Dashboards used with {product-name} version 8 or earlier *will not* work with version 12 and must be upgraded.
 If they are not upgraded, they will not be displayed.
 
-The {product-name} version 9.x includes a dashboard conversion tool to upgrade dashboards created using previous versions.
+The {product-name} version 12.x includes a dashboard conversion tool to upgrade dashboards created using previous versions.
 
 IMPORTANT: You must export your dashboards from a previous version of the plugin.
 You can export them before you upgrade your {page-component-title} installation, or from a separate Grafana instance that is running the previous version.
 
 When you export a dashboard, a JSON file is produced containing its settings and associated data.
 
-After you export your old dashboards, upgrade your plugin to version 9.x.
+After you export your old dashboards, upgrade your plugin to version 12.x.
 Next, use the conversion tool to update your dashboards:
 
-. xref:getting_started:basic_walkthrough.adoc#bw-dashboard-create[Create a new dashboard].
-. Click the *Add Panel* symbol.
-. Click *Add New Panel*.
-. Select the *Dashboard Convert* panel.
+. Go to *Dashboards*
+. Click on *Dashboard Converter | OpenNMS Plugin for Grafana* which is already installed with {product-name} version 12.
 . On the Dashboard Convert panel, select the version of the plugin from which you exported the dashboard using the *Source Plugin Version* list.
 +
 .Dashboard Convert panel
 image::dashboard-conversion-tool.png["Dashboard Convert panel displaying blank configuration options.", 650]
 
-. Paste the contents of a dashboard JSON file in the *Enter Source Dashboard JSON* box.
+. Paste the contents of a dashboard JSON file in the *Enter Source Dashboard Json* box.
 The dashboard's name should appear in the *Dashboard Title* box.
 ** (Optional) Edit the *Dashboard Title*.
 ** (Optional) Toggle *Unhide All Queries* on or off, as desired.
 Toggling this on marks all OpenNMS datasource queries as visible, which may be useful for troubleshooting.
+** (Optional) Toggle *Convert Graph to Timeseries Panels* on or off, as desired.
+This will convert any of your Graph panels to the newer Grafana Timeseries Panels.
 . Click *Convert*.
 The converted JSON is displayed in the *Target Dashboard JSON* box.
 . Copy the converted JSON and use it to import a dashboard.
+Go to *Dashboards* > *New* > *Import* to import the converted JSON.
 
 NOTE: The conversion tool may not handle all patterns in variables and resource names.
 After you convert your dashboards, test them to ensure that all of the associated data is correct.

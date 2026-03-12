@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = Predefined Dashboards
+:description: Learn how to import official and community-built dashboards into {product-name} to display data like Cassandra performance or business service availability.
 
 You can import a number of official and community-built https://grafana.com/grafana/dashboards?search=opennms&orderBy=name&direction=asc[{product-name} dashboards].
 They display the following data points, among others:

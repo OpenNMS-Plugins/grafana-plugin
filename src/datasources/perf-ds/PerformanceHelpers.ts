@@ -1,4 +1,4 @@
-import { ArrayVector, DataFrame, Field, FieldType } from '@grafana/data'
+import { DataFrame, Field, FieldType } from '@grafana/data'
 import { formatFunctions } from 'lib/function_formatter'
 import { OnmsMeasurementsQueryMetadata, OnmsMeasurementsQueryResponse, OnmsMeasurementsQueryResponseColumnItem } from './types'
 
@@ -92,7 +92,7 @@ const measurementColumnToDataFrame = (
     name: 'Time',
     type: FieldType.time,
     config: {},
-    values: new ArrayVector<number>(windowedTimestamps)
+    values: windowedTimestamps
   } as Field)
 
   const formattedLabel = metadata?.resources ? formatFunctions(label, metadata) : label
@@ -106,7 +106,7 @@ const measurementColumnToDataFrame = (
       name: formattedLabel || 'Value',
       type: FieldType.number, // will be a number, a string representing a number or else null
       config: {},
-      values: new ArrayVector<string | number | null>(windowedValues)
+      values: windowedValues
     } as Field
 
     dataFrame.fields.push(field)

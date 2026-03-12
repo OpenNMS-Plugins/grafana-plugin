@@ -1,7 +1,7 @@
-import { onmsColorArray } from '../../components/OnmsColors'
-import { getAlarmColumns } from '../../datasources/entity-ds/queries'
-import { AlarmTableAlarmDataState, AlarmTablePaginationState } from '../../panels/alarm-table/AlarmTableTypes'
-import { alarmSeverityThemeOptions, fontSizeOptions } from '../../panels/alarm-table/constants'
+import { onmsColorArray } from '../../../components/OnmsColors'
+import { getAlarmColumns } from '../../../datasources/entity-ds/queries'
+import { AlarmTableAlarmDataState, AlarmTablePaginationState } from '../../../panels/alarm-table/AlarmTableTypes'
+import { alarmSeverityThemeOptions, fontSizeOptions } from '../../../panels/alarm-table/constants'
 
 // map to alarmSeverityThemeOptions
 const legacyAlarmSeverityThemes = [
@@ -14,7 +14,7 @@ const legacyAlarmSeverityThemes = [
 ]
 
 export const isLegacyAlarmTablePanel = (panel: any) => {
-  return panel && panel.type && panel.type === 'opennms-helm-alarm-table-panel'
+  return panel?.type && panel.type === 'opennms-helm-alarm-table-panel'
 }
 
 const getSeverityThemeValue = (theme: string) => {
@@ -145,7 +145,7 @@ const createValueMappings = (source: any) => {
 const isRegexMatcherOverride = (column: any) => {
   const pattern: string = column?.style?.pattern || ''
 
-  if (pattern && pattern.startsWith('/') && pattern.endsWith('/')) {
+  if (pattern.startsWith('/') && pattern.endsWith('/')) {
     const innerPattern = pattern.slice(1, pattern.length - 1)
 
     return innerPattern !== column.text

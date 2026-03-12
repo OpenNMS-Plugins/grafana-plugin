@@ -1,6 +1,8 @@
 
 = Contribute Code
 
+:description: Learn how to contribute code to the {product-name} that lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
+
 You can contribute code to the {product-name} project via https://github.com/OpenNMS/grafana-plugin[GitHub].
 This section describes the codebase and how to prepare your development environment.
 
@@ -44,6 +46,9 @@ npm ci
 +
 [source, shell]
 npm run dev
+
+Note that `npm run dev` will generate (mostly) non-minified code which is better when debugging in a browser.
+For a release build, you can run `npm run build` to create minified and optimized code.
 
 . Symlink your `dist` directory to Grafana's plugin path:
 +

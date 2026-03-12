@@ -1,5 +1,6 @@
 
 :imagesdir: ../assets/images
+:description: Follow the steps to create a dashboard with the {product-name} to visualize and interact with data stored by OpenNMS.
 
 = Create a Dashboard
 

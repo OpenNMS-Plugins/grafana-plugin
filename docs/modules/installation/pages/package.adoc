@@ -1,5 +1,6 @@
 
 = Install from Package
+:description: Learn how to install the {product-name} from a package on Debian, Ubuntu, and RPM-based Linux distributions (CentOS, Fedora, and so on).
 
 This section describes how to install the {product-name} from a package on Debian, Ubuntu, and RPM-based Linux distributions (CentOS, Fedora, and so on).
 

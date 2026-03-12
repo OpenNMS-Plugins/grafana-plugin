@@ -1,4 +1,4 @@
-import { dateTimeAsMoment, ArrayVector } from '@grafana/data'
+import { dateTimeAsMoment } from '@grafana/data'
 import { OnmsFlowSeries } from 'opennms/src/model'
 import *  as helpers from '../../datasources/flow-ds/helpers'
 import {
@@ -679,25 +679,25 @@ describe("OpenNMS_Flow_Datasource", function () {
         fields: [
           {
             name: 'Application',
-            values: new ArrayVector(['app0', 'app1']),
+            values: ['app0', 'app1'],
             config: {},
             type: 'number'
           },
           {
             name: 'Bits In',
-            values: new ArrayVector([16, 0]),
+            values: [16, 0],
             config: {},
             type: 'number'
           },
           {
             name: 'Bits Out',
-            values: new ArrayVector([8, 40]),
+            values: [8, 40],
             config: {},
             type: 'number'
           },
           {
             name: 'ECN',
-            values: new ArrayVector(['non-ect / ce', 'non-ect / ce']),
+            values: ['non-ect / ce', 'non-ect / ce'],
             config: {},
             type: 'number'
           }

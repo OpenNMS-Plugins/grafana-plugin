@@ -1,5 +1,6 @@
 
 = Migrate from OpenNMS Data Source Plugin
+:description: Learn how to migrate data from an existing Grafana installation that uses the OpenNMS Data Source Plugin to the {product-name}.
 
 This section describes how to migrate an existing installation of Grafana that uses the OpenNMS Data Source plugin to the {product-name}.
 

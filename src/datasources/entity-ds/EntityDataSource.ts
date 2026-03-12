@@ -1,4 +1,4 @@
-import { DataQueryResponse, DataSourceApi, DataSourceInstanceSettings, QueryResultMeta } from '@grafana/data'
+import { DataQueryResponse, DataSourceApi, DataSourceInstanceSettings } from '@grafana/data'
 import { TemplateSrv, getBackendSrv, getTemplateSrv } from '@grafana/runtime'
 import { ClientDelegate } from 'lib/client_delegate'
 import { SimpleOpenNMSRequest } from 'lib/simpleRequest'
@@ -27,10 +27,6 @@ import {
   EntityQueryRequest,
   OnmsTableData
 } from './types'
-
-export interface OnmsQueryResultMeta extends QueryResultMeta {
-  entity_metadata: any[]
-}
 
 export class EntityDataSource extends DataSourceApi<EntityQuery> {
     type: string

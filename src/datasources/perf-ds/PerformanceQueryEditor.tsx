@@ -8,13 +8,14 @@ import { PerformanceAttribute } from './PerformanceAttribute'
 import { PerformanceExpression } from './PerformanceExpression'
 import { PerformanceFilter } from './PerformanceFilter'
 import { PerformanceStringProperty } from './PerformanceStringProperty'
-import { PerformanceQueryEditorProps, QuickSelect, PerformanceStringPropertyState } from './types'
+import { PerformanceAttributeItemState, PerformanceQueryEditorProps, PerformanceStringPropertyState, QuickSelect } from './types'
 import { collectInterpolationVariables, interpolate } from './queries/interpolate'
 import { getRemoteResourceId } from './queries/queryBuilder'
 import { getStringProperties } from './PerformanceHelpers'
 import { getTemplateVariable, isTemplateVariable } from '../../lib/variableHelpers'
 import { OnmsResourceDto, OnmsRrdGraphAttribute } from '../../lib/api_types'
 import { getMultiValues, isInteger, sanitizeFiqlQuery } from 'lib/utils'
+import { SelectableValue } from '@grafana/data'
 
 export const PerformanceQueryEditor: React.FC<PerformanceQueryEditorProps> = ({ onChange, query, onRunQuery, datasource, ...rest }) => {
     const [performanceType, setPerformanceType] = useState<QuickSelect>(query.performanceType)
@@ -94,7 +95,21 @@ export const PerformanceQueryEditor: React.FC<PerformanceQueryEditorProps> = ({ 
       } as API.Filter
 
       const nodes = await datasource.client.findNodes(filter, true)
-      return nodes
+      
+      // Convert to SelectableValue<PerformanceAttributeItemState>
+      // See DEVELOPMENT.md for an in-depth explanation of why we cannot pass OnmsNode[]
+      const selectableValues: Array<SelectableValue<PerformanceAttributeItemState>> = nodes.map(n => {
+        return {
+            id: n.id,
+            label: n.label,
+            value: {
+                id: n.id,
+                label: n.label
+            }
+        }
+      })
+
+      return selectableValues
     }
 
     /**

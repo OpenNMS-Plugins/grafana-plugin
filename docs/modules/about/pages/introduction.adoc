@@ -2,6 +2,7 @@
 :imagesdir: ../assets/images
 
 = About the {product-name}
+:description: Learn how the {product-name} lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
 
 The {product-name} lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
 It works with https://grafana.com[Grafana] to customize and display <<fault, fault management>>, <<performance, performance management>>, and <<flow, flow management>> data from OpenNMS https://www.opennms.org[Horizon] and https://www.opennms.com[Meridian].

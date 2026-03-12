@@ -1,5 +1,6 @@
 
 = Install from Source
+:description: Learn how to install the {product-name}, which lets you create flexible dashboards to visualize and interact with data stored by OpenNMS, from source.
 
 This section describes how to install the {product-name} from source.
 

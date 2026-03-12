@@ -1,17 +1,10 @@
 .DS_Store
 node_modules
 npm-debug.log
-yarn-error.log
 coverage/
 .aws-config.json
 awsconfig
-/emails/dist
-/public_gen
 /tmp
-vendor/phantomjs/phantomjs
-vendor/opennms*.js*
-vendor/parenthesis
-vendor/crypto-js
 
 docs/AWS_S3_BUCKET
 docs/GIT_BRANCH
@@ -33,10 +26,6 @@ public/css/*.min.css
 /bin/*
 
 conf/custom.ini
-fig.yml
-profile.cov
-/grafana
-.notouch
 
 # Antora documentation
 public/
@@ -44,8 +33,6 @@ build/
 
 # Not ready yet
 /dist
-/SPECS
-/SOURCES
 
 # Debian package droppings
 /dist/opennms-grafana-plugin

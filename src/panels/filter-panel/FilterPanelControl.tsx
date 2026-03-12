@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { PanelProps, SelectableValue } from '@grafana/data'
 import { getDataSourceSrv } from '@grafana/runtime'
-import { HorizontalGroup, VerticalGroup } from '@grafana/ui'
+import { Stack } from '@grafana/ui'
 import { loadFilterEditorData, saveFilterEditorData } from 'lib/localStorageService'
 import { FilterControlProps } from './FilterPanelTypes'
 import { useFilterData } from '../../hooks/useFilterData'
@@ -72,7 +72,12 @@ export const FilterPanelControl: React.FC<PanelProps<FilterControlProps>> = (pro
                 const attr = filter.attribute.id
 
                 if (entity && attr) {
-                    const opts = { entityType: entity }
+                    // TODO: opts changed from 
+                    // const opts = { entityType: entity }
+                    // to a LegacyMetricFindQueryOptions which has a:
+                    // scopedVars?: ScopedVars;
+                    // May need to make additional changes for this to work correctly
+                    const opts = { scopedVars: { entityType: { value: entity } } }
                     const query = `${entityFunc}(${attr})`
 
                     const metricFindValues = await qualifiedDatasource.metricFindQuery(query, opts)
@@ -161,7 +166,7 @@ export const FilterPanelControl: React.FC<PanelProps<FilterControlProps>> = (pro
       <>
         { props.options.filterEditor.isHorizontalLayout ?
           <div style={{ height: '100%', overflowX: 'auto' }}>
-            <HorizontalGroup align='flex-start'>
+            <Stack direction='row' alignItems='flex-start'>
                 {props.options?.filterEditor?.activeFilters.map((filter, index) => {
                   return (
                     <FilterPanelControlField
@@ -177,12 +182,11 @@ export const FilterPanelControl: React.FC<PanelProps<FilterControlProps>> = (pro
                     />
                   )
                   })}
-                l
-            </HorizontalGroup>
+            </Stack>
           </div>
         :
           <div style={{ height: '100%', overflowY: 'auto' }}>
-            <VerticalGroup align='flex-start'>
+            <Stack direction='column' alignItems='flex-start'>
                 {props.options?.filterEditor?.activeFilters.map((filter, index) => {
                   return (
                     <FilterPanelControlField
@@ -198,7 +202,7 @@ export const FilterPanelControl: React.FC<PanelProps<FilterControlProps>> = (pro
                     />
                   )
                 })}
-            </VerticalGroup>
+            </Stack>
           </div>
         }
       </>

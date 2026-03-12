@@ -7,7 +7,7 @@ import { updateEntityQuery } from './entityDs'
 import { convertLegacyFilterPanel, isLegacyFilterPanel } from './filterPanel'
 import { updateFlowQuery } from './flowDs'
 import { updatePerformanceQuery } from './performanceDs'
-import { DatasourceMetadata, DsType } from './types'
+import { DatasourceMetadata, DsType } from '../types'
 import { updateTargetDatasource } from './utils'
 
 // Convert Dashboard panels
@@ -94,7 +94,7 @@ const convertPanelDatasources = (panel: any, datasourceMap: Map<string, DsType>,
       targets.push(updatedTarget)
     }
 
-    // TODO: if p.datasource is a pluginId
+    // may need to handle if p.datasource is a pluginId
 
     panel.targets = targets
   }

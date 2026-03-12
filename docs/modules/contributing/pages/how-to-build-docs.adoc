@@ -1,5 +1,6 @@
 
 = Write and Build Documentation
+:description: Learn how to contribute documentation to the {product-name} that lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
 
 The {product-name} is free and open source and, as such, we welcome any kind of contribution.
 
