@@ -1,3 +1,13 @@
+### v12.0.0
+
+Grafana Plugin for OpenNMS version 12 provides compatibility with Grafana 12.
+
+Highlights include:
+* Grafana 12 compatibility
+* Various bug fixes, including for the Alarm Table Panel
+* Dashboard Converter has been updated to migrate dashboards from previous version to OPG 12.
+* Dependency updates and security improvements
+
 ### v9.0.16
 
 Grafana Plugin for OpenNMS version 9.0.16 release contains a number of bug fixes.

@@ -1,6 +1,6 @@
 {
   "name": "opennms-grafana-plugin",
-  "version": "12.0.0-SNAPSHOT",
+  "version": "12.0.0",
   "description": "An OpenNMS Integration for Grafana",
   "repository": {
     "type": "git",
