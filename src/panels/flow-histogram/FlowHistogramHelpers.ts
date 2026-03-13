@@ -237,14 +237,16 @@ export const setLegend = (options: { flowHistogramOptions: FlowHistogramOptionsP
 
 export const validateFlowHistogramPanelData = (dataSeries: DataFrame[]) => {
     if (!dataSeries || dataSeries.length < 1) {
-        console.log('No data, check the datasource is flow-datasource and function asSummaryTable are selected')
+        // uncomment to debug locally. do not include console statements in the final code
+        // console.log('No data, check the datasource is flow-datasource and function asSummaryTable are selected')
         return false
     }
 
     const series = dataSeries[0]
 
     if (!series.meta || !series.meta?.custom) {
-        console.log('Incorrect or incomplete data, check the datasource is flow-datasource and function asSummaryTable are selected')
+        // uncomment to debug locally. do not include console statements in the final code
+        // console.log('Incorrect or incomplete data, check the datasource is flow-datasource and function asSummaryTable are selected')
         return false
     }
 

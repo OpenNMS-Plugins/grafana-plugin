@@ -31,11 +31,5 @@ export const useAlarm = (series: DataFrame[], soloAlarmId: number, client: Clien
         }
     }, [alarm?.id, alarmId, client])
 
-    const goToAlarm = () => {
-        if (alarm?.detailsPage) {
-            window.location.href = alarm.detailsPage
-        }
-    }
-
-    return { alarm, alarmQuery, goToAlarm }
+    return { alarm, alarmQuery }
 }

@@ -14,7 +14,7 @@ export const AppConfig = ({ plugin }: AppConfigProps) => {
   const { enabled, jsonData } = plugin.meta
 
   return (
-    <div className="gf-form-group">
+    <div className={s.marginBottom}>
       <div>
         {/* Enable the plugin */}
         <Legend>Enable / Disable</Legend>
@@ -67,6 +67,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   marginTop: css`
     margin-top: ${theme.spacing(3)};
+  `,
+  marginBottom: css`
+    margin-bottom: ${theme.spacing(3)};
   `,
 })
 
