@@ -14,7 +14,7 @@ asciidoc:
   attributes:
     experimental: true
     stem: latexmath
-    full-display-version: '12.0.0-SNAPSHOT'
+    full-display-version: '12.0.1-SNAPSHOT'
     grafana-version-required: '12.x'
     grafana-version-tested: '12.0'
     node-js-build-version: '20.x'
