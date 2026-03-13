@@ -147,6 +147,9 @@
     "@typescript-eslint/typescript-estree": {
       "minimatch": "^9.0.7"
     },
+    "@typescript-eslint/utils": {
+      "flatted": "^3.4.0"
+    },
     "copy-webpack-plugin": {
       "schema-utils": "^4.3.3",
       "serialize-javascript": "^7.0.3"
@@ -156,6 +159,12 @@
     },
     "eslint-plugin-react": {
       "minimatch": "^3.1.4"
+    },
+    "eslint-webpack-plugin": {
+      "flatted": "^3.4.0"
+    },
+    "flat-cache": {
+      "flatted": "^3.4.0"
     },
     "fork-ts-checker-webpack-plugin": {
       "ajv": "^8.18.0",

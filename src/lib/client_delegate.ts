@@ -136,7 +136,8 @@ export class ClientDelegate {
                                 }
                             })
                         } catch (err) {
-                            console.warn('An error occurred querying the IP interface')
+                            // uncomment to debug locally. do not include console statements in the final code
+                            // console.warn('An error occurred querying the IP interface')
                         }
                     }
 
@@ -186,7 +187,9 @@ export class ClientDelegate {
                         return comparators
                     }
                 }
-                console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+
+                // uncomment to debug locally. do not include console statements in the final code
+                // console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
 
                 // This may be the case when the user entered a property, which does not exist
                 // therefore fallback to EQ
@@ -235,7 +238,9 @@ export class ClientDelegate {
                         return comparators
                     }
                 }
-                console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+                // uncomment to debug locally. do not include console statements in the final code
+                // console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+
                 // This may be the case when the user entered a property, which does not exist
                 // therefore fallback to EQ
                 return [ API.Comparators.EQ ]
@@ -283,7 +288,9 @@ export class ClientDelegate {
                         return comparators
                     }
                 }
-                console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+                // uncomment to debug locally. do not include console statements in the final code
+                // console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+
                 // This may be the case when the user entered a property, which does not exist
                 // therefore fallback to EQ
                 return [ API.Comparators.EQ ]
@@ -331,7 +338,9 @@ export class ClientDelegate {
                         return comparators
                     }
                 }
-                console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+                // uncomment to debug locally. do not include console statements in the final code
+                // console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+
                 // This may be the case when the user entered a property, which does not exist
                 // therefore fallback to EQ
                 return [ API.Comparators.EQ ]
@@ -379,7 +388,9 @@ export class ClientDelegate {
                         return comparators
                     }
                 }
-                console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+                // uncomment to debug locally. do not include console statements in the final code
+                // console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+
                 // This may be the case when the user entered a property, which does not exist
                 // therefore fallback to EQ
                 return [ API.Comparators.EQ ]
@@ -504,7 +515,9 @@ export class ClientDelegate {
                         return comparators
                     }
                 }
-                console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+                // uncomment to debug locally. do not include console statements in the final code
+                // console.warn(`No comparators found for property with id '${propertyId}'. Falling back to EQ.`)
+
                 // This may be the case when the user entered a property, which does not exist
                 // therefore fallback to EQ
                 return [ API.Comparators.EQ ]
@@ -687,12 +700,12 @@ export class ClientDelegate {
 
     testConnection = async () => {
         const defaultErrorMessage = 'Cannot connect to API'
-        console.log('Testing the data source!')
+
         let response = { status: '', message: '' }
 
         try {
-          const metadata = await this.getClientWithMetadata()
-          console.log('Testing the data source!', metadata)
+          await this.getClientWithMetadata()
+
           response = { status: 'Success', message: 'Success' }
         } catch (err) {
           let message = ''
@@ -705,14 +718,13 @@ export class ClientDelegate {
             if (grafanaError) {
               message = `Fetch error: ${(grafanaError.data.statusText ? grafanaError.data.statusText : defaultErrorMessage)}`
 
-              if (grafanaError.data && grafanaError.data?.error && grafanaError.data?.message) {
-                message += `: ${grafanaError.data.error. grafanaError.data.message}`
+              if (grafanaError.data?.message) {
+                message += `: ${grafanaError.data.message}`
               }
             }
           }
 
           response = { status: 'error', message: message }
-          console.log('CAUGHT!', err)
         }
 
         return response

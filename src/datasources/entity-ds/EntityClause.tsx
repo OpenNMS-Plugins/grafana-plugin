@@ -92,7 +92,7 @@ export const EntityClause = ({
         <>
         <style>
           {`
-            .entity-attr-value label.entity-attr-value-segment, label.entity-attr-value-segment-input, input.gf-form-input {
+            .entity-attr-value label.entity-attr-value-segment, label.entity-attr-value-segment-input, input {
               min-width: 100px;
             }
           `}
