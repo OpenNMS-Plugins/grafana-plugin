@@ -52,7 +52,8 @@ const parseSource = (s: any, datasourceMap: Map<string,DsType>, dsMetas: Datasou
     let dsMeta = dsMetas.find(d => isUpdatedDatasourceOfType(d, datasourceType))
 
     if (!dsMeta) {
-      console.log(`Dashboard convert: did not find Version 9 datasource for '${datasourceType}', falling back to first available:`)
+      // uncomment to debug locally. do not include console statements in the final code
+      // console.log(`Dashboard convert: did not find Version 9 datasource for '${datasourceType}', falling back to first available:`)
       dsMeta = dsMetas.find(d => d.datasourceType && d.datasourceType === datasourceType)
     }
 

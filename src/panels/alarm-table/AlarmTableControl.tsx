@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AppEvents, DataFrame, PanelProps } from '@grafana/data'
 import { getAppEvents } from '@grafana/runtime'
-import { Button, ContextMenu, Modal, Pagination, Tab, TabContent, Table, TabsBar } from '@grafana/ui'
+import { ContextMenu, Modal, Pagination, Tab, TabContent, Table, TabsBar, TextLink } from '@grafana/ui'
 import { AlarmTableMenu } from './AlarmTableMenu'
 import { AlarmTableModalContent } from './modal/AlarmTableModalContent'
 import { AlarmTableSelectionStyles } from './AlarmTableSelectionStyles'
@@ -39,7 +39,7 @@ export const AlarmTableControl: React.FC<PanelProps<AlarmTableControlProps>> = (
       client)    
 
     const { tabActive, tabClick, resetTabs } = useAlarmTableModalTabs()
-    const { alarm, goToAlarm, alarmQuery } = useAlarm(props?.data?.series, soloAlarmId, client)
+    const { alarm, alarmQuery } = useAlarm(props?.data?.series, soloAlarmId, client)
 
     const paginationRef = useRef<HTMLDivElement>(null)
 
@@ -216,7 +216,12 @@ export const AlarmTableControl: React.FC<PanelProps<AlarmTableControlProps>> = (
                   renderMenuItems={() => <AlarmTableMenu state={alarmControlState} actions={actions} />}
               />}
               <Modal isOpen={detailsModal} title='Alarm Detail' onDismiss={() => setDetailsModal(false)}>
-                  <Button style={{ marginBottom: 12 }} onClick={goToAlarm}><i className='fa fa-external-link'></i>&nbsp;Full Details</Button>
+                  { alarm?.detailsPage &&
+                    <TextLink href={alarm.detailsPage} external={true} style={{ marginBottom: 12, display: 'inline-block' }}>
+                    Full Details
+                    </TextLink>
+                  }
+
                   <TabsBar>
                       <Tab label='Overview' active={tabActive === 0} onChangeTab={() => tabClick(0)} />
                       <Tab label='Memos' active={tabActive === 1} onChangeTab={() => tabClick(1)} />
