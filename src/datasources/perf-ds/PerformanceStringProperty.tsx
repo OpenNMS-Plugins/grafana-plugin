@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { SegmentAsync } from '@grafana/ui'
+import { css } from '@emotion/css'
+import { GrafanaTheme2 } from '@grafana/data'
+import { SegmentAsync, useStyles2 } from '@grafana/ui'
 import { SegmentSectionWithIcon } from 'components/SegmentSectionWithIcon'
 import { PerformanceStringPropertyProps, PerformanceStringPropertyState } from './types'
 import { isTemplateVariable } from '../../lib/variableHelpers'
@@ -10,6 +12,12 @@ export const defaultPerformanceStringState = {
     stringProperty: { label: '', value: '' }
 }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+    spacer: css`
+        margin-top: ${theme.spacing(1)};
+    `,
+})
+
 export const PerformanceStringProperty: React.FC<PerformanceStringPropertyProps> = ({
     query,
     updateQuery,
@@ -19,6 +27,7 @@ export const PerformanceStringProperty: React.FC<PerformanceStringPropertyProps>
     loadStringPropertiesForState
 }) => {
     const [performanceState, setPerformanceState] = useState<PerformanceStringPropertyState>(query.stringPropertyState || defaultPerformanceStringState)
+    const s = useStyles2(getStyles)
 
     const setPerformanceStateProperty = (propertyName: string, propertyValue: unknown) => {
         setPerformanceState({ ...performanceState, [propertyName]: propertyValue })
@@ -33,7 +42,7 @@ export const PerformanceStringProperty: React.FC<PerformanceStringPropertyProps>
 
     return (
         <>
-            <div className='spacer' />
+            <div className={s.spacer} />
             <SegmentSectionWithIcon label='Node' icon='tree'>
                 <SegmentAsync
                     value={performanceState?.node}
@@ -44,7 +53,7 @@ export const PerformanceStringProperty: React.FC<PerformanceStringPropertyProps>
                     }}
                 />
             </SegmentSectionWithIcon>
-            <div className='spacer' />
+            <div className={s.spacer} />
 
             {
                 (performanceState?.node?.id  || isTemplateVariable(performanceState?.node)) &&
@@ -60,7 +69,7 @@ export const PerformanceStringProperty: React.FC<PerformanceStringPropertyProps>
                     />
                 </SegmentSectionWithIcon>
             }
-            <div className='spacer' />
+            <div className={s.spacer} />
             {
                 (performanceState?.node?.id || isTemplateVariable(performanceState?.node)) && 
                 (performanceState?.resource?.id || isTemplateVariable(performanceState?.resource)) &&

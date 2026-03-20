@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { SegmentInput } from '@grafana/ui';
+import { css } from '@emotion/css'
+import { GrafanaTheme2 } from '@grafana/data'
+import { SegmentInput, useStyles2 } from '@grafana/ui';
 import { SegmentSectionWithIcon } from 'components/SegmentSectionWithIcon';
 import { PerformanceQuery } from './types'
 
@@ -8,9 +10,16 @@ export interface PerformanceExpressionProps {
     updateQuery: Function;
 }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+    spacer: css`
+        margin-top: ${theme.spacing(1)};
+    `,
+})
+
 export const PerformanceExpression: React.FC<PerformanceExpressionProps> = ({ query, updateQuery }) => {
     const [expression, setExpression] = useState<string | number>(query.expression || '')
     const [label, setLabel] = useState<string | number>(query.label || '')
+    const s = useStyles2(getStyles)
 
     useEffect(() => {
         updateQuery(expression, label)
@@ -19,7 +28,7 @@ export const PerformanceExpression: React.FC<PerformanceExpressionProps> = ({ qu
 
     return (
         <>
-            <div className='spacer' />
+            <div className={s.spacer} />
             <SegmentSectionWithIcon label='Expression' icon='calendar'>
                 <SegmentInput
                     value={expression}
@@ -32,7 +41,7 @@ export const PerformanceExpression: React.FC<PerformanceExpressionProps> = ({ qu
                     }}
                 />
             </SegmentSectionWithIcon>
-            <div className='spacer' />
+            <div className={s.spacer} />
             <SegmentSectionWithIcon label='Label' icon='font'>
                 <SegmentInput
                     value={label}

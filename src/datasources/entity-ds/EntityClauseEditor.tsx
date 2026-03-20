@@ -1,4 +1,7 @@
 import React, { useEffect } from 'react'
+import { css } from '@emotion/css'
+import { GrafanaTheme2 } from '@grafana/data'
+import { useStyles2 } from '@grafana/ui'
 import { EntityClause } from './EntityClause'
 import { ClauseActionType, OnmsEntityType, SearchOption } from './types'
 import { API } from 'opennms'
@@ -12,6 +15,14 @@ interface EntityClauseEditorProps {
 }
 
 export const EntityClauseEditor = ({ setFilter, loading, propertiesAsArray, clauses, dispatchClauses }: EntityClauseEditorProps) => {
+    const getStyles = (theme: GrafanaTheme2) => ({
+        spacer: css`
+        margin-top: ${theme.spacing(2)};
+        margin-bottom: ${theme.spacing(2)};
+        `,
+    })
+
+    const s = useStyles2(getStyles)
 
     useEffect(() => {
         const updatedFilter = new API.Filter();
@@ -74,7 +85,7 @@ export const EntityClauseEditor = ({ setFilter, loading, propertiesAsArray, clau
                             hasMultipleClauses={clauses.length > 1}
                         />
 
-                        <div className='spacer' />
+                        <div className={s.spacer} />
                     </>
                 )
             })}

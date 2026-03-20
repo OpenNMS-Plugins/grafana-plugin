@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { SelectableValue } from '@grafana/data'
-import { Segment, SegmentAsync, SegmentInput } from '@grafana/ui'
+import { css } from '@emotion/css'
+import { GrafanaTheme2, SelectableValue } from '@grafana/data'
+import { Segment, SegmentAsync, SegmentInput, useStyles2 } from '@grafana/ui'
 import { SegmentSectionWithIcon } from 'components/SegmentSectionWithIcon'
 import { ValueOverrideSwitch } from 'components/ValueOverrideSwitch'
 import { getTemplateVariables, isTemplateVariable } from 'lib/variableHelpers'
@@ -39,6 +40,15 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
     const [nodeOverrideValue, setNodeOverrideValue] = useState<string>('')
     const [isResourceOverride, setIsResourceOverride] = useState<boolean>(false)
     const [resourceOverrideValue, setResourceOverrideValue] = useState<string>('')
+
+    const getStyles = (theme: GrafanaTheme2) => ({
+        spacer: css`
+        margin-top: ${theme.spacing(2)};
+        margin-bottom: ${theme.spacing(2)};
+        `,
+    })
+
+    const s = useStyles2(getStyles)
 
     useEffect(() => {
         // Note: this could result in invalid queries if not all parameters have been selected.
@@ -154,7 +164,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                 }
             `}
             </style>
-            <div className='spacer' />
+            <div className={s.spacer} />
             <SegmentSectionWithIcon label='Node' icon='tree'>
                 <SegmentAsync
                     value={performanceState?.node}
@@ -177,7 +187,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                 }
             </SegmentSectionWithIcon>
 
-            <div className='spacer' />
+            <div className={s.spacer} />
             {
                 (performanceState?.node?.id || performanceState?.node?.label) &&
                 <SegmentSectionWithIcon label='Resource' icon='leaf'>
@@ -197,7 +207,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                     }
                 </SegmentSectionWithIcon>
             }
-            <div className='spacer' />
+            <div className={s.spacer} />
             {
                 (performanceState?.node?.id || performanceState?.node?.label) &&
                 (performanceState?.resource?.id || performanceState?.resource?.label) &&
@@ -212,7 +222,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                             }}
                         />
                     </SegmentSectionWithIcon>
-                    <div className='spacer' />
+                    <div className={s.spacer} />
                     <SegmentSectionWithIcon label='Sub-Attribute' icon='flash'>
                         <SegmentInput
                             value={performanceState?.subAttribute || ''}
@@ -222,7 +232,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                             }}
                         />
                     </SegmentSectionWithIcon>
-                    <div className='spacer' />
+                    <div className={s.spacer} />
                     <SegmentSectionWithIcon label='Fallback Attribute' icon='tag'>
                         <SegmentAsync
                             value={performanceState?.fallbackAttribute}
@@ -233,7 +243,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                             }}
                         />
                     </SegmentSectionWithIcon>
-                    <div className='spacer' />
+                    <div className={s.spacer} />
                     <SegmentSectionWithIcon label='Aggregation' icon='calendar'>
                         <Segment
                             value={performanceState?.aggregation}
@@ -246,7 +256,7 @@ export const PerformanceAttribute: React.FC<PerformanceAttributesProps> = ({
                     </SegmentSectionWithIcon>
                 </>
             }
-            <div className='spacer' />
+            <div className={s.spacer} />
             <SegmentSectionWithIcon label='Label' icon='font'>
                 <SegmentInput
                     value={performanceState?.label}

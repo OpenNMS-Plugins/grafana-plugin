@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { SelectableValue } from '@grafana/data'
-import { Segment, SegmentAsync, SegmentInput } from '@grafana/ui'
+import { css } from '@emotion/css'
+import { GrafanaTheme2, SelectableValue } from '@grafana/data'
+import { Segment, SegmentAsync, SegmentInput, useStyles2 } from '@grafana/ui'
 import { SegmentSectionWithIcon } from 'components/SegmentSectionWithIcon'
 import { PerformanceQuery, PerformanceQueryFilterParameter } from './types'
 
@@ -23,9 +24,16 @@ export interface PerformanceFilterProps {
   loadFilters: (query?: string | undefined) => Promise<Array<SelectableValue<FilterResponse>>>
 }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+  spacer: css`
+    margin-top: ${theme.spacing(1)};
+  `,
+})
+
 export const PerformanceFilter: React.FC<PerformanceFilterProps> = ({ query, updateQuery, loadFilters }) => {
   const [filter, setFilter] = useState<SelectableValue<FilterResponse>>(query.filter)
   const [filterState, setFilterState] = useState<Record<string, {value: any, filter: any}>>(query.filterState || {})
+  const s = useStyles2(getStyles)
 
   const updateFilterState = (propertyName: string | undefined, value: {value: any, filter: any}) => {
     if (propertyName !== undefined) {
@@ -51,7 +59,7 @@ export const PerformanceFilter: React.FC<PerformanceFilterProps> = ({ query, upd
 
   return (
     <>
-      <div className='spacer' />
+      <div className={s.spacer} />
       <SegmentSectionWithIcon label='Filter' icon='filter'>
         <SegmentAsync
           value={filter}
@@ -65,7 +73,7 @@ export const PerformanceFilter: React.FC<PerformanceFilterProps> = ({ query, upd
       { filter?.parameter?.map((param: PerformanceQueryFilterParameter, index) => {
         return (
             <>
-              <div className='spacer' />
+              <div className={s.spacer} />
               <SegmentSectionWithIcon label={param.displayName || ''} key={index} >
                 {param.type === 'boolean' &&
                   <Segment
