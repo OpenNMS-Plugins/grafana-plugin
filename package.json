@@ -148,7 +148,7 @@
       "minimatch": "^9.0.7"
     },
     "@typescript-eslint/utils": {
-      "flatted": "^3.4.0"
+      "flatted": "^3.4.2"
     },
     "copy-webpack-plugin": {
       "schema-utils": "^4.3.3",
@@ -161,10 +161,10 @@
       "minimatch": "^3.1.4"
     },
     "eslint-webpack-plugin": {
-      "flatted": "^3.4.0"
+      "flatted": "^3.4.2"
     },
     "flat-cache": {
-      "flatted": "^3.4.0"
+      "flatted": "^3.4.2"
     },
     "fork-ts-checker-webpack-plugin": {
       "ajv": "^8.18.0",

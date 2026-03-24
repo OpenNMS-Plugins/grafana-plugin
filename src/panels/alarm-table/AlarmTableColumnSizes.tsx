@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react'
+import { css } from '@emotion/css'
+import { GrafanaTheme2 } from '@grafana/data'
 import {
   Collapse,
   Combobox,
@@ -6,7 +8,8 @@ import {
   InlineFieldRow,
   Input,
   Stack,
-  Switch
+  Switch,
+  useStyles2
 } from '@grafana/ui'
 import { FieldDisplay } from 'components/FieldDisplay'
 import { AlarmTableColumnSizeItem, AlarmTableColumnSizeState } from './AlarmTableTypes'
@@ -17,10 +20,17 @@ interface AlarmTableColumnSizeProps {
     context: any
 }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+  spacer: css`
+    margin-top: ${theme.spacing(2)};
+  `,
+})
+
 export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onChange, columnState, context }) => {
   const [isOpen, setIsOpen] = useState<boolean>(columnState?.active || false)
   const [active, setActive] = useState<boolean>(columnState?.active || false)
   const [columnSizes, setColumnSizes] = useState<AlarmTableColumnSizeItem[]>(columnState?.columnSizes || [])
+  const s = useStyles2(getStyles)
 
   const onAddColumn = (fieldName?: string) => {
     if (fieldName && !columnSizes.some(c => c.fieldName === fieldName)) {
@@ -71,10 +81,6 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
       <style>
       {
         `
-          .spacer {
-            margin-top: 1em;
-          }
-
           .field-display-width {
             width: 200px;
           }
@@ -94,7 +100,7 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
         `
       }
       </style>
-      <div className="spacer"></div>
+      <div className={s.spacer}></div>
       <Collapse label="Column Sizes" isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)}>
         <InlineFieldRow>
           <InlineField label='Set column sizes' tooltip={tooltipText}>
@@ -140,7 +146,7 @@ export const AlarmTableColumnSizes: React.FC<AlarmTableColumnSizeProps> = ({ onC
             </Stack>
           </div>
         :
-          <div className='spacer'>
+          <div className={s.spacer}>
             No configured column sizes.
           </div>
         }
