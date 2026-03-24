@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { css } from '@emotion/css'
+import { GrafanaTheme2 } from '@grafana/data'
 import {
     Button,
     Combobox,
@@ -7,7 +9,8 @@ import {
     InlineFieldRow,
     Label,
     Stack,
-    Switch
+    Switch,
+    useStyles2
 } from '@grafana/ui'
 import { GrafanaDatasource } from 'hooks/useDataSources'
 import { useEntities } from 'hooks/useEntities'
@@ -32,6 +35,14 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
     const [featuredAttributes, setFeaturedAttributes] = useState<boolean>(true)
     const { propertiesAsArray } = useEntityProperties(entity?.label || '', featuredAttributes, client as any)
     const { getFilterId, getFilterIdFromParts } = useFilterData()
+
+    const getStyles = (theme: GrafanaTheme2) => ({
+        spacer: css`
+            margin-bottom: ${theme.spacing(0.75)};
+        `,
+    })
+
+    const s = useStyles2(getStyles)
 
     const isDisabled = () => {
         if (!entity || !attribute || !datasource || attribute.label === 'Select Attribute') {
@@ -72,13 +83,6 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
 
     return (
         <>
-            <style>
-                {`
-                    .spacer {
-                        margin-bottom: 6px;
-                    }
-                `}
-            </style>
              <Label style={{ marginTop: 12 }}>
                 Filters
             </Label>
@@ -87,7 +91,7 @@ export const FilterPanelFilterSelector: React.FC<FilterPanelFilterSelectorProps>
                 <Combobox placeholder='Attribute' options={getAttributeOptions().map(o => ({ label: o.label, value: o.id } ))} onChange={(e) => setAttribute(e)} value={attribute} />
                 <Button disabled={isDisabled()} onClick={addFilterRow}>Add Filter Row</Button>
             </Stack>
-            <div className='spacer' />
+            <div className={s.spacer} />
             <InlineFieldRow>
                 <InlineField label='Featured attributes'>
                     <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>

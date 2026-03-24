@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Button } from '@grafana/ui'
+import { css } from '@emotion/css'
+import { GrafanaTheme2 } from '@grafana/data'
+import { Button, useStyles2 } from '@grafana/ui'
 import { clearFilterEditorData } from '../lib/localStorageService'
 
 export const ClearFilterData: React.FC<{}> = () => {
@@ -10,20 +12,19 @@ export const ClearFilterData: React.FC<{}> = () => {
     setFilterDataCleared(true)
   }
 
+  const getStyles = (theme: GrafanaTheme2) => ({
+    spacer: css`
+      margin-top: ${theme.spacing(2)};
+      margin-bottom: ${theme.spacing(2)};
+    `,
+  })
+
+  const s = useStyles2(getStyles)
+
   return (
     <>
-      <style>
-        {
-          `
-          .spacer {
-            margin-top: 10px;
-            margin-bottom: 10px;
-          }
-          `
-      }
-      </style>
-      <h3 className='spacer'>Filter Data</h3>
-      <div className='spacer'>
+      <h3 className={s.spacer}>Filter Data</h3>
+      <div className={s.spacer}>
         OpenNMS Filter Panel data is stored in browser local storage.
         Click here to remove any existing filter data.
       </div>
@@ -34,7 +35,7 @@ export const ClearFilterData: React.FC<{}> = () => {
       </Button>
       {
         filterDataCleared &&
-        <div className='spacer'>Filter data was cleared.</div>
+        <div className={s.spacer}>Filter data was cleared.</div>
       }
     </>
   )

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react'
+import { css } from '@emotion/css'
 import {
     InlineField,
     InlineFieldRow,
@@ -7,8 +8,9 @@ import {
     SegmentSection,
     Spinner,
     Switch,
+    useStyles2
 } from '@grafana/ui'
-import { SelectableValue } from '@grafana/data';
+import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { useEntityProperties } from '../../hooks/useEntityProperties';
 import { isInteger } from '../../lib/utils'
 import { EntityClauseEditor } from './EntityClauseEditor';
@@ -84,6 +86,23 @@ export const EntityQueryEditor: React.FC<EntityQueryEditorProps> = ({ onChange, 
     const [featuredAttributes, setFeaturedAttributes] = useState(true)
     const { propertiesLoading, propertiesAsArray } = useEntityProperties(value.label || '', featuredAttributes, client)
 
+    const getStyles = (theme: GrafanaTheme2) => ({
+        spacer: css`
+        margin-top: ${theme.spacing(2)};
+        margin-bottom: ${theme.spacing(2)};
+        `,
+        maxInput: css`
+        max-width: 150px;
+        `,
+        biggerLabels: css`
+        label {
+            min-width: 32px;
+        }
+        `
+    })
+
+    const s = useStyles2(getStyles)
+
     useEffect(() => {
         if (propertiesLoading) {
             setLoading(true)
@@ -116,20 +135,7 @@ export const EntityQueryEditor: React.FC<EntityQueryEditorProps> = ({ onChange, 
         })
     }
 
-    return (<div className='bigger-labels'>
-        <style>
-            {`
-                .bigger-labels label {
-                    min-width: 32px;
-                }
-                .spacer {
-                    margin-bottom: 6px;
-                }
-                .max-input {
-                    max-width: 150px;
-                }
-            `}
-        </style>
+    return (<div className={s.biggerLabels}>
         <SegmentSection label='Select'>
             <Segment
                 value={value}
@@ -151,7 +157,7 @@ export const EntityQueryEditor: React.FC<EntityQueryEditorProps> = ({ onChange, 
                 <Spinner />
             </div>}
         </SegmentSection>
-        <div className='spacer' />
+        <div className={s.spacer} />
 
         <EntityClauseEditor
             clauses={clauses}
@@ -167,10 +173,10 @@ export const EntityQueryEditor: React.FC<EntityQueryEditorProps> = ({ onChange, 
             searchAttributes={propertiesAsArray}
         />
 
-        <div className='spacer' />
+        <div className={s.spacer} />
         <InlineFieldRow>
             <InlineField label='Limit'>
-                <Input className='max-input' type='number' value={limit}
+                <Input className={s.maxInput} type='number' value={limit}
                     onChange={(ev) => {
                         const elem = (ev.target as HTMLInputElement)
                         if (elem) {
@@ -179,7 +185,7 @@ export const EntityQueryEditor: React.FC<EntityQueryEditorProps> = ({ onChange, 
                     }} />
             </InlineField>
         </InlineFieldRow>
-        <div className='spacer' />
+        <div className={s.spacer} />
         <InlineFieldRow>
             <InlineField label='Featured attributes'>
                 <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
