@@ -1,3 +1,9 @@
+### v12.0.1
+
+Grafana Plugin for OpenNMS version 12.0.1 release contains an enhancement.
+
+* [OPG-518](https://opennms.atlassian.net/browse/OPG-518) Remove 'spacer' class, replace with Grafana theme
+
 ### v12.0.0
 
 Grafana Plugin for OpenNMS version 12 provides compatibility with Grafana 12.
