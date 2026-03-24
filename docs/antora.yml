@@ -3,7 +3,7 @@ version: '12-SNAPSHOT'
 title: Plugin for Grafana
 asciidoc:
   attributes:
-    full-display-version: '12.0.1-SNAPSHOT'
+    full-display-version: '12.0.2-SNAPSHOT'
     grafana-version-required: '12.x'
     grafana-version-tested: '12.0'
     node-js-build-version: '22.x'
