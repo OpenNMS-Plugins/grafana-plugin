@@ -51,7 +51,7 @@
     "@types/jquery": "^3.5.13",
     "@types/node": "^18.17.0",
     "@types/react-router-dom": "^5.3.3",
-    "commander": "^11.0.0",
+    "commander": "^14.0.3",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.1",
     "eslint-webpack-plugin": "^4.2.0",
