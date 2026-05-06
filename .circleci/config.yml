@@ -599,7 +599,7 @@ workflows:
           context:
             - "cloudsmith-publish-account"
             - "docker-publish-account"
-            - "Service Principal"
+          #  - "Service Principal"
           requires:
             - validate-packages
           filters:
@@ -611,7 +611,7 @@ workflows:
           context:
             - "cloudsmith-publish-account"
             - "docker-publish-account"
-            - "Service Principal"
+          #  - "Service Principal"
           requires:
             - validate-packages
           filters:
