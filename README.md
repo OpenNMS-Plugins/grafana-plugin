@@ -1,4 +1,4 @@
-# OpenNMS Plugin for Grafana [![CircleCI](https://circleci.com/gh/OpenNMS/grafana-plugin.svg?style=svg)](https://circleci.com/gh/OpenNMS/grafana-plugin)
+# OpenNMS Plugin for Grafana [![CircleCI](https://circleci.com/gh/OpenNMS-Plugins/grafana-plugin.svg?style=svg)](https://circleci.com/gh/OpenNMS-Plugins/grafana-plugin)
 
 OpenNMS Plugin for Grafana (formerly known as Helm) is a Grafana application that allows users to create flexible monitoring dashboards using data from [OpenNMS® Horizon™](https://www.opennms.com/horizon/) and/or [OpenNMS® Meridian™](https://www.opennms.com/meridian/).
 
