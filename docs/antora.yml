@@ -5,7 +5,7 @@ asciidoc:
   attributes:
     full-display-version: '10.0.0-SNAPSHOT'
     grafana-version-required: '9.x'
-    grafana-version-tested: '9.0'
+    grafana-version-tested: '11.2'
     node-js-build-version: '16.x'
     product-name: 'OpenNMS Plugin for Grafana'
 nav:
