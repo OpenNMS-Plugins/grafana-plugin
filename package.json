@@ -84,8 +84,8 @@
   "dependencies": {
     "@emotion/css": "^11.1.3",
     "@grafana/data": "^9.5.21",
-    "@grafana/runtime": "^9.5.21",
-    "@grafana/ui": "^9.5.21",
+    "@grafana/runtime": "^11.4.0",
+    "@grafana/ui": "^11.4.0",
     "async": "^3.2.3",
     "crypto-js": "^4.2.0",
     "flot": "^0.8.3",
@@ -97,7 +97,7 @@
     "q": "^1.5.1",
     "react": "~17.0.2",
     "react-dom": "~17.0.2",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "^7.18.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.1/xlsx-0.19.1.tgz"
   },
   "engines": {
