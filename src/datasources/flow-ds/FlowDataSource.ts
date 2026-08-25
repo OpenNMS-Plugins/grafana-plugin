@@ -37,7 +37,7 @@ export class FlowDataSource extends DataSourceApi<FlowQuery> {
 
     async query(options: FlowQueryRequest<FlowQuery>): Promise<DataQueryResponse> {
         const partialQueryData = extractDataFromQuery(options.targets);
-        const fullQueryData = buildFullQueryData(partialQueryData, this.templateSrv);
+        const fullQueryData = buildFullQueryData(partialQueryData, this.templateSrv, options.scopedVars);
         const { allAreSummaries } = checkForTableSummary(fullQueryData)
         const type = allAreSummaries ? FlowStrings.summaries : FlowStrings.series;
         return await queryOpenNMS(fullQueryData, options, type, { client: this.client, simpleRequest: this.simpleRequest });
