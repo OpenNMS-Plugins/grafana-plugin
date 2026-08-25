@@ -111,7 +111,25 @@ transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'opennms'
 
 ### Security: `npm overrides`
 
-Transitive dependency CVEs are fixed via `overrides` in `package.json`. To fix a new transient dep vulnerability, add an entry under `overrides`, delete `package-lock.json`, and re-run `npm install`. Run `osv-scanner -L package-lock.json` to check.
+Transitive dependency CVEs are fixed via `overrides` in `package.json`. To fix a new transient dep vulnerability, add an entry under `overrides`, then:
+
+```bash
+rm -rf node_modules package-lock.json && npm install
+osv-scanner -L package-lock.json
+```
+
+**Delete `node_modules` too, not just the lockfile.** Regenerating the lockfile alone leaves already-installed packages in place, so npm reuses them and the new overrides silently fail to take effect — you get a lockfile that does not match `overrides`.
+
+When a package has two major lines live in the tree (e.g. `@xmldom/xmldom` 0.8 and 0.9), use npm's scoped key syntax so neither line is force-upgraded across a major:
+
+```json
+"@xmldom/xmldom@^0.8.0": "^0.8.13",
+"@xmldom/xmldom@^0.9.0": "^0.9.10"
+```
+
+Scoped keys match on the *requested spec*, not the resolved version, so they do not work against an exact pin — `@grafana/ui` requires `uuid` as `"11.1.0"`, which no range key matches. Use a nested override under the parent in that case.
+
+A full reinstall also re-resolves every `^` range, so it can surface breakage unrelated to the CVE work. Run `npm run build`, `npm run dev`, `npm test` and `npm run typecheck` afterwards — `npm run build` in particular is the only one that exercises `webpack.config.ts` through ts-node.
 
 ## CI/CD Notes
 
