@@ -4,7 +4,7 @@
   "description": "An OpenNMS Integration for Grafana",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OpenNMS/grafana-plugin.git"
+    "url": "git+https://github.com/OpenNMS-Plugins/grafana-plugin.git"
   },
   "author": {
     "name": "OpenNMS",
@@ -14,7 +14,7 @@
   "bugs": {
     "url": "https://opennms.atlassian.net/projects/OPG"
   },
-  "homepage": "https://github.com/OpenNMS/grafana-plugin",
+  "homepage": "https://github.com/OpenNMS-Plugins/grafana-plugin",
   "scripts": {
     "build": "webpack -c ./webpack.config.ts --env production",
     "dev": "webpack -c ./webpack.config.ts --env development",

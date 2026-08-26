@@ -14,8 +14,8 @@
       "large": "img/opennms-grafana-plugin.svg"
     },
     "links": [
-      {"name": "Project site", "url": "https://github.com/OpenNMS/grafana-plugin"},
-      {"name": "License & Terms", "url": "https://github.com/OpenNMS/grafana-plugin/blob/master/LICENSE"}
+      {"name": "Project site", "url": "https://github.com/OpenNMS-Plugins/grafana-plugin"},
+      {"name": "License & Terms", "url": "https://github.com/OpenNMS-Plugins/grafana-plugin/blob/master/LICENSE"}
     ],
     "screenshots": [
       {"name": "Alarms", "path": "img/Helm_Screenshot_Alarms.png"},
