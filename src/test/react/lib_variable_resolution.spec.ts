@@ -141,6 +141,95 @@ describe('lib :: variableResolution', () => {
         })
     })
 
+    describe('review follow-ups', () => {
+        afterEach(() => {
+            delete (window as any).__grafanaSceneContext
+        })
+
+        // #1 -- a ':json' registry that JSON.stringify()s everything returns a quoted scalar.
+        // No supported Grafana does this today (10.4, 11.6 and 12.4 all route formatVariableValue
+        // through @grafana/scenes' formatRegistry), but the parse must not leak the quotes.
+        it('should unwrap a JSON-quoted scalar rather than keeping its quotes', () => {
+            const variable = { name: 'node', current: { value: 'web-01' } }
+            const templateSrv = {
+                getVariables: () => [variable],
+                replace: (target: string) => target.includes(':json') ? '"web-01"' : 'web-01'
+            }
+
+            expect(resolveVariable(templateSrv as any, variable as any, SCENES_SCOPED_VARS).values)
+                .toStrictEqual(['web-01'])
+        })
+
+        it('should not normalise an unquoted scalar through its parsed number form', () => {
+            // '1e5' parses to 100000; the original string is what the query needs.
+            const variable = { name: 'node', current: { value: '1e5' } }
+            const templateSrv = {
+                getVariables: () => [variable],
+                replace: (target: string) => target.includes(':json') ? '1e5' : '1e5'
+            }
+
+            expect(resolveVariable(templateSrv as any, variable as any, SCENES_SCOPED_VARS).values)
+                .toStrictEqual(['1e5'])
+        })
+
+        // #2 -- Grafana gates its own scene fallback on `ctx && ctx.isActive`
+        // (template_srv.ts:87, 205, 283). With a truthy but inactive context and no __sceneObject,
+        // replace() falls through to the redux variable store, which is empty under Scenes, and
+        // echoes the reference back. getVariables() is NOT gated on isActive, so variable.current
+        // is still populated by the compatibility shim -- the legacy resolver is the correct path.
+        it('should fall back to dashboard-scope values when the scene context is inactive', () => {
+            ;(window as any).__grafanaSceneContext = { isActive: false }
+
+            const variable = { name: 'node', multi: true, current: { value: ['1', '2', '3'] } }
+            const templateSrv = {
+                getVariables: () => [variable],
+                replace: (target: string) => target   // redux store empty: reference echoed back
+            }
+
+            const resolved = resolveVariables(templateSrv as any, undefined)
+
+            expect(resolved[0].values).toStrictEqual(['1', '2', '3'])
+            expect(resolved[0].isLocalOverride).toBe(false)
+        })
+
+        it('should use scene interpolation when the context is active', () => {
+            ;(window as any).__grafanaSceneContext = { isActive: true }
+
+            const variable = { name: 'node', multi: true, current: { value: ['1', '2', '3'] } }
+            const templateSrv = {
+                getVariables: () => [variable],
+                replace: (target: string) => target.includes(':json') ? '["1","2"]' : '{1,2}'
+            }
+
+            expect(resolveVariables(templateSrv as any, undefined)[0].values).toStrictEqual(['1', '2'])
+        })
+
+        // #3 -- formatVariableValue short-circuits adhoc variables to '' in every supported
+        // version, so the echoed-reference guard never fires for them.
+        it('should contribute nothing for an adhoc variable, which interpolates to an empty string', () => {
+            const variable = { name: 'filters', type: 'adhoc', current: { value: [] } }
+            const templateSrv = {
+                getVariables: () => [variable],
+                replace: () => ''
+            }
+
+            expect(resolveVariables(templateSrv as any, SCENES_SCOPED_VARS)).toStrictEqual([{
+                name: 'filters',
+                values: [],
+                texts: [],
+                isLocalOverride: false,
+                isAllInDashboardScope: false
+            }])
+        })
+
+        it('should contribute nothing for an adhoc variable on the legacy path either', () => {
+            const variable = { name: 'filters', type: 'adhoc', current: { value: [] } }
+            const templateSrv = { getVariables: () => [variable], replace: () => '' }
+
+            expect(resolveVariables(templateSrv as any, undefined)[0].values).toStrictEqual([])
+        })
+    })
+
     describe('legacy engine (Grafana 10/11, or Grafana 12 with ?scenes=false)', () => {
         it('should read the repeat value from scopedVars and report it as a local override', () => {
             const templateSrv = makeLegacyTemplateSrv([multiValuedNode])

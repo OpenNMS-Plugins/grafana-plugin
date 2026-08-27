@@ -4,7 +4,7 @@ import { API } from 'opennms'
 import { EntityQuery, EntityQueryRequest, FilterEditorData } from './../types'
 import { ALL_SELECTION_VALUE, EntityTypes } from '../../../constants/constants'
 import { isInteger, trimChar } from '../../../lib/utils'
-import { ResolvedVariable, resolveVariable } from '../../../lib/variableResolution'
+import { ResolvedVariable, VariableResolver, createVariableResolver } from '../../../lib/variableResolution'
 import { getAttributeMapping } from './attributeMappings'
 import { getFilterId } from '../EntityHelper'
 
@@ -99,14 +99,14 @@ const subtituteNodeRestriction = (clause: API.Clause) => {
  * quite a few more methods, etc., so we use 'any' instead. See:
  * https://github.com/grafana/grafana/blob/main/public/app/features/templating/template_srv.ts
  */
-const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQuery>, templateSrv: any) => {
+const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQuery>, templateSrv: any, resolver: VariableResolver) => {
     const remove: API.Clause[] = []
     const clausesWithRestrictions = clauses.filter(c => c.restriction)
 
     for (let clause of clausesWithRestrictions) {
         if (clause.restriction instanceof API.NestedRestriction) {
             // this is actually a NestedRestriction, recurse through subclauses
-            substitute(clause.restriction.clauses, request, templateSrv)
+            substitute(clause.restriction.clauses, request, templateSrv, resolver)
         } else if (clause.restriction.value) {
             // clause.restriction.value may be:
             // - a template variable (in $var or ${var} or ${var:text} format)
@@ -119,7 +119,7 @@ const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQue
             // Resolve the variable in *this* query's scope. For a repeated panel or row that is the
             // single value belonging to this clone, not every value selected on the dashboard.
             const resolved: ResolvedVariable | undefined = templateVariable
-                ? resolveVariable(templateSrv, templateVariable, request.scopedVars)
+                ? resolver.resolve(templateVariable)
                 : undefined
 
             // A repeat clone is showing one specific value, so "all" can never apply to it; only an
@@ -148,7 +148,7 @@ const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQue
                     // we've turned a single restriction into a nested one, so re-process it as a
                     // collection and skip the simple replacement below
                     clause.restriction = replacement
-                    substitute(clause.restriction.clauses, request, templateSrv)
+                    substitute(clause.restriction.clauses, request, templateSrv, resolver)
                     skipSimpleSubstitution = true
                 }
             }
@@ -223,8 +223,10 @@ export const buildQueryFilter = (filter: API.Filter, request: EntityQueryRequest
         }
     }
 
-    // Substitute $<variable> or [[variable]] in the restriction value
-    substitute(clonedFilter.clauses, request, templateSrv)
+    // Substitute $<variable> or [[variable]] in the restriction value.
+    // One resolver for the whole tree: substitute() recurses, and a variable referenced by several
+    // clauses must not be re-resolved for each of them.
+    substitute(clonedFilter.clauses, request, templateSrv, createVariableResolver(templateSrv, request?.scopedVars))
 
     // Remove any empty clauses
     // This could happen e.g. if there was a multi-value template variable that has no values selected

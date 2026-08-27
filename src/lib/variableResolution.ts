@@ -22,10 +22,14 @@ import { ALL_SELECTION_VALUE } from '../constants/constants'
  * answers at DASHBOARD scope, so any code that reads variable.current directly sees every selected
  * value and a repeated panel renders all of them. That was OPG-521.
  *
+ * The two engines do NOT differ in how they format a value: Grafana 10.4, 11.6 and 12.4 all import
+ * formatRegistry from @grafana/scenes in formatVariableValue, so both paths share one registry.
+ *
  * See:
  *   grafana/scenes  packages/scenes/src/querying/SceneQueryRunner.ts        (what scopedVars holds)
  *   grafana/scenes  packages/scenes/src/variables/interpolation/formatRegistry.ts
  *   grafana/grafana public/app/features/templating/template_srv.ts          (replace vs getVariables)
+ *   grafana/grafana public/app/features/templating/formatVariableValue.ts   (shared registry, adhoc)
  */
 
 /**
@@ -86,10 +90,13 @@ const alignTexts = (texts: string[], values: string[]): string[] =>
 /**
  * Parse the result of interpolating '${name:json}'.
  *
- * The two engines disagree on scalars: the scenes JSON formatter is
- * `typeof value === 'string' ? value : JSON.stringify(value)`, so it leaves a scalar string
- * unquoted, while Grafana core JSON.stringify()s everything. A tolerant parse handles both, and
- * treats anything unparseable as a plain scalar -- which is what a value like 'web-01' will be.
+ * The scenes JSON formatter is `typeof value === 'string' ? value : JSON.stringify(value)`, so a
+ * scalar string comes back unquoted and unparseable -- 'web-01' throws, and the raw text is what
+ * the query needs anyway. A registry that JSON.stringify()s everything would instead yield
+ * '"web-01"'; no supported Grafana does that today, but unwrapping it costs nothing.
+ *
+ * Returning `raw` rather than the parsed value for non-strings is deliberate: '1e5' parses to
+ * 100000, and the query needs the original text.
  */
 const parseInterpolatedJson = (raw: string): string[] | undefined => {
     let parsed: any
@@ -110,7 +117,8 @@ const parseInterpolatedJson = (raw: string): string[] | undefined => {
         return undefined
     }
 
-    return [raw]
+    // A quoted scalar round-trips to a string; anything else keeps its original text.
+    return typeof parsed === 'string' ? [parsed] : [raw]
 }
 
 /**
@@ -199,11 +207,17 @@ const resolveInLegacyScope = (
 
 /**
  * Scenes routes interpolation through the scene graph only when it is handed a scene object. The
- * window handle is Grafana's own fallback for the same purpose (see TemplateSrv.replace), and
- * covers calls made outside a query, such as metricFindQuery.
+ * window handle is Grafana's own fallback for the same purpose, and covers calls made outside a
+ * query, such as metricFindQuery or the query editor.
+ *
+ * The isActive check mirrors TemplateSrv.replace (template_srv.ts:87, 205, 283). A truthy but
+ * inactive context makes replace() fall through to the redux variable store, which is empty under
+ * Scenes, so every reference would echo back unresolved. getVariables() is deliberately NOT gated
+ * on isActive by Grafana (template_srv.ts:79), so variable.current is still populated by the
+ * compatibility shim -- which makes the legacy resolver the correct path in that state.
  */
 const isSceneInterpolationAvailable = (scopedVars?: ScopedVars): boolean =>
-    !!scopedVars?.__sceneObject || !!(window as any)?.__grafanaSceneContext
+    !!scopedVars?.__sceneObject || !!(window as any)?.__grafanaSceneContext?.isActive
 
 /** Resolve one variable to the values that apply to this query. */
 export const resolveVariable = (
@@ -211,6 +225,13 @@ export const resolveVariable = (
     variable: TypedVariableModel,
     scopedVars?: ScopedVars
 ): ResolvedVariable => {
+    // Adhoc filters hold a set of key/value conditions rather than a value, and formatVariableValue
+    // short-circuits them to '' in every supported Grafana. They cannot be referenced as $name in a
+    // query, so they contribute nothing on either path.
+    if ((variable as any)?.type === 'adhoc') {
+        return { name: variable.name, values: [], texts: [], isLocalOverride: false, isAllInDashboardScope: false }
+    }
+
     if (SUPPORT_NON_SCENES_GRAFANA && !isSceneInterpolationAvailable(scopedVars)) {
         return resolveInLegacyScope(variable, scopedVars)
     }
@@ -224,3 +245,40 @@ export const resolveVariables = (
     scopedVars?: ScopedVars
 ): ResolvedVariable[] =>
     templateSrv.getVariables().map(variable => resolveVariable(templateSrv, variable, scopedVars))
+
+export interface VariableResolver {
+    resolve: (variable: TypedVariableModel) => ResolvedVariable
+}
+
+/**
+ * A resolver memoised for the lifetime of a single query.
+ *
+ * Resolving is no longer a property read: each call costs up to two templateSrv.replace() calls.
+ * Callers that walk a tree -- entity-ds substitute() recurses through nested restrictions and hits
+ * the same variable once per clause -- should share one of these rather than calling
+ * resolveVariable() directly.
+ *
+ * Memoising by name is safe within one request: variable values cannot change part-way through
+ * building a single query. Do not hold a resolver across requests.
+ */
+export const createVariableResolver = (
+    templateSrv: TemplateSrv,
+    scopedVars?: ScopedVars
+): VariableResolver => {
+    const resolvedByName = new Map<string, ResolvedVariable>()
+
+    return {
+        resolve: (variable: TypedVariableModel) => {
+            const cached = resolvedByName.get(variable.name)
+
+            if (cached) {
+                return cached
+            }
+
+            const resolved = resolveVariable(templateSrv, variable, scopedVars)
+            resolvedByName.set(variable.name, resolved)
+
+            return resolved
+        }
+    }
+}

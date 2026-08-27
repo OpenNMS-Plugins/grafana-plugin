@@ -123,6 +123,102 @@ describe('EntityDataSource :: buildQueryFilter :: template variables', () => {
         })
     })
 
+    describe('resolution is memoised per request', () => {
+        it('should resolve a variable once however many clauses reference it', () => {
+            const templateSrv: any = makeScenesTemplateSrv([multiValuedNode])
+            const realReplace = templateSrv.replace
+            let jsonReplaceCalls = 0
+
+            templateSrv.replace = (target: any, scopedVars?: any, format?: string) => {
+                if (typeof target === 'string' && target.includes(':json')) {
+                    jsonReplaceCalls++
+                }
+
+                return realReplace(target, scopedVars, format)
+            }
+
+            // Three clauses, plus a nested restriction, all referencing $node.
+            const filter = new API.Filter()
+                .withAndRestriction(new API.Restriction('node.id', API.Comparators.EQ, '$node'))
+                .withAndRestriction(new API.Restriction('node.label', API.Comparators.EQ, '$node'))
+                .withAndRestriction(new API.NestedRestriction()
+                    .withOrRestriction(new API.Restriction('node.foreignId', API.Comparators.EQ, '$node')))
+
+            buildQueryFilter(filter, buildRequest(SCENES_SCOPED_VARS), templateSrv)
+
+            // resolveInSceneScope makes exactly two ':json' calls, scoped and unscoped, so one
+            // resolution is 2. Without the memo it grows with the number of referencing clauses.
+            expect(jsonReplaceCalls).toBe(2)
+        })
+    })
+
+    describe('${var:text} format (OPG-466)', () => {
+        // Values and display texts differ, which is the whole point of the :text specifier.
+        const nodeWithLabels: FakeVariableSpec = {
+            name: 'node',
+            multi: true,
+            current: { value: ['1', '2', '3'], text: ['alpha', 'beta', 'gamma'] },
+            options: [
+                { value: '1', text: 'alpha' }, { value: '2', text: 'beta' }, { value: '3', text: 'gamma' }
+            ]
+        }
+
+        const filterOnNodeLabel = () =>
+            new API.Filter().withAndRestriction(new API.Restriction('node.label', API.Comparators.EQ, '${node:text}'))
+
+        it('should OR over the display texts, not the values, when not repeating', () => {
+            const templateSrv = makeScenesTemplateSrv([nodeWithLabels])
+
+            const built = buildQueryFilter(filterOnNodeLabel(), buildRequest(SCENES_SCOPED_VARS), templateSrv as any)
+
+            expect(restrictionsOf(built)).toStrictEqual([
+                ['node.label', 'EQ', 'alpha'],
+                ['node.label', 'EQ', 'beta'],
+                ['node.label', 'EQ', 'gamma']
+            ])
+        })
+
+        it("should use the repeat clone's own display text", () => {
+            const templateSrv = makeScenesTemplateSrv([nodeWithLabels], { node: { value: '2', text: 'beta' } })
+
+            const built = buildQueryFilter(filterOnNodeLabel(), buildRequest(SCENES_SCOPED_VARS), templateSrv as any)
+
+            expect(restrictionsOf(built)).toStrictEqual([['node.label', 'EQ', 'beta']])
+        })
+
+        it('should still substitute the value, not the text, for a plain $var reference', () => {
+            const templateSrv = makeScenesTemplateSrv([nodeWithLabels], { node: { value: '2', text: 'beta' } })
+
+            const built = buildQueryFilter(filterOnNodeId(), buildRequest(SCENES_SCOPED_VARS), templateSrv as any)
+
+            expect(restrictionsOf(built)).toStrictEqual([['node.id', 'EQ', '2']])
+        })
+
+        it('should OR over the display texts on the legacy engine too', () => {
+            const templateSrv = makeLegacyTemplateSrv([nodeWithLabels])
+
+            const built = buildQueryFilter(filterOnNodeLabel(), buildRequest(undefined), templateSrv as any)
+
+            expect(restrictionsOf(built)).toStrictEqual([
+                ['node.label', 'EQ', 'alpha'],
+                ['node.label', 'EQ', 'beta'],
+                ['node.label', 'EQ', 'gamma']
+            ])
+        })
+
+        it("should use the repeat clone's display text on the legacy engine too", () => {
+            const templateSrv = makeLegacyTemplateSrv([nodeWithLabels])
+
+            const built = buildQueryFilter(
+                filterOnNodeLabel(),
+                buildRequest(legacyRepeatScopedVars({ node: { value: '2', text: 'beta' } })),
+                templateSrv as any
+            )
+
+            expect(restrictionsOf(built)).toStrictEqual([['node.label', 'EQ', 'beta']])
+        })
+    })
+
     describe('legacy engine (Grafana 10/11, or Grafana 12 with ?scenes=false)', () => {
         it('should restrict to the repeat value carried in scopedVars', () => {
             const templateSrv = makeLegacyTemplateSrv([multiValuedNode])

@@ -5,7 +5,7 @@ import { ScopedVars, TypedVariableModel } from '@grafana/data'
  *
  * Grafana 12 ships two interpolation engines behind the same TemplateSrv facade, and OPG has to
  * work with both (Scenes on Grafana 12/13, the legacy engine on Grafana 10/11 and on Grafana 12
- * with '?scenes=false' or 'dashboardScene = false'). They differ in three ways that matter to us:
+ * with '?scenes=false' or 'dashboardScene = false'). They differ in two ways that matter to us:
  *
  *  1. What arrives in DataQueryRequest.scopedVars.
  *     Legacy puts the repeated panel's value there directly, as { node: { value: '2' } }.
@@ -18,14 +18,16 @@ import { ScopedVars, TypedVariableModel } from '@grafana/data'
  *     which is the dashboard root, so a repeat's local override is invisible to it. This is the
  *     root cause of OPG-521.
  *
- *  3. How the ':json' format renders a scalar.
- *     Scenes: `typeof value === 'string' ? value : JSON.stringify(value)` -- scalars are NOT quoted.
- *     Core:   `JSON.stringify(value)`                                     -- scalars ARE quoted.
+ * They do NOT differ in formatting. Grafana 10.4, 11.6 and 12.4 all import formatRegistry from
+ * @grafana/scenes in formatVariableValue, so one registry serves both paths -- which is why both
+ * fakes below share a single formatter. formatVariableValue also short-circuits adhoc variables to
+ * '' on both paths, modelled here so the adhoc guard is tested against real behaviour.
  *
  * See:
  *   grafana/scenes  packages/scenes/src/variables/interpolation/formatRegistry.ts
  *   grafana/scenes  packages/scenes/src/variables/variants/MultiValueVariable.ts
  *   grafana/grafana public/app/features/templating/template_srv.ts
+ *   grafana/grafana public/app/features/templating/formatVariableValue.ts
  */
 
 export const ALL_VALUE = '$__all'
@@ -41,6 +43,8 @@ export interface FakeVariableOption {
 
 export interface FakeVariableSpec {
     name: string
+    /** Grafana variable type. 'adhoc' interpolates to '' on both paths. */
+    type?: string
     multi?: boolean
     includeAll?: boolean
     /** Currently selected value(s) at dashboard scope. Use ALL_VALUE to model the "All" selection. */
@@ -78,7 +82,7 @@ const concreteOptions = (spec: FakeVariableSpec): FakeVariableOption[] =>
 
 const buildVariableModel = (spec: FakeVariableSpec): TypedVariableModel => ({
     name: spec.name,
-    type: 'query',
+    type: spec.type ?? 'query',
     multi: !!spec.multi,
     includeAll: !!spec.includeAll,
     current: {
@@ -124,28 +128,14 @@ const interpolateWith = (target: any, resolve: Resolver, format: Formatter, defa
     })
 }
 
-/** grafana/scenes formatRegistry. */
-const scenesFormat: Formatter = ({ value, text }, format) => {
+/**
+ * grafana/scenes formatRegistry -- shared by both engines, see the header note.
+ */
+const formatValue: Formatter = ({ value, text }, format) => {
     switch (format) {
         case 'json':
             // NB: scalars pass through unquoted.
             return typeof value === 'string' ? value : JSON.stringify(value)
-        case 'text':
-            return Array.isArray(text) ? text.join(' + ') : String(text)
-        case 'csv':
-            return Array.isArray(value) ? value.join(',') : String(value)
-        case 'raw':
-            return String(value)
-        default:
-            return Array.isArray(value) ? `{${value.join(',')}}` : String(value)
-    }
-}
-
-/** grafana/grafana core formatRegistry. */
-const coreFormat: Formatter = ({ value, text }, format) => {
-    switch (format) {
-        case 'json':
-            return JSON.stringify(value)
         case 'text':
             return Array.isArray(text) ? text.join(' + ') : String(text)
         case 'csv':
@@ -187,14 +177,19 @@ const commonMethods = (models: TypedVariableModel[]) => ({
  * TemplateSrv as it behaves under Dashboard Scenes (Grafana 12 default, Grafana 13 only).
  *
  * @param specs           the dashboard's variables
- * @param localOverrides  values shadowed by a repeat, e.g. { node: '2' }. Applied only when the
+ * @param localOverrides  values shadowed by a repeat, e.g. { node: '2' } or, when the display text
+ *                        differs from the value, { node: { value: '2', text: 'two' } } -- repeats
+ *                        carry both (RowItemRepeater passes variableValues[i] and variableTexts[i]).
+ *                        Applied only when the
  *                        caller passes scopedVars containing __sceneObject -- exactly like
  *                        sceneGraph.interpolate() resolving a LocalValueVariable from the panel's
  *                        position in the scene graph. A repeated PANEL and a repeated ROW are
  *                        indistinguishable here, which is the point: both attach a
  *                        SceneVariableSet([LocalValueVariable]) that descendants inherit.
  */
-export const makeScenesTemplateSrv = (specs: FakeVariableSpec[], localOverrides: Record<string, string> = {}) => {
+export type FakeLocalOverride = string | { value: string, text: string }
+
+export const makeScenesTemplateSrv = (specs: FakeVariableSpec[], localOverrides: Record<string, FakeLocalOverride> = {}) => {
     const models = specs.map(buildVariableModel)
     const bySpecName = new Map(specs.map(s => [s.name, s]))
 
@@ -205,11 +200,17 @@ export const makeScenesTemplateSrv = (specs: FakeVariableSpec[], localOverrides:
             return undefined
         }
 
+        if (spec.type === 'adhoc') {
+            return { value: '', text: '' }
+        }
+
         const hasSceneHandle = !!scopedVars?.__sceneObject
         const override = localOverrides[name]
 
         if (hasSceneHandle && override !== undefined) {
-            return { value: override, text: override }
+            return typeof override === 'string'
+                ? { value: override, text: override }
+                : { value: override.value, text: override.text }
         }
 
         return dashboardScopeValue(spec)
@@ -218,7 +219,7 @@ export const makeScenesTemplateSrv = (specs: FakeVariableSpec[], localOverrides:
     return {
         ...commonMethods(models),
         replace: (target: any, scopedVars?: ScopedVars, format?: string) =>
-            interpolateWith(target, resolverFor(scopedVars), scenesFormat, format)
+            interpolateWith(target, resolverFor(scopedVars), formatValue, format)
     }
 }
 
@@ -239,16 +240,23 @@ export const makeLegacyTemplateSrv = (specs: FakeVariableSpec[]) => {
 
         const spec = bySpecName.get(name)
 
+        if (spec?.type === 'adhoc') {
+            return { value: '', text: '' }
+        }
+
         return spec ? dashboardScopeValue(spec) : undefined
     }
 
     return {
         ...commonMethods(models),
         replace: (target: any, scopedVars?: ScopedVars, format?: string) =>
-            interpolateWith(target, resolverFor(scopedVars), coreFormat, format)
+            interpolateWith(target, resolverFor(scopedVars), formatValue, format)
     }
 }
 
 /** scopedVars as the legacy engine builds them for a repeated panel. */
-export const legacyRepeatScopedVars = (values: Record<string, string>): ScopedVars =>
-    Object.fromEntries(Object.entries(values).map(([name, value]) => [name, { text: value, value }]))
+export const legacyRepeatScopedVars = (values: Record<string, FakeLocalOverride>): ScopedVars =>
+    Object.fromEntries(Object.entries(values).map(([name, override]) =>
+        typeof override === 'string'
+            ? [name, { text: override, value: override }]
+            : [name, { text: override.text, value: override.value }]))

@@ -26,6 +26,12 @@ describe('OpenNMSPerformanceDatasource :: interpolate', () => {
     expect(interpolate(query, ['resource'], [{ name: '!node', value: ['1'] }])).toStrictEqual([query])
   })
 
+  it('should return an empty array when a referenced variable has no values', () => {
+    // The cartesian product of an empty value list is empty, so callers cannot assume [0] exists.
+    // Reachable whenever a referenced multi-value variable has nothing selected.
+    expect(interpolate(query, ['resource'], [{ name: 'node', value: [] }])).toStrictEqual([])
+  })
+
   it('should be able to interpolate a single variable in a single attribute', () => {
     const interpolated = interpolate(query, ['resource'], [{ name: 'node', value: ['1', '2'] }])
 
