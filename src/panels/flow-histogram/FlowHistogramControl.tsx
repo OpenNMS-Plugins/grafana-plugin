@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import $ from 'jquery'
 import { PanelProps } from '@grafana/data'
 import { UnitInfo } from './FlowHistogramConstants'
 import {

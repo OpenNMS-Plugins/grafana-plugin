@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react'
+import $ from 'jquery'
 import { DataFrame, PanelData } from '@grafana/data'
 import { FlowHistogramOptionsProps, FlowPanelDataProcessed, FlowPanelUnitInfo } from './FlowHistogramTypes'
 import { DataPosition, FlowDataDirection, UnitInfo } from './FlowHistogramConstants'
@@ -50,7 +51,7 @@ export const getFlowHistogramPlotConfig = (
 
     const stacked = options.flowHistogramOptions.mode.label === 'Stacked'
     const horizontal = options.flowHistogramOptions.direction.label === 'Horizontal'
-    const container = null //options.flowHistogramOptions.position.label === 'Under Graph' ? $('.flow-histogram-legend-bottom') : $('.flow-histogram-legend-right') 
+    const container = null //options.flowHistogramOptions.position.label === 'Under Graph' ? $('.flow-histogram-legend-bottom') : $('.flow-histogram-legend-right')
     const noColumns = options.flowHistogramOptions.position.label === 'Under Graph' ? 5 : 1
     const showLegend = options.flowHistogramOptions.showLegend
     const legendPosition = options.flowHistogramOptions.position.value
@@ -176,7 +177,7 @@ const getMetricLabelsAndLabelFunction = (metric: string, frame: DataFrame) => {
 }
 
 /**
- * Returns and array of [index, label] 
+ * Returns and array of [index, label]
  * where index is the record position in the original data and the label to be displayed in the graph
  */
 export const getIndexedMetricLabels = (metricLabels: any[], labelFunction: LabelFunction, stacked: boolean) => {
@@ -286,7 +287,7 @@ export const getStyleFor = (element: FlowHistogramElement, height: number, width
             }
         case FlowHistogramElement.GraphAxisLabelUnit:
             return {
-                marginTop: 24 
+                marginTop: 24
             }
     }
 }
