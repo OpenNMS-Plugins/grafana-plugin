@@ -170,8 +170,10 @@ export const PerformanceQueryEditor: React.FC<PerformanceQueryEditorProps> = ({ 
         // Note: similar to legacy 'suggestAttributes'
         const interpolationVars = collectInterpolationVariables(getTemplateSrv())
 
-        const interpolatedNodeId = interpolate({ value: node.id || node.label }, ['value'], interpolationVars)?.[0].value || ''
-        const interpolatedResourceId = interpolate({ value: resource.id || resource.label }, ['value'], interpolationVars)?.[0].value || ''
+        // Note: interpolate() returns [] when a referenced variable has no values, so guard the
+        // element as well as the array
+        const interpolatedNodeId = interpolate({ value: node.id || node.label }, ['value'], interpolationVars)?.[0]?.value || ''
+        const interpolatedResourceId = interpolate({ value: resource.id || resource.label }, ['value'], interpolationVars)?.[0]?.value || ''
         const remoteResourceId = getRemoteResourceId(interpolatedNodeId, interpolatedResourceId)
 
         const resourceData = await datasource.doResourcesRequest(remoteResourceId)

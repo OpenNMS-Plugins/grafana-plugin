@@ -5,6 +5,29 @@
 A place to put various notes that may help in development, or discuss odd behaviors.
 
 
+## Testing
+
+Unit tests live in `src/test/react/*.spec.ts` and run with `npm test`.
+
+`test/dashboards/` holds dashboards for manual testing against a real Grafana and OpenNMS. They are *not* bundled into the plugin — only `src/dashboards/` is shipped. Import one via **Dashboards → New → Import** and paste the JSON; each prompts for the datasource it needs, so there are no UIDs to edit.
+
+### `opg-521-repeat-test-dashboard.json`
+
+Covers repeating panels and rows over a multi-value template variable (OPG-521). Needs an OpenNMS Performance datasource and an SNMP node reporting `hrStorageIndex` resources.
+
+Select three or more storage volumes, then watch `POST /rest/measurements` in the browser Network tab:
+
+| Panel | Expected |
+|-------|----------|
+| A. Repeated panel | one request per clone, each with exactly **1** entry in `source` |
+| B. Not repeated, multi-value | **one** request with **N** entries in `source`, N series in the one panel |
+| C. Repeated row | one request per row clone, each with exactly **1** entry in `source` |
+
+Panel B is the regression guard: a repeat fix that pins the variable too aggressively breaks multi-value fan-out, and the panel count alone will not show it. Checking the `source` array length is what distinguishes fixed from broken — the request *count* looks the same either way, because each clone has always had its own `SceneQueryRunner`.
+
+Also worth running with the picker set to **All**, and with **`?scenes=false`** appended to the dashboard URL, which forces the pre-Scenes renderer on Grafana 12 and exercises the legacy interpolation path. That query parameter is gone in Grafana 13.
+
+
 ## swc/core
 
 Seems to be some errors with grafana libraries and `@swc/core`, you may get `Failed to load native bindings` or similar errors.
@@ -79,7 +102,7 @@ If there are any libraries that have something in `FIXED VERSION`, you'll need t
 
 You may be able to fix some transient dependencies, i.e. some libraries failing the `osv-scanner` but aren't direct dependencies.
 
-Use the `npm overrides` mechanism in the `package.json`. Delete the `package-lock.json` and rerun `npm install`.
+Use the `npm overrides` mechanism in the `package.json`. Delete **both** `node_modules` and `package-lock.json`, then rerun `npm install` — regenerating the lockfile alone leaves the already-installed packages in place, npm reuses them, and the new overrides silently do not take effect.
 
 ```
 "overrides": {
