@@ -1,6 +1,5 @@
 import { CSSProperties } from 'react'
 import { DataFrame, PanelData } from '@grafana/data'
-import $ from 'jquery'
 import { FlowHistogramOptionsProps, FlowPanelDataProcessed, FlowPanelUnitInfo } from './FlowHistogramTypes'
 import { DataPosition, FlowDataDirection, UnitInfo } from './FlowHistogramConstants'
 
@@ -51,13 +50,11 @@ export const getFlowHistogramPlotConfig = (
 
     const stacked = options.flowHistogramOptions.mode.label === 'Stacked'
     const horizontal = options.flowHistogramOptions.direction.label === 'Horizontal'
-    const container = null //options.flowHistogramOptions.position.label === 'Under Graph' ? $('.flow-histogram-legend-bottom') : $('.flow-histogram-legend-right') 
     const noColumns = options.flowHistogramOptions.position.label === 'Under Graph' ? 5 : 1
     const showLegend = options.flowHistogramOptions.showLegend
     const legendPosition = options.flowHistogramOptions.position.value
 
     const yaxis = {
-        mode: 'categories',
         tickLength: 0,
         ticks: stacked ? processedData.stackedData?.ticks : processedData.separateData?.ticks,
         autoscaleMargin: 0.02,
@@ -66,7 +63,9 @@ export const getFlowHistogramPlotConfig = (
     const configOptions = {
         legend: {
             show: showLegend,
-            container: container || undefined,
+            // No `container` here: flot renders the legend inside the plot and
+            // setLegend() moves it afterwards. See the note there for why flot's
+            // own `container` option cannot be used.
             position: legendPosition,
             backgroundOpacity: 0,
             noColumns: noColumns,
@@ -223,16 +222,36 @@ export const getSeriesMetricValues = (fields: any[], name: string) => {
     return match?.values?.toArray() || []
 }
 
-export const setLegend = (options: { flowHistogramOptions: FlowHistogramOptionsProps }) => {
-    if (options.flowHistogramOptions.showLegend) {
-        const className = options.flowHistogramOptions.position.label === 'Under Graph' ? '.flow-histogram-legend-bottom' : '.flow-histogram-legend-right'
-        const legend = $('.legend')
+// flot always renders its legend inside the plot container, so we move it into our
+// own element to position it independently of the graph.
+//
+// flot's `legend.container` option is meant to do exactly this, but it is broken in
+// the flot version Grafana vendors: insertLegend() clears the container with
+// `$.find(container).html('')`, and in jQuery 3.x `$.find` returns a plain Array,
+// which has no `.html()` - so it throws on every plot.
+//
+// Both elements are passed in rather than looked up by selector: two flow-histogram
+// panels on one dashboard would otherwise fight over the same document-wide match.
+export const setLegend = (
+    plotElement: HTMLElement | null,
+    legendElement: HTMLElement | null,
+    options: { flowHistogramOptions: FlowHistogramOptionsProps }
+) => {
+    if (!legendElement) {
+        return
+    }
 
-        if (legend && legend.html()) {
-            $(className).html('')
-            $(className).append(legend.html())
-            legend.remove()
-        }
+    if (!options.flowHistogramOptions.showLegend) {
+        // clear anything a previous render moved here
+        legendElement.replaceChildren()
+        return
+    }
+
+    const legend = plotElement?.querySelector('.legend')
+
+    if (legend?.hasChildNodes()) {
+        legendElement.replaceChildren(...legend.childNodes)
+        legend.remove()
     }
 }
 
