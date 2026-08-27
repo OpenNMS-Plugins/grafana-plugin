@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import { PanelProps } from '@grafana/data'
+import $ from 'jquery'
+import 'jquery.flot'
+import 'jquery.flot.stack'
 import { UnitInfo } from './FlowHistogramConstants'
 import {
     FlowHistogramElement,

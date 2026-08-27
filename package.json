@@ -105,8 +105,6 @@
     "@grafana/schema": "^12.4.0",
     "@grafana/ui": "^12.4.0",
     "async": "^3.2.3",
-    "flot": "^0.8.3",
-    "flot-axislabels": "https://github.com/j-white/flot-axislabels#master",
     "lodash.clonedeep": "^4.5.0",
     "lodash.escaperegexp": "^4.1.2",
     "opennms": "^2.6.1",

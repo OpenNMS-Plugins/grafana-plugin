@@ -1,5 +1,6 @@
 import { CSSProperties } from 'react'
 import { DataFrame, PanelData } from '@grafana/data'
+import $ from 'jquery'
 import { FlowHistogramOptionsProps, FlowPanelDataProcessed, FlowPanelUnitInfo } from './FlowHistogramTypes'
 import { DataPosition, FlowDataDirection, UnitInfo } from './FlowHistogramConstants'
 
