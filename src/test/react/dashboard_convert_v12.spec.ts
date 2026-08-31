@@ -127,3 +127,255 @@ describe('convertToV12 :: annotation target defaults', () => {
     expect((annotation.target as unknown as AnnotationTarget).limit).toEqual(100)
   })
 })
+
+describe('convertToV12 :: unhideAllQueries option', () => {
+  const dashboardWithHiddenQueries = {
+    panels: [
+      {
+        type: 'timeseries',
+        title: 'Top level',
+        targets: [{ refId: 'A', hide: true }, { refId: 'B' }]
+      },
+      {
+        type: 'row',
+        title: 'A row',
+        collapsed: true,
+        panels: [
+          { type: 'timeseries', title: 'Nested', targets: [{ refId: 'A', hide: true }] }
+        ]
+      }
+    ]
+  }
+
+  it('should unhide all panel targets when the option is set', () => {
+    const options = { ...defaultOptions, unhideAllQueries: true }
+    const panels = convert(dashboardWithHiddenQueries, options).dashboardV12!.panels as any[]
+
+    expect(panels[0].targets[0].hide).toEqual(false)
+    expect(panels[0].targets[1].hide).toEqual(false)
+  })
+
+  it('should unhide targets of panels nested inside a collapsed row', () => {
+    const options = { ...defaultOptions, unhideAllQueries: true }
+    const panels = convert(dashboardWithHiddenQueries, options).dashboardV12!.panels as any[]
+
+    expect(panels[1].panels[0].targets[0].hide).toEqual(false)
+  })
+
+  it('should leave the hide flag alone when the option is not set', () => {
+    const panels = convert(dashboardWithHiddenQueries, defaultOptions).dashboardV12!.panels as any[]
+
+    expect(panels[0].targets[0].hide).toEqual(true)
+    expect(panels[0].targets[1].hide).toBeUndefined()
+  })
+})
+
+describe('convertToV12 :: convertGraphToTimeSeries option', () => {
+  const dashboardWithGraphPanels = {
+    panels: [
+      {
+        type: 'graph',
+        title: 'A graph',
+        gridPos: { h: 8, w: 12, x: 0, y: 0 },
+        legend: { show: true, avg: true },
+        yaxes: [{ format: 'Bps', label: 'bits/sec' }],
+        targets: [{ refId: 'A' }]
+      },
+      {
+        type: 'row',
+        title: 'A row',
+        collapsed: true,
+        panels: [{ type: 'graph', title: 'Nested graph', targets: [{ refId: 'A' }] }]
+      }
+    ]
+  }
+
+  it('should convert graph panels to timeseries when the option is set', () => {
+    const options = { ...defaultOptions, convertGraphToTimeSeries: true }
+    const panels = convert(dashboardWithGraphPanels, options).dashboardV12!.panels as any[]
+
+    expect(panels[0].type).toEqual('timeseries')
+    expect(panels[0].fieldConfig.defaults.unit).toEqual('Bps')
+    expect(panels[0].yaxes).toBeUndefined()
+  })
+
+  it('should convert graph panels nested inside a collapsed row', () => {
+    const options = { ...defaultOptions, convertGraphToTimeSeries: true }
+    const panels = convert(dashboardWithGraphPanels, options).dashboardV12!.panels as any[]
+
+    expect(panels[1].panels[0].type).toEqual('timeseries')
+  })
+
+  it('should leave graph panels alone when the option is not set', () => {
+    const panels = convert(dashboardWithGraphPanels, defaultOptions).dashboardV12!.panels as any[]
+
+    expect(panels[0].type).toEqual('graph')
+  })
+})
+
+describe('convertToV12 :: malformed json', () => {
+  const badRequest: ConvertResponse = {
+    json: '{ not json',
+    isError: false,
+    targetPluginVersion: 12
+  }
+
+  it('should return an error response rather than throwing', () => {
+    expect(() => convertDashboardToV12(badRequest, '', defaultOptions)).not.toThrow()
+  })
+
+  it('should describe the parse failure', () => {
+    const result = convertDashboardToV12(badRequest, '', defaultOptions)
+
+    expect(result.isError).toEqual(true)
+    expect(result.errorMessage).toContain('Error parsing source Json')
+  })
+})
+
+describe('convertToV12 :: variable fields outside the base schema', () => {
+  it('should preserve the filters of an adhoc variable', () => {
+    const source = {
+      templating: {
+        list: [
+          {
+            name: 'Filters',
+            type: 'adhoc',
+            datasource: { type: 'opennms-entity-datasource', uid: 'abc' },
+            filters: [{ key: 'node.label', operator: '=', value: 'srv01' }],
+            baseFilters: [{ key: 'severity', operator: '=', value: 'MAJOR' }],
+            defaultKeys: [{ text: 'node.label', value: 'node.label' }]
+          }
+        ]
+      }
+    }
+
+    const variable = convert(source).dashboardV12!.templating!.list![0] as any
+
+    expect(variable.filters).toEqual([{ key: 'node.label', operator: '=', value: 'srv01' }])
+    expect(variable.baseFilters).toEqual([{ key: 'severity', operator: '=', value: 'MAJOR' }])
+    expect(variable.defaultKeys).toEqual([{ text: 'node.label', value: 'node.label' }])
+  })
+
+  it('should preserve the defaultValue of a groupby variable', () => {
+    const source = {
+      templating: {
+        list: [
+          { name: 'Group', type: 'groupby', multi: true, defaultValue: { selected: true, text: 'node', value: 'node' } }
+        ]
+      }
+    }
+
+    const variable = convert(source).dashboardV12!.templating!.list![0] as any
+
+    expect(variable.defaultValue).toEqual({ selected: true, text: 'node', value: 'node' })
+  })
+
+  it('should preserve the v12 regexApplyTo and valuesFormat fields', () => {
+    const source = {
+      templating: {
+        list: [{ name: 'Nodes', type: 'query', regexApplyTo: 'text', valuesFormat: 'json' }]
+      }
+    }
+
+    const variable = convert(source).dashboardV12!.templating!.list![0] as any
+
+    expect(variable.regexApplyTo).toEqual('text')
+    expect(variable.valuesFormat).toEqual('json')
+  })
+
+  it('should preserve the properties of a multi-prop variable option', () => {
+    const source = {
+      templating: {
+        list: [
+          {
+            name: 'Nodes',
+            type: 'query',
+            current: { selected: true, text: 'srv01', value: '1', properties: { foreignId: 'srv01' } }
+          }
+        ]
+      }
+    }
+
+    const variable = convert(source).dashboardV12!.templating!.list![0] as any
+
+    expect(variable.current.properties).toEqual({ foreignId: 'srv01' })
+  })
+
+  it('should recognise the switch variable type', () => {
+    const source = { templating: { list: [{ name: 'Toggle', type: 'switch' }] } }
+
+    const variable = convert(source).dashboardV12!.templating!.list![0]
+
+    expect(variable.type).toEqual('switch')
+  })
+})
+
+describe('convertToV12 :: annotation and link fields outside the base schema', () => {
+  it('should preserve datasource specific annotation query fields', () => {
+    const source = {
+      annotations: {
+        list: [
+          {
+            enable: true,
+            iconColor: 'red',
+            name: 'OpenNMS Alarms',
+            datasource: { type: 'opennms-entity-datasource', uid: 'abc' },
+            expr: 'severity >= MAJOR',
+            titleFormat: '{{label}}'
+          }
+        ]
+      }
+    }
+
+    const annotation = convert(source).dashboardV12!.annotations!.list![0] as any
+
+    expect(annotation.expr).toEqual('severity >= MAJOR')
+    expect(annotation.titleFormat).toEqual('{{label}}')
+  })
+
+  it('should preserve the v12 annotation placement field', () => {
+    const source = {
+      annotations: {
+        list: [{ enable: true, iconColor: 'red', name: 'A', placement: 'inControlsMenu' }]
+      }
+    }
+
+    const annotation = convert(source).dashboardV12!.annotations!.list![0] as any
+
+    expect(annotation.placement).toEqual('inControlsMenu')
+  })
+
+  it('should preserve the v12 dashboard link placement field', () => {
+    const source = {
+      links: [{ type: 'link', title: 'Docs', url: 'https://example.com', placement: 'inControlsMenu' }]
+    }
+
+    const link = convert(source).dashboardV12!.links![0] as any
+
+    expect(link.placement).toEqual('inControlsMenu')
+  })
+})
+
+describe('convertToV12 :: annotation target query fields', () => {
+  it('should preserve datasource specific fields inside the annotation target', () => {
+    const source = {
+      annotations: {
+        list: [
+          {
+            enable: true,
+            iconColor: 'red',
+            name: 'OpenNMS Alarms',
+            datasource: { type: 'opennms-entity-datasource', uid: 'abc' },
+            target: { refId: 'A', entityType: 'alarm', filter: { clauses: [] } }
+          }
+        ]
+      }
+    }
+
+    const target = convert(source).dashboardV12!.annotations!.list![0].target as any
+
+    expect(target.entityType).toEqual('alarm')
+    expect(target.filter).toEqual({ clauses: [] })
+    expect(target.refId).toEqual('A')
+  })
+})

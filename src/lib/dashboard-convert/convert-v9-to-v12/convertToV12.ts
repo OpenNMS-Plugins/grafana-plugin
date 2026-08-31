@@ -29,6 +29,7 @@ import {
   isEnumValueOfType,
   isNonEmptyArray
 } from '../../parseUtils'
+import { convertLegacyGraphToTimeSeriesPanel, isLegacyGraphPanel } from '../convert-from-v8/graphToTimeSeriesPanel'
 import { isTemplateVariableCandidate } from 'lib/utils'
 
 /**
@@ -43,7 +44,23 @@ import { isTemplateVariableCandidate } from 'lib/utils'
 export const convertDashboardToV12 = (request: ConvertResponse, dashboardTitle: string, options: ConvertOptions): ConvertResponse => {
   // Assume this is either an object parsed by convertFromV8, or else Grafana V9-V12 dashboard json string.
   // It should be an object that is at least Grafana V9 Dashboard compatible.
-  const source = request.dashboardV9 ?? JSON.parse(request.json)
+  let source: any
+
+  if (isDefined(request.dashboardV9)) {
+    source = request.dashboardV9
+  } else {
+    try {
+      source = JSON.parse(request.json)
+    } catch (e: any) {
+      return {
+        dashboardV9: request.dashboardV9,
+        json: request.json,
+        isError: true,
+        errorMessage: `Error parsing source Json: ${e.message || '(unknown)'}`,
+        targetPluginVersion: 12
+      }
+    }
+  }
 
   // Make an empty Grafana V12 Dashboard object
   // Then we map everything from 'source' into it
@@ -141,7 +158,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
   }
   
   if (isNonEmptyArray(source.panels)) {
-    dashboard.panels = source.panels.map(mapPanelOrRowPanel)
+    dashboard.panels = source.panels.map((p: any) => mapPanelOrRowPanel(p, options))
   }
 
   if (isDefined(source.preload)) {
@@ -255,7 +272,10 @@ const mapAnnotationQuery = (obj: any) => {
   let annotation = {
     enable: false,
     iconColor: '',
-    name: ''
+    name: '',
+    // spread the source so that datasource-specific query fields, and any fields added
+    // to the schema after this was written, are preserved rather than dropped
+    ...obj
   } as AnnotationQuery<AnnotationTarget & DataQuery>
 
   if (isDefined(obj.builtIn)) {
@@ -292,6 +312,9 @@ const mapAnnotationQuery = (obj: any) => {
 
   if (isDefined(obj.target)) {
     annotation.target = {
+      // for a non-Grafana datasource the target is the actual annotation query,
+      // so spread it to keep the datasource-specific fields
+      ...obj.target,
       limit: convertToInt(obj.target.limit, 100),  // 100 is the Grafana default annotation limit
       matchAny: convertToBoolean(obj.target.matchAny),
       refId: convertToString(obj.target.refId, 'A'),
@@ -323,6 +346,7 @@ const mapDashboardLinkType = (obj?: any) => {
 
 const mapDashboardLink = (obj: any) => {
   const link = {
+    ...obj,  // preserve fields we do not normalize, e.g. the v12 'placement'
     asDropdown: convertToBoolean(obj.asDropdown),
     icon: convertToString(obj.icon),
     includeVars: convertToBoolean(obj.includeVars),
@@ -361,19 +385,39 @@ const mapGridPos = (obj: any): GridPos => {
   return pos
 }
 
-const mapPanelOrRowPanel = (obj: any): Panel | RowPanel => {
+const mapPanelOrRowPanel = (obj: any, options: ConvertOptions): Panel | RowPanel => {
   // RowPanel should have 'type' of 'row'
   // Should also have 'collapsed' and 'panels', but we will key off of the 'type' field
   const isRowPanel = isDefined(obj.type) && obj.type === 'row'
 
   if (isRowPanel) {
-    return mapRowPanel(obj)
+    return mapRowPanel(obj, options)
   }
 
-  return mapPanel(obj)
+  return mapPanel(obj, options)
 }
 
-const mapPanel = (obj: any): Panel => {
+// The 'targets' are OPG (or other datasource) queries which we do not parse further here.
+// If the user asked to unhide all queries, clear the 'hide' flag on each of them.
+const mapTargets = (obj: any, options: ConvertOptions) => {
+  if (!isNonEmptyArray(obj.targets)) {
+    return []
+  }
+
+  if (options.unhideAllQueries) {
+    return obj.targets.map((t: any) => ({ ...t, hide: false }))
+  }
+
+  return obj.targets
+}
+
+const mapPanel = (source: any, options: ConvertOptions): Panel => {
+  // The Angular 'graph' panel was removed in Grafana 11, so it cannot render under v12.
+  // If the user asked for it, convert it to a 'timeseries' panel first, then map that.
+  const obj = options.convertGraphToTimeSeries && isLegacyGraphPanel(source)
+    ? convertLegacyGraphToTimeSeriesPanel(source)
+    : source
+
   const panel = {
     ...obj, // this will capture properties of specific panels, not contains in Panel base interface
     cacheTimeout: isDefined(obj.cacheTimeout) ? convertToString(obj.cacheTimeout) : undefined,
@@ -393,7 +437,7 @@ const mapPanel = (obj: any): Panel => {
     queryCachingTTL: isDefined(obj.queryCachingTTL) ? convertToInt(obj.queryCachingTTL) : undefined,
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     repeatDirection: isDefined(obj.repeatDirection) && (obj.repeatDirection === 'h' || obj.repeatDirection === 'v') ? obj.repeatDirection : undefined,
-    targets: isNonEmptyArray(obj.targets) ? obj.targets : [],  // these should be OPG targets
+    targets: mapTargets(obj, options),  // these should be OPG targets
     timeFrom: isDefined(obj.timeFrom) ? convertToString(obj.timeFrom) : undefined,
     timeShift: isDefined(obj.timeShift) ? convertToString(obj.timeShift) : undefined,
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
@@ -405,14 +449,14 @@ const mapPanel = (obj: any): Panel => {
   return panel
 }
 
-const mapRowPanel = (obj: any): RowPanel => {
+const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
   const row = {
     ...obj, // this will capture properties of specific panels, not contains in RowPanel base interface
     collapsed: convertToBoolean(obj.collapsed),
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     gridPos: isDefined(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
     id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
-    panels: isNonEmptyArray(obj.panels) ? obj.panels.map(mapPanelOrRowPanel) : [],
+    panels: isNonEmptyArray(obj.panels) ? obj.panels.map((p: any) => mapPanelOrRowPanel(p, options)) : [],
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
     type: 'row'
@@ -442,6 +486,7 @@ const mapDashboardSnapshot = (obj: any) => {
 
 const mapVariableOption = (obj: any): VariableOption => {
   const option = {
+    ...obj,  // preserve fields we do not normalize, e.g. 'properties' for multi-prop variables
     selected: convertToBoolean(obj.selected),
     text: isNonEmptyArray(obj.text) ? obj.text : convertToString(obj.text),
     value: isNonEmptyArray(obj.value) ? obj.value : convertToString(obj.value)
@@ -464,7 +509,7 @@ const mapStaticOptionsOrder = (obj?: any) => {
 
 const mapVariableType = (obj: any): VariableType => {
   if (isDefined(obj)) {
-    const values = ['query', 'adhoc', 'groupby', 'constant', 'datasource', 'interval', 'textbox', 'custom', 'system', 'snapshot']
+    const values = ['query', 'adhoc', 'groupby', 'constant', 'datasource', 'interval', 'textbox', 'custom', 'system', 'snapshot', 'switch']
     
     const s = convertToString(obj)
     if (values.includes(s)) {
@@ -481,6 +526,11 @@ const mapVariableType = (obj: any): VariableType => {
 // It's possible in the future these will be removed if no longer needed.
 const mapVariableModel = (obj: any): VariableModel => {
   const model = {
+    // spread the source so that per-type fields which are not in the base VariableModel
+    // interface are preserved: 'filters'/'baseFilters'/'defaultKeys' on adhoc variables,
+    // 'defaultValue' on groupby variables, and newer fields such as 'regexApplyTo'
+    // and 'valuesFormat'
+    ...obj,
     allValue: isDefined(obj.allValue) ? convertToString(obj.allValue) : undefined,
     allowCustomValue: isDefined(obj.allowCustomValue) ? convertToBoolean(obj.allowCustomValue) : undefined,
     current: isDefined(obj.current) ? mapVariableOption(obj.current) : undefined,
