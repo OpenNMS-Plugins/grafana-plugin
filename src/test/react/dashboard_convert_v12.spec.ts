@@ -683,3 +683,29 @@ describe('convertToV12 :: panel pluginVersion', () => {
     expect(panels[0].panels[0].pluginVersion).toEqual(pluginJson.info.version)
   })
 })
+
+describe('convertToV12 :: string array mapping', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it('should not leak the array index into a refresh interval that is not a string', () => {
+    const source = { timepicker: { refresh_intervals: ['5s', null, '1m'] } }
+
+    expect(convertJson(source).timepicker.refresh_intervals).toEqual(['5s', '', '1m'])
+  })
+
+  it('should not leak the array index into a dashboard link tag that is not a string', () => {
+    const source = { links: [{ type: 'dashboards', title: 'T', tags: ['prod', null, 'db'] }] }
+
+    expect(convertJson(source).links[0].tags).toEqual(['prod', '', 'db'])
+  })
+
+  it('should not leak the array index into an annotation target tag that is not a string', () => {
+    const source = {
+      annotations: {
+        list: [{ enable: true, iconColor: 'red', name: 'A', target: { tags: ['x', null, 'y'] } }]
+      }
+    }
+
+    expect(convertJson(source).annotations.list[0].target.tags).toEqual(['x', '', 'y'])
+  })
+})

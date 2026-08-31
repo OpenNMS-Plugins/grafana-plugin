@@ -5,6 +5,7 @@ import {
   AnnotationTarget,
   Dashboard,
   DashboardLink,
+  DashboardLinkType,
   DataQuery,
   DataSourceRef,
   defaultAnnotationQuery,
@@ -72,13 +73,15 @@ export const convertDashboardToV12 = (request: ConvertResponse, dashboardTitle: 
 
   const json = JSON.stringify(dashboard, null, 2)
 
-  return {
+  const response: ConvertResponse = {
     dashboardV9: request.dashboardV9,
     dashboardV12: dashboard,
     json: json,
     isError: false,
     targetPluginVersion: 12
-  } as ConvertResponse
+  }
+
+  return response
 }
 
 const mapRequires = (sourceRequires: any[]) => {
@@ -102,6 +105,14 @@ const mapRequires = (sourceRequires: any[]) => {
   return targetRequires
 }
 
+// Map an array out of the untyped source Json, giving the result a real element type so the
+// compiler can check it against the schema (a '.map' on an 'any' yields another 'any').
+// Note the callback takes only the item: passing a two-argument function such as
+// convertToString straight to Array.map would feed it the index as its second argument.
+const mapArray = <T>(obj: any, mapItem: (item: any) => T): T[] => {
+  return isNonEmptyArray(obj) ? (obj as any[]).map(item => mapItem(item)) : []
+}
+
 // source is a Grafana V9 dashboard compatible object.
 // We then map it into a Grafana 12 Dashboard typed object
 // See @grafana/schema, dashboard_types.gen.d.ts, interface Dashboard
@@ -120,7 +131,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
 
   if (isDefined(source.annotations) && isDefined(source.annotations.list) && isNonEmptyArray(source.annotations.list)) {
     dashboard.annotations = {
-      list: source.annotations.list.map(mapAnnotationQuery)
+      list: mapArray(source.annotations.list, mapAnnotationQuery)
     }
   }
 
@@ -149,7 +160,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
   }
 
   if (isNonEmptyArray(source.links)) {
-    dashboard.links = source.links.map(mapDashboardLink)
+    dashboard.links = mapArray(source.links, mapDashboardLink)
   }
 
   if (isDefined(source.liveNow)) {
@@ -181,12 +192,12 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
   }
 
   if (isNonEmptyArray(source.tags)) {
-    dashboard.tags = (source.tags as string[])?.map(s => convertToString(s)) ?? []
+    dashboard.tags = mapArray(source.tags, t => convertToString(t))
   }  
 
   if (isDefined(source.templating) && isNonEmptyArray(source.templating.list)) {
     dashboard.templating = {
-      list: source.templating.list.map(mapVariableModel)
+      list: mapArray(source.templating.list, mapVariableModel)
     }
   }
 
@@ -248,16 +259,16 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
       return null
     }
 
-    return { uid: nameOrVariable } as DataSourceRef
+    return { uid: nameOrVariable }
   }
 
   // full DataSourceRef object
   if (isDefined(obj.type) || isDefined(obj.uid) || isDefined(obj.apiVersion)) {
-    const datasource = {
+    const datasource: DataSourceRef = {
       apiVersion: isDefined(obj.apiVersion) ? convertToString(obj?.apiVersion) : undefined,
       type: isDefined(obj.type) ? convertToString(obj?.type) : undefined,
       uid: isDefined(obj.uid) ? convertToString(obj?.uid) : undefined
-    } as DataSourceRef
+    }
 
     return datasource
   }
@@ -265,16 +276,18 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
   return null
 }
 
-const mapAnnotationQuery = (obj: any) => {
-  let annotation = {
+type OpgAnnotationQuery = AnnotationQuery<AnnotationTarget & DataQuery>
+
+const mapAnnotationQuery = (obj: any): OpgAnnotationQuery => {
+  // Build the fields we normalize as a typed object so the compiler checks them against
+  // the schema, then merge it over the source so that datasource-specific query fields,
+  // and any fields added to the schema after this was written, are preserved.
+  const annotation: OpgAnnotationQuery = {
     // an annotation with no explicit 'enable' is on in Grafana, so do not switch it off here
-    enable: defaultAnnotationQuery.enable,
+    enable: defaultAnnotationQuery.enable ?? true,
     iconColor: '',
-    name: '',
-    // spread the source so that datasource-specific query fields, and any fields added
-    // to the schema after this was written, are preserved rather than dropped
-    ...obj
-  } as AnnotationQuery<AnnotationTarget & DataQuery>
+    name: ''
+  }
 
   if (isDefined(obj.builtIn)) {
     annotation.builtIn = convertToInt(obj.builtIn)
@@ -289,11 +302,13 @@ const mapAnnotationQuery = (obj: any) => {
   }
 
   if (isDefined(obj.filter)) {
-    annotation.filter = {
+    const filter: AnnotationPanelFilter = {
       exclude: convertToBoolean(obj.filter.exclude),
       // AnnotationPanelFilter.ids is a list of numeric panel ids
-      ids: isNonEmptyArray(obj.filter.ids) ? obj.filter.ids.map((id: any) => convertToInt(id)) : []
-    } as AnnotationPanelFilter
+      ids: mapArray(obj.filter.ids, id => convertToInt(id))
+    }
+
+    annotation.filter = filter
   }
 
   if (isDefined(obj.hide)) {
@@ -309,55 +324,60 @@ const mapAnnotationQuery = (obj: any) => {
   }
 
   if (isDefined(obj.target)) {
-    annotation.target = {
-      // for a non-Grafana datasource the target is the actual annotation query,
-      // so spread it to keep the datasource-specific fields
-      ...obj.target,
+    const target: AnnotationTarget & DataQuery = {
       limit: convertToInt(obj.target.limit, 100),  // 100 is the Grafana default annotation limit
       matchAny: convertToBoolean(obj.target.matchAny),
       refId: convertToString(obj.target.refId, 'A'),
-      tags: isNonEmptyArray(obj.target.tags) ? obj.target.tags.map(convertToString) : [],
-      type: convertToString(obj.target.type),
-    } as AnnotationTarget & DataQuery
+      tags: mapArray(obj.target.tags, tag => convertToString(tag)),
+      type: convertToString(obj.target.type)
+    }
+
+    // for a non-Grafana datasource the target is the actual annotation query,
+    // so keep the datasource-specific fields alongside the ones we normalize
+    annotation.target = { ...obj.target, ...target }
   }
 
   // note that 'type' is kind of deprecated
   if (isDefined(obj.type)) {
-    annotation.type = obj.type
+    annotation.type = convertToString(obj.type)
   }
 
-  return annotation
+  return { ...obj, ...annotation }
 }
 
 // convert to a DashboardLinkType which is 'link' or 'dashboards'
-const mapDashboardLinkType = (obj?: any) => {
+const dashboardLinkTypes: DashboardLinkType[] = ['link', 'dashboards']
+
+const mapDashboardLinkType = (obj?: any): DashboardLinkType => {
   if (isDefined(obj)) {
     const s = convertToString(obj)
 
-    if (['link', 'dashboards'].includes(s)) {
-      return s
+    const match = dashboardLinkTypes.find(t => t === s)
+
+    if (match) {
+      return match
     }
   }
 
   return 'link'
 }
 
-const mapDashboardLink = (obj: any) => {
-  const link = {
-    ...obj,  // preserve fields we do not normalize, e.g. the v12 'placement'
+const mapDashboardLink = (obj: any): DashboardLink => {
+  const link: DashboardLink = {
     asDropdown: convertToBoolean(obj.asDropdown),
     icon: convertToString(obj.icon),
     includeVars: convertToBoolean(obj.includeVars),
     keepTime: convertToBoolean(obj.keepTime),
-    tags: isNonEmptyArray(obj.tags) ? obj.tags.map(convertToString) : [],
+    tags: mapArray(obj.tags, tag => convertToString(tag)),
     targetBlank: convertToBoolean(obj.targetBlank),
     title: convertToString(obj.title),
     tooltip: convertToString(obj.tooltip),
     type: mapDashboardLinkType(obj.type),
     url: convertToString(obj.url)
-  } as DashboardLink
+  }
 
-  return link
+  // preserve fields we do not normalize, e.g. the v12 'placement'
+  return { ...obj, ...link }
 }
 
 // These are complex fields with lots of optional properties, we will assume they are correct
@@ -373,12 +393,12 @@ const mapFieldConfigSource = (obj: any): FieldConfigSource => {
 
 const mapGridPos = (obj: any): GridPos => {
   // fall back to Grafana's default panel size rather than a zero-sized panel
-  const pos = {
+  const pos: GridPos = {
     h: convertToInt(obj.h, defaultGridPos.h),
     w: convertToInt(obj.w, defaultGridPos.w),
     x: convertToInt(obj.x, defaultGridPos.x),
     y: convertToInt(obj.y, defaultGridPos.y)
-  } as GridPos
+  }
 
   // 'static' is optional; only pin the panel if the source actually said so
   if (isDefined(obj.static)) {
@@ -438,6 +458,18 @@ const mapPluginVersion = (obj: any) => {
   return isDefined(obj.pluginVersion) ? convertToString(obj.pluginVersion) : undefined
 }
 
+// Two places where a real dashboard is legitimately wider than the generated schema:
+// - 'datasource' is typed DataSourceRef, but null is valid and means "the default datasource"
+// - RowPanel.id is required, yet a row that has never been saved by Grafana has none, and
+//   RowPanel.panels is typed Panel[], while a (malformed but real) dashboard can nest a row
+type OpgPanel = Omit<Panel, 'datasource'> & { datasource?: DataSourceRef | null }
+
+type OpgRowPanel = Omit<RowPanel, 'datasource' | 'id' | 'panels'> & {
+  datasource?: DataSourceRef | null
+  id?: number
+  panels: Array<Panel | RowPanel>
+}
+
 const mapPanel = (source: any, options: ConvertOptions): Panel => {
   // The Angular 'graph' panel was removed in Grafana 11, so it cannot render under v12.
   // If the user asked for it, convert it to a 'timeseries' panel first, then map that.
@@ -445,8 +477,10 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     ? convertLegacyGraphToTimeSeriesPanel(source)
     : source
 
-  const panel = {
-    ...obj, // this will capture properties of specific panels, not contains in Panel base interface
+  // Build the fields we normalize as a typed object so the compiler checks them against the
+  // schema, then merge it over the source, which carries the properties of specific panel
+  // types that are not in the Panel base interface.
+  const panel: OpgPanel = {
     cacheTimeout: isDefined(obj.cacheTimeout) ? convertToString(obj.cacheTimeout) : undefined,
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     description: isDefined(obj.description) ? convertToString(obj.description) : undefined,
@@ -456,7 +490,7 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
     interval: isDefined(obj.interval) ? convertToString(obj.interval) : undefined,
     libraryPanel: obj.libraryPanel, // may be undefined. we are not bothering to parse further
-    links: isNonEmptyArray(obj.links) ? obj.links.map(mapDashboardLink) : [],
+    links: mapArray(obj.links, mapDashboardLink),
     maxDataPoints: isDefined(obj.maxDataPoints) ? convertToInt(obj.maxDataPoints) : undefined,
     maxPerRow: isDefined(obj.maxPerRow) ? convertToInt(obj.maxPerRow) : undefined,
     options: obj.options,  // may be undefined. most likely this is our OPG options, we won't parse further here
@@ -470,15 +504,14 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
     transformations: isNonEmptyArray(obj.transformations) ? obj.transformations : [],  // not bothering to parse these further into DataTransformerConfig objects
     transparent: isDefined(obj.transparent) ? convertToBoolean(obj.transparent) : undefined,
-    type: convertToString(obj.type) // panel plugin in
-  } as Panel
+    type: convertToString(obj.type) // panel plugin id
+  }
 
-  return panel
+  return { ...obj, ...panel }
 }
 
 const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
-  const row = {
-    ...obj, // this will capture properties of specific panels, not contains in RowPanel base interface
+  const row: OpgRowPanel = {
     collapsed: convertToBoolean(obj.collapsed),
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     gridPos: isDefined(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
@@ -487,9 +520,10 @@ const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
     type: 'row'
-  } as RowPanel
+  }
 
-  return row
+  // merge over the source, which carries any properties not in the RowPanel base interface
+  return { ...obj, ...row }
 }
 
 const mapDashboardSnapshot = (obj: any) => {
@@ -519,52 +553,59 @@ const mapVariableOptionValue = (obj: any) => {
 }
 
 const mapVariableOption = (obj: any): VariableOption => {
-  const option = {
-    ...obj,  // preserve fields we do not normalize, e.g. 'properties' for multi-prop variables
+  const option: VariableOption = {
     selected: isDefined(obj.selected) ? convertToBoolean(obj.selected) : undefined,
     text: mapVariableOptionValue(obj.text),
     value: mapVariableOptionValue(obj.value)
-  } as VariableOption
+  }
 
-  return option
+  // preserve fields we do not normalize, e.g. 'properties' for multi-prop variables
+  return { ...obj, ...option }
 }
 
-const mapStaticOptionsOrder = (obj?: any) => {
+type StaticOptionsOrder = NonNullable<VariableModel['staticOptionsOrder']>
+
+const staticOptionsOrders: StaticOptionsOrder[] = ['before', 'after', 'sorted']
+
+const mapStaticOptionsOrder = (obj?: any): StaticOptionsOrder | undefined => {
   if (isDefined(obj)) {
     const s = convertToString(obj)
 
-    if (['before', 'after', 'sorted'].includes(s)) {
-      return s
-    }
+    return staticOptionsOrders.find(o => o === s)
   }
 
   return undefined
 }
 
+const variableTypes: VariableType[] = [
+  'query', 'adhoc', 'groupby', 'constant', 'datasource', 'interval',
+  'textbox', 'custom', 'system', 'snapshot', 'switch'
+]
+
 const mapVariableType = (obj: any): VariableType => {
   if (isDefined(obj)) {
-    const values = ['query', 'adhoc', 'groupby', 'constant', 'datasource', 'interval', 'textbox', 'custom', 'system', 'snapshot', 'switch']
-    
     const s = convertToString(obj)
-    if (values.includes(s)) {
-      return s as VariableType ?? 'query'
-    }
+
+    return variableTypes.find(t => t === s) ?? 'query'
   }
 
   return 'query'
 }
 
-// We don't do a lot of extensive parsing here, just make sure it has the same shape as a VariableModel
-// We do include some properties like definition, tagsQuery, tagValuesQuery which are not required but are used by our OPG variables,
-// so that they will be preserved in the conversion
+// A few properties our OPG variables carry are not part of the Grafana VariableModel
+// interface. We still normalize them so they survive the conversion.
 // It's possible in the future these will be removed if no longer needed.
+interface OpgVariableModel extends VariableModel {
+  definition?: string
+  queryValue?: string
+  tagsQuery?: string
+  tagValuesQuery?: string
+  useTags?: boolean
+}
+
+// We don't do a lot of extensive parsing here, just make sure it has the same shape as a VariableModel
 const mapVariableModel = (obj: any): VariableModel => {
-  const model = {
-    // spread the source so that per-type fields which are not in the base VariableModel
-    // interface are preserved: 'filters'/'baseFilters'/'defaultKeys' on adhoc variables,
-    // 'defaultValue' on groupby variables, and newer fields such as 'regexApplyTo'
-    // and 'valuesFormat'
-    ...obj,
+  const model: OpgVariableModel = {
     allValue: isDefined(obj.allValue) ? convertToString(obj.allValue) : undefined,
     allowCustomValue: isDefined(obj.allowCustomValue) ? convertToBoolean(obj.allowCustomValue) : undefined,
     current: isDefined(obj.current) ? mapVariableOption(obj.current) : undefined,
@@ -576,22 +617,26 @@ const mapVariableModel = (obj: any): VariableModel => {
     label: isDefined(obj.label) ? convertToString(obj.label) : undefined,
     multi: isDefined(obj.multi) ? convertToBoolean(obj.multi) : undefined,
     name: convertToString(obj.name),
-    options: isNonEmptyArray(obj.options) ? obj.options.map(mapVariableOption) : [],
+    options: mapArray(obj.options, mapVariableOption),
     query: obj.query,  // not bothering to parse this further,
     queryValue: isDefined(obj.queryValue) ? convertToString(obj.queryValue) : undefined,
     refresh: isDefined(obj.refresh) && isEnumValueOfType(VariableRefresh, obj.refresh) ? convertToInt(obj.refresh) : undefined,
     regex: isDefined(obj.regex) ? convertToString(obj.regex) : undefined,
     skipUrlSync: isDefined(obj.skipUrlSync) ? convertToBoolean(obj.skipUrlSync) : undefined,
     sort: isDefined(obj.sort) && isEnumValueOfType(VariableSort, obj.sort) ? convertToInt(obj.sort) : undefined,
-    staticOptions: isNonEmptyArray(obj.staticOptions) ? obj.staticOptions.map(mapVariableOption) : undefined,
+    staticOptions: isNonEmptyArray(obj.staticOptions) ? mapArray(obj.staticOptions, mapVariableOption) : undefined,
     staticOptionsOrder: mapStaticOptionsOrder(obj.staticOptionsOrder),
     tagsQuery: isDefined(obj.tagsQuery) ? convertToString(obj.tagsQuery) : undefined,
     tagValuesQuery: isDefined(obj.tagValuesQuery) ? convertToString(obj.tagValuesQuery) : undefined,
     type: isDefined(obj.type) ? mapVariableType(obj.type) : 'query',
     useTags: isDefined(obj.useTags) ? convertToBoolean(obj.useTags) : undefined
-  } as VariableModel
+  }
 
-  return model
+  // merge over the source so that per-type fields which are not in the base VariableModel
+  // interface are preserved: 'filters'/'baseFilters'/'defaultKeys' on adhoc variables,
+  // 'defaultValue' on groupby variables, and newer fields such as 'regexApplyTo'
+  // and 'valuesFormat'
+  return { ...obj, ...model }
 }
 
 const mapTimeOption = (obj: any): TimeOption => {
@@ -609,11 +654,11 @@ const mapTimeOptionsFromStrings = (options: string[]): TimeOption[] => {
 
   for (const s of options) {
     if (s) {
-      const timeOption = {
+      const timeOption: TimeOption = {
         display: s,
         from: `now-${s}`,
         to: 'now'
-      } as TimeOption
+      }
 
       timeOptions.push(timeOption)
     }
@@ -626,7 +671,7 @@ const mapTimePickerConfig = (obj: any): TimePickerConfig => {
   // if obj has 'quick_ranges', use that and strongly type it
   // if obj has 'time_options', this is a list of strings of intervals like ['5m', '15m', '1hr', '30d'], try to parse to 'quick_ranges' TimeOption[]
 
-  let quick_ranges = isNonEmptyArray(obj.quick_ranges) ? obj.quick_ranges.map(mapTimeOption) : []
+  let quick_ranges = mapArray(obj.quick_ranges, mapTimeOption)
 
   if (!isDefined(obj.quick_ranges) && isNonEmptyArray(obj.time_options)) {
     quick_ranges = mapTimeOptionsFromStrings(obj.time_options)
@@ -635,12 +680,12 @@ const mapTimePickerConfig = (obj: any): TimePickerConfig => {
   // Leave 'quick_ranges' and 'refresh_intervals' out when the source has none: an empty
   // array is not "use the defaults", it means there are no options, which would blank the
   // refresh picker and the quick range list.
-  const config = {
+  const config: TimePickerConfig = {
     hidden: isDefined(obj.hidden) ? convertToBoolean(obj.hidden) : undefined,
     nowDelay: isDefined(obj.nowDelay) ? convertToString(obj.nowDelay) : undefined,
     quick_ranges: isNonEmptyArray(quick_ranges) ? quick_ranges : undefined,
-    refresh_intervals: isNonEmptyArray(obj.refresh_intervals) ? obj.refresh_intervals.map(convertToString) : undefined,
-  } as TimePickerConfig
+    refresh_intervals: isNonEmptyArray(obj.refresh_intervals) ? mapArray(obj.refresh_intervals, i => convertToString(i)) : undefined,
+  }
 
   return config
 }
