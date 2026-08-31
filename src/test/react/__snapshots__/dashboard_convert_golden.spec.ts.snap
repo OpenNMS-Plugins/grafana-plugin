@@ -70,7 +70,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
     {
       "datasource": {
         "type": "opennms-performance-datasource",
-        "uid": "onms-perf",
+        "uid": "$datasource",
       },
       "gridPos": {
         "h": 9,
@@ -145,7 +145,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
     {
       "datasource": {
         "type": "opennms-performance-datasource",
-        "uid": "onms-perf",
+        "uid": "$datasource",
       },
       "fieldConfig": {
         "defaults": {
@@ -355,7 +355,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
         "datasource": {
           "type": "opennms-performance-datasource",
-          "uid": "onms-perf",
+          "uid": "$datasource",
         },
         "definition": "nodeFilter(label like '*')",
         "hide": 0,
@@ -480,7 +480,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
-        "uid": "onms-perf",
+        "uid": "$datasource",
       },
       "description": undefined,
       "fieldConfig": undefined,
@@ -572,7 +572,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
-        "uid": "onms-perf",
+        "uid": "$datasource",
       },
       "description": undefined,
       "fieldConfig": {
@@ -833,7 +833,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "datasource": {
           "apiVersion": undefined,
           "type": "opennms-performance-datasource",
-          "uid": "onms-perf",
+          "uid": "$datasource",
         },
         "definition": "nodeFilter(label like '*')",
         "description": undefined,
@@ -984,7 +984,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
-        "uid": "onms-perf",
+        "uid": "$datasource",
       },
       "description": undefined,
       "fieldConfig": {
@@ -1123,7 +1123,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
-        "uid": "onms-perf",
+        "uid": "$datasource",
       },
       "description": undefined,
       "fieldConfig": {
@@ -1448,7 +1448,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "datasource": {
           "apiVersion": undefined,
           "type": "opennms-performance-datasource",
-          "uid": "onms-perf",
+          "uid": "$datasource",
         },
         "definition": "nodeFilter(label like '*')",
         "description": undefined,

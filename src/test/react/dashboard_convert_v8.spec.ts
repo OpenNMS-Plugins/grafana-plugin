@@ -68,19 +68,58 @@ describe('convertFromV8 :: datasource template variable', () => {
     expect(result.dashboardV9.templating.list[0].query).toEqual('opennms-performance-datasource')
   })
 
-  // NOTE: this pins current behaviour, which does not match updateTargetDatasource's stated
-  // intent of "retain the original uid if it's a template variable". That check reads
-  // source.datasource.uid, which is undefined when the datasource is the bare string
-  // '$datasource' rather than { uid: '$datasource' }, so the variable is resolved away to a
-  // concrete uid from the converting machine. See the object form below, which does retain it.
-  it('should resolve a bare string datasource variable to the v9 datasource uid', () => {
+  it('should retain the variable when the datasource is the bare string form', () => {
     const result = dashboardConvert(
       JSON.stringify(helmDashboardWithDatasourceVariable), 8, 9, '', defaultOptions)
 
     expect(result.dashboardV9.panels[0].datasource).toEqual({
       type: 'opennms-performance-datasource',
-      uid: 'onms-perf'
+      uid: '$datasource'
     })
+  })
+
+  it('should retain the ${} form of the variable', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [{ ...helmDashboardWithDatasourceVariable.panels[0], datasource: '${datasource}' }]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].datasource.uid).toEqual('${datasource}')
+  })
+
+  it('should retain the variable on a target as well as on the panel', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [
+        {
+          ...helmDashboardWithDatasourceVariable.panels[0],
+          datasource: undefined,
+          targets: [{ refId: 'A', datasource: '$datasource', type: 'attribute', nodeId: '1' }]
+        }
+      ]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].targets[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: '$datasource'
+    })
+  })
+
+  // A bare variable name with no $ is not a usable Grafana reference, so it is treated as a
+  // datasource name and resolved to the concrete uid rather than retained.
+  it('should resolve a name with no variable sigil to the concrete datasource uid', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [{ ...helmDashboardWithDatasourceVariable.panels[0], datasource: 'datasource' }]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].datasource.uid).toEqual('onms-perf')
   })
 
   it('should retain the variable when the datasource is the object form', () => {

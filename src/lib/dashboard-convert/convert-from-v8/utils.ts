@@ -1,5 +1,6 @@
 import { SourceDatasourceInfo } from './datasources';
 import { DatasourceMetadata, DsType } from '../types'
+import { isTemplateVariableCandidate } from '../../utils'
 
 // add 'name', '$name' and '${name}' variations
 export const addVariationsToMap = (varName: string, dsType: DsType,  datasourceMap: Map<string,DsType>) => {
@@ -83,7 +84,7 @@ export const updateTargetDatasource = (source: any, sourceDsInfo: SourceDatasour
 
     if (dsMeta) {
       // retain the uid if it's a template variable
-      const dsUid = sourceDsInfo.isTemplateVariable && !!source.datasource.uid ? source.datasource.uid : dsMeta.uid
+      const dsUid = getTemplateVariableUid(source.datasource) ?? dsMeta.uid
 
       source.datasource = {
         type: dsMeta.type,
@@ -91,4 +92,21 @@ export const updateTargetDatasource = (source: any, sourceDsInfo: SourceDatasour
       }
     }
   }
+}
+
+// If the datasource points at a template variable, that variable is the uid to keep, so that the
+// converted dashboard still follows the variable instead of being pinned to one datasource.
+// A uid from the converting machine would not exist on the Grafana the dashboard is imported into.
+//
+// The datasource may be the object form, { uid: '$datasource' }, or the bare string
+// '$datasource', which has no 'uid' property to read.
+// A string with no '$' is a datasource name rather than a variable, so it is not retained.
+const getTemplateVariableUid = (datasource: any): string | undefined => {
+  // typeof rather than the isString helper: that also accepts a String wrapper object, and
+  // everything here comes from JSON.parse, so it is always a primitive
+  if (typeof datasource === 'string') {
+    return isTemplateVariableCandidate(datasource) ? datasource : undefined
+  }
+
+  return datasource?.uid && isTemplateVariableCandidate(datasource.uid) ? datasource.uid : undefined
 }
