@@ -50,7 +50,10 @@ export const useAlarmTableSelection = (doubleClicked) => {
                     newSelectedAlarmIds.add(rowAlarmIds[i])
                 }
 
-                setSoloAlarmId(0)
+                // a range is selected, so no single alarm is soloed. -1 is the
+                // 'nothing selected' sentinel used throughout; 0 would be passed
+                // on to useAlarm and fetched as the invalid alarm id 0
+                setSoloAlarmId(-1)
             } else if (fromContext && alarmId > 0) {
                 // user right-clicked on a row, toggling selection for that row
                 const countSelected = previousState.selectedAlarmIds.size

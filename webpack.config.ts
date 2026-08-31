@@ -15,6 +15,14 @@ const config = async (env): Promise<Configuration> => {
     output: {
       hashFunction: 'sha256',
     },
+    // Grafana serves flot to plugins from its SystemJS shared-dependency map, the
+    // same way it serves 'jquery' (which .config/bundler/externals.ts already lists).
+    // The alarm-histogram and flow-histogram panels import these for their side
+    // effect, to make Grafana attach flot to the shared jQuery so `$.plot` exists.
+    externals: [
+      'jquery.flot',
+      'jquery.flot.stack',
+    ],
     plugins: [
       // add README.md to datasources, this is what is displayed when clicking the "?" next to
       // a datasource in the query editor.

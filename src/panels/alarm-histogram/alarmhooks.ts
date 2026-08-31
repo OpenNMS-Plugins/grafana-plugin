@@ -107,7 +107,6 @@ export const useAlarmHooks = () => {
                 }
             },
             [axis]: {
-                mode: 'categories',
                 tickLength: 0,
                 autoscaleMargin: 0.02,
                 ticks: getTicks(group)
