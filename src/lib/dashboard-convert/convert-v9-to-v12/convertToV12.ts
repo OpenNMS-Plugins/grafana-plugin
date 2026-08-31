@@ -95,8 +95,10 @@ const mapRequires = (sourceRequires: any[]) => {
       isDefined(r.id) &&
       typeof r.id === 'string' &&
       String(r.id).startsWith('opennms-')) {
-      // set on the copy; mutating 'r' would corrupt the caller's source dashboard
-      obj['version'] = 12
+      // '__requires[].version' is the minimum plugin version the dashboard needs, and Grafana
+      // reads it as a semver string, so use the plugin's own version rather than a bare 12.
+      // Set it on the copy; mutating 'r' would corrupt the caller's source dashboard.
+      obj['version'] = pluginJson.info.version
     }
 
     targetRequires.push(obj)
@@ -124,7 +126,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
     dashboard['__inputs'] = source['__inputs']
   }
 
-  // leave __requires as-is, except if it refers to an opennms datasource, set the 'version' to 12
+  // leave __requires as-is, except that an opennms entry gets the current plugin version
   if (isNonEmptyArray(source['__requires'])) {
     dashboard['__requires'] = mapRequires(source['__requires'])
   }

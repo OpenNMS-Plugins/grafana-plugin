@@ -25,10 +25,21 @@ describe('convertToV12 :: __requires', () => {
     { type: 'datasource', id: 'opennms-performance-datasource', name: 'OpenNMS Performance', version: '1.0.0' }
   ]
 
-  it('should bump the version of OpenNMS entries in the converted output', () => {
+  it('should set OpenNMS entries to the plugin version, as a semver string', () => {
     const result = convert({ __requires: [...openNmsRequires.map(r => ({ ...r }))] })
 
-    expect(result.dashboardV12!['__requires'][0].version).toEqual(12)
+    expect(result.dashboardV12!['__requires'][0].version).toEqual(pluginJson.info.version)
+    expect(typeof result.dashboardV12!['__requires'][0].version).toEqual('string')
+  })
+
+  it('should set OpenNMS panel entries as well as datasource entries', () => {
+    const source = {
+      __requires: [
+        { type: 'panel', id: 'opennms-alarm-table-panel', name: 'Alarm Table', version: '' }
+      ]
+    }
+
+    expect(convert(source).dashboardV12!['__requires'][0].version).toEqual(pluginJson.info.version)
   })
 
   it('should not mutate the source dashboard', () => {

@@ -424,13 +424,13 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "id": "opennms-performance-datasource",
       "name": "OpenNMS Performance",
       "type": "datasource",
-      "version": 12,
+      "version": "12.0.2-SNAPSHOT",
     },
     {
       "id": "opennms-helm-alarm-table-panel",
       "name": "Alarm Table",
       "type": "panel",
-      "version": 12,
+      "version": "12.0.2-SNAPSHOT",
     },
   ],
   "annotations": {
@@ -928,13 +928,13 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "id": "opennms-performance-datasource",
       "name": "OpenNMS Performance",
       "type": "datasource",
-      "version": 12,
+      "version": "12.0.2-SNAPSHOT",
     },
     {
       "id": "opennms-helm-alarm-table-panel",
       "name": "Alarm Table",
       "type": "panel",
-      "version": 12,
+      "version": "12.0.2-SNAPSHOT",
     },
   ],
   "annotations": {
