@@ -72,7 +72,8 @@ const mapRequires = (sourceRequires: any[]) => {
       isDefined(r.id) &&
       typeof r.id === 'string' &&
       String(r.id).startsWith('opennms-')) {
-      r['version'] = 12
+      // set on the copy; mutating 'r' would corrupt the caller's source dashboard
+      obj['version'] = 12
     }
 
     targetRequires.push(obj)
@@ -105,6 +106,10 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
 
   if (isDefined(source.description)) {
     dashboard.description = convertToString(source.description)
+  }
+
+  if (isDefined(source.editable)) {
+    dashboard.editable = convertToBoolean(source.editable, dashboard.editable)
   }
 
   if (isDefined(source.fiscalYearStartMonth)) {
@@ -268,7 +273,8 @@ const mapAnnotationQuery = (obj: any) => {
   if (isDefined(obj.filter)) {
     annotation.filter = {
       exclude: convertToBoolean(obj.filter.exclude),
-      ids: isNonEmptyArray(obj.filter.ids) ? obj.filter.ids.map(convertToString) : []
+      // AnnotationPanelFilter.ids is a list of numeric panel ids
+      ids: isNonEmptyArray(obj.filter.ids) ? obj.filter.ids.map((id: any) => convertToInt(id)) : []
     } as AnnotationPanelFilter
   }
 
@@ -286,7 +292,7 @@ const mapAnnotationQuery = (obj: any) => {
 
   if (isDefined(obj.target)) {
     annotation.target = {
-      limit: convertToInt(obj.target.number),
+      limit: convertToInt(obj.target.limit, 100),  // 100 is the Grafana default annotation limit
       matchAny: convertToBoolean(obj.target.matchAny),
       refId: convertToString(obj.target.refId, 'A'),
       tags: isNonEmptyArray(obj.target.tags) ? obj.target.tags.map(convertToString) : [],

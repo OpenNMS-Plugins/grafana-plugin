@@ -11,28 +11,32 @@ export const isNonEmptyArray = (obj?: any) => {
 }
 
 // check if a value is a valid string or numeric value for a given enum
+// Note that TypeScript numeric enums also have reverse mappings, so Object.values()
+// yields both the names and the numbers (e.g. ['dontHide', ..., 0, 1, 2, 3]).
+// Only the numbers are valid values, so exclude the names for numeric enums.
 export const isEnumValueOfType = <T extends Record<string, string | number>>(
   enumObject: T, value: string | number
 ): boolean => {
-  return Object.values(enumObject).includes(value)
+  const values = Object.values(enumObject)
+  const isNumericEnum = values.some(v => typeof v === 'number')
+
+  return values
+    .filter(v => !isNumericEnum || typeof v === 'number')
+    .includes(value)
 }
 
 export const convertToInt = (source?: any, defaultValue?: number) => {
-  let val: number = defaultValue ?? 0
+  const fallback: number = defaultValue ?? 0
 
   if (source !== undefined) {
-    if (typeof source === 'string') {
-      val = Number.parseInt(source, 10)
-    } else {
-      val = Number(source)
-    }
+    const val = typeof source === 'string' ? Number.parseInt(source, 10) : Number(source)
 
     if (!Number.isNaN(val)) {
       return val
     }
   }
 
-  return val
+  return fallback
 }
 
 export const convertToNumber = (source?: any, defaultValue?: number) => {
