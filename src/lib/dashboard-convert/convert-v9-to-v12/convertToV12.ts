@@ -7,6 +7,9 @@ import {
   DashboardLink,
   DataQuery,
   DataSourceRef,
+  defaultAnnotationQuery,
+  defaultDashboard,
+  defaultGridPos,
   FieldConfigSource,
   GridPos,
   Panel,
@@ -144,10 +147,6 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
     }
   }
 
-  if (isDefined(source.id)) {
-    dashboard.id = source.id === null ? null : convertToInt(source.id)
-  }
-
   if (isNonEmptyArray(source.links)) {
     dashboard.links = source.links.map(mapDashboardLink)
   }
@@ -212,9 +211,6 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
     dashboard.title = convertToString(source.title)
   }
 
-  // remove uid, Grafana will create a new unique one when user imports the Dashboard json
-  delete dashboard.uid
-
   if (isDefined(source.version)) {
     dashboard.version = convertToInt(source.version, 1)
   } else {
@@ -270,7 +266,8 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
 
 const mapAnnotationQuery = (obj: any) => {
   let annotation = {
-    enable: false,
+    // an annotation with no explicit 'enable' is on in Grafana, so do not switch it off here
+    enable: defaultAnnotationQuery.enable,
     iconColor: '',
     name: '',
     // spread the source so that datasource-specific query fields, and any fields added
@@ -374,13 +371,18 @@ const mapFieldConfigSource = (obj: any): FieldConfigSource => {
 }
 
 const mapGridPos = (obj: any): GridPos => {
+  // fall back to Grafana's default panel size rather than a zero-sized panel
   const pos = {
-    h: convertToInt(obj.h),
-    static: convertToBoolean(obj.static),
-    w: convertToInt(obj.w),
-    x: convertToInt(obj.x),
-    y: convertToInt(obj.y)
+    h: convertToInt(obj.h, defaultGridPos.h),
+    w: convertToInt(obj.w, defaultGridPos.w),
+    x: convertToInt(obj.x, defaultGridPos.x),
+    y: convertToInt(obj.y, defaultGridPos.y)
   } as GridPos
+
+  // 'static' is optional; only pin the panel if the source actually said so
+  if (isDefined(obj.static)) {
+    pos.static = convertToBoolean(obj.static)
+  }
 
   return pos
 }
@@ -494,12 +496,19 @@ const mapDashboardSnapshot = (obj: any) => {
   return snapshot
 }
 
+// 'text' and 'value' are a string, or an array of strings for a multi-value variable.
+// An empty array is a valid selection (a multi variable with nothing selected), so key off
+// the type rather than off the array being non-empty.
+const mapVariableOptionValue = (obj: any) => {
+  return Array.isArray(obj) ? obj.map((v: any) => convertToString(v)) : convertToString(obj)
+}
+
 const mapVariableOption = (obj: any): VariableOption => {
   const option = {
     ...obj,  // preserve fields we do not normalize, e.g. 'properties' for multi-prop variables
-    selected: convertToBoolean(obj.selected),
-    text: isNonEmptyArray(obj.text) ? obj.text : convertToString(obj.text),
-    value: isNonEmptyArray(obj.value) ? obj.value : convertToString(obj.value)
+    selected: isDefined(obj.selected) ? convertToBoolean(obj.selected) : undefined,
+    text: mapVariableOptionValue(obj.text),
+    value: mapVariableOptionValue(obj.value)
   } as VariableOption
 
   return option
@@ -559,7 +568,7 @@ const mapVariableModel = (obj: any): VariableModel => {
     regex: isDefined(obj.regex) ? convertToString(obj.regex) : undefined,
     skipUrlSync: isDefined(obj.skipUrlSync) ? convertToBoolean(obj.skipUrlSync) : undefined,
     sort: isDefined(obj.sort) && isEnumValueOfType(VariableSort, obj.sort) ? convertToInt(obj.sort) : undefined,
-    staticOptions: isNonEmptyArray(obj.staticOptions) ? obj.staticOptions.map(mapVariableOption) : [],
+    staticOptions: isNonEmptyArray(obj.staticOptions) ? obj.staticOptions.map(mapVariableOption) : undefined,
     staticOptionsOrder: mapStaticOptionsOrder(obj.staticOptionsOrder),
     tagsQuery: isDefined(obj.tagsQuery) ? convertToString(obj.tagsQuery) : undefined,
     tagValuesQuery: isDefined(obj.tagValuesQuery) ? convertToString(obj.tagValuesQuery) : undefined,
@@ -608,32 +617,32 @@ const mapTimePickerConfig = (obj: any): TimePickerConfig => {
     quick_ranges = mapTimeOptionsFromStrings(obj.time_options)
   }
 
+  // Leave 'quick_ranges' and 'refresh_intervals' out when the source has none: an empty
+  // array is not "use the defaults", it means there are no options, which would blank the
+  // refresh picker and the quick range list.
   const config = {
     hidden: isDefined(obj.hidden) ? convertToBoolean(obj.hidden) : undefined,
     nowDelay: isDefined(obj.nowDelay) ? convertToString(obj.nowDelay) : undefined,
-    quick_ranges,
-    refresh_intervals: isNonEmptyArray(obj.refresh_intervals) ? obj.refresh_intervals.map(convertToString) : [],
+    quick_ranges: isNonEmptyArray(quick_ranges) ? quick_ranges : undefined,
+    refresh_intervals: isNonEmptyArray(obj.refresh_intervals) ? obj.refresh_intervals.map(convertToString) : undefined,
   } as TimePickerConfig
 
   return config
 }
 
+// Build the Dashboard we map the source onto.
+// Only seed a field here when Grafana itself has a default for it, or when the Dashboard
+// interface requires it. Anything else must stay absent unless the source supplies it:
+// inventing a value (a refresh interval, a timezone, liveNow) silently changes how the
+// converted dashboard behaves. See defaultDashboard in @grafana/schema.
 const createEmptyV12Dashboard = () => {
   const dashboard: Dashboard = {
     /**
      * Contains the list of annotations that are associated with the dashboard.
-     * Annotations are used to overlay event markers and overlay event tags on graphs.
-     * Grafana comes with a native annotation store and the ability to add annotation events directly from the graph panel or via the HTTP API.
-     * See https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/annotate-visualizations/
      */
-    // annotations?: AnnotationContainer;
     annotations: {
       list: []
     },
-    /**
-     * Description of dashboard.
-     */
-    description: '',
     /**
      * Whether a dashboard is editable or not.
      */
@@ -643,55 +652,32 @@ const createEmptyV12Dashboard = () => {
      */
     fiscalYearStartMonth: 0,
     /**
-     * ID of a dashboard imported from the https://grafana.com/grafana/dashboards/ portal
-     */
-    gnetId: '',
-    /**
      * Configuration of dashboard cursor sync behavior.
      * Accepted values are 0 (sync turned off), 1 (shared crosshair), 2 (shared crosshair and tooltip).
      */
     graphTooltip: DashboardCursorSync.Off,
     /**
-     * Unique numeric identifier for the dashboard.
-     * `id` is internal to a specific Grafana instance. `uid` should be used to identify a dashboard across Grafana instances.
+     * 'id' and 'uid' identify the dashboard within the Grafana instance it came from, so
+     * neither should be carried over. Grafana's own "export for sharing externally" nulls
+     * the id and omits the uid, and the importing instance then assigns its own.
      */
-    id: 0,
+    id: null,
     /**
      * Links with references to other dashboards or external websites.
      */
     links: [],
     /**
-     * When set to true, the dashboard will redraw panels at an interval matching the pixel width.
-     * This will keep data "moving left" regardless of the query refresh rate. This setting helps
-     * avoid dashboards presenting stale live data
-     */
-    liveNow: true,
-    /**
      * List of dashboard panels
      */
     panels: [],
     /**
-     * When set to true, the dashboard will load all panels in the dashboard when it's loaded.
-     */
-    preload: true,
-    /**
-     * Refresh rate of dashboard. Represented via interval string, e.g. "5s", "1m", "1h", "1d".
-     */
-    refresh: '1m',
-    /**
-     * This property should only be used in dashboards defined by plugins.  It is a quick check
-     * to see if the version has changed since the last time.
-     */
-    revision: 0,
-    /**
      * Version of the JSON schema, incremented each time a Grafana update brings
      * changes to said schema.
+     * This is the only required Dashboard field. When the source has one we keep it, so that
+     * Grafana runs just the migrations it still needs; this fallback is for a source that has
+     * none, where a 0 would make Grafana replay every migration from the beginning.
      */
-    schemaVersion: 0,
-    /**
-     * Snapshot options. They are present only if the dashboard is a snapshot.
-     */
-    // snapshot?: { }
+    schemaVersion: defaultDashboard.schemaVersion,
     /**
      * Tags associated with dashboard.
      */
@@ -700,9 +686,6 @@ const createEmptyV12Dashboard = () => {
      * Configured template variables
      */
     templating: {
-        /**
-         * List of configured template variables with their saved values along with some other metadata
-         */
         list: []
     },
     /**
@@ -715,29 +698,20 @@ const createEmptyV12Dashboard = () => {
     },
     /**
      * Configuration of the time picker shown at the top of a dashboard.
-     * a TimePickerConfig
      */
     timepicker: {},
     /**
      * Timezone of dashboard. Accepted values are IANA TZDB zone ID or "browser" or "utc".
      */
-    timezone: 'utc',
+    timezone: defaultDashboard.timezone,
     /**
      * Title of dashboard.
      */
     title: '',
     /**
-     * Unique dashboard identifier that can be generated by anyone. string (8-40)
-     */
-    uid: '',
-    /**
      * Version of the dashboard, incremented each time the dashboard is updated.
      */
-    version: 0,
-    /**
-     * Day when the week starts. Expressed by the name of the day in lowercase, e.g. "monday".
-     */
-    weekStart: 'monday'
+    version: 1
   }
 
   return dashboard

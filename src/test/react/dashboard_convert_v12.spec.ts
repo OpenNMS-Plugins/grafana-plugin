@@ -1,4 +1,4 @@
-import { AnnotationTarget } from '@grafana/schema'
+import { AnnotationTarget, defaultDashboard, defaultGridPos } from '@grafana/schema'
 import { convertDashboardToV12 } from '../../lib/dashboard-convert/convert-v9-to-v12'
 import { ConvertOptions, ConvertResponse } from '../../lib/dashboard-convert/types'
 
@@ -489,5 +489,154 @@ describe('convertToV12 :: graph to timeseries panel time overrides', () => {
     expect(panel.type).toEqual('timeseries')
     expect(panel.timeFrom).toEqual('now-2d')
     expect(panel.timeShift).toEqual('1d')
+  })
+})
+
+describe('convertToV12 :: dashboard defaults for fields the source omits', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it('should default schemaVersion to the version @grafana/schema provides, not 0', () => {
+    expect(convertJson({}).schemaVersion).toEqual(defaultDashboard.schemaVersion)
+    expect(convertJson({}).schemaVersion).toBeGreaterThan(0)
+  })
+
+  it('should preserve the source schemaVersion so Grafana runs only the migrations it needs', () => {
+    expect(convertJson({ schemaVersion: 36 }).schemaVersion).toEqual(36)
+  })
+
+  it('should not invent a refresh interval', () => {
+    expect(convertJson({})).not.toHaveProperty('refresh')
+  })
+
+  it('should not turn on liveNow or preload', () => {
+    expect(convertJson({})).not.toHaveProperty('liveNow')
+    expect(convertJson({})).not.toHaveProperty('preload')
+  })
+
+  it('should default the timezone to browser rather than utc', () => {
+    expect(convertJson({}).timezone).toEqual('browser')
+  })
+
+  it('should not invent a weekStart', () => {
+    expect(convertJson({})).not.toHaveProperty('weekStart')
+  })
+
+  it('should not emit empty description, gnetId or revision placeholders', () => {
+    const json = convertJson({})
+
+    expect(json).not.toHaveProperty('description')
+    expect(json).not.toHaveProperty('gnetId')
+    expect(json).not.toHaveProperty('revision')
+  })
+
+  it('should null the id and drop the uid so the importing Grafana assigns its own', () => {
+    const json = convertJson({ id: 47, uid: 'abc12345' })
+
+    expect(json.id).toBeNull()
+    expect(json).not.toHaveProperty('uid')
+  })
+
+  it('should still honour the values the source does set', () => {
+    const json = convertJson({
+      refresh: '30s',
+      liveNow: true,
+      preload: true,
+      timezone: 'utc',
+      weekStart: 'sunday',
+      description: 'A dashboard',
+      revision: 3
+    })
+
+    expect(json.refresh).toEqual('30s')
+    expect(json.liveNow).toEqual(true)
+    expect(json.preload).toEqual(true)
+    expect(json.timezone).toEqual('utc')
+    expect(json.weekStart).toEqual('sunday')
+    expect(json.description).toEqual('A dashboard')
+    expect(json.revision).toEqual(3)
+  })
+
+  it('should honour liveNow false rather than replacing it with the default', () => {
+    expect(convertJson({ liveNow: false }).liveNow).toEqual(false)
+  })
+})
+
+describe('convertToV12 :: sub-object defaults', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it('should default an annotation to enabled, as Grafana does', () => {
+    const source = { annotations: { list: [{ iconColor: 'red', name: 'A' }] } }
+
+    expect(convertJson(source).annotations.list[0].enable).toEqual(true)
+  })
+
+  it('should keep an explicitly disabled annotation disabled', () => {
+    const source = { annotations: { list: [{ enable: false, iconColor: 'red', name: 'A' }] } }
+
+    expect(convertJson(source).annotations.list[0].enable).toEqual(false)
+  })
+
+  it('should default a missing gridPos to the Grafana default size, not zero', () => {
+    const source = { panels: [{ type: 'timeseries', title: 'P', gridPos: {} }] }
+
+    const gridPos = convertJson(source).panels[0].gridPos
+
+    expect(gridPos.h).toEqual(defaultGridPos.h)
+    expect(gridPos.w).toEqual(defaultGridPos.w)
+  })
+
+  it('should not emit a static flag on a gridPos that has none', () => {
+    const source = { panels: [{ type: 'timeseries', title: 'P', gridPos: { h: 8, w: 12, x: 0, y: 0 } }] }
+
+    expect(convertJson(source).panels[0].gridPos).not.toHaveProperty('static')
+  })
+
+  it('should not emit empty refresh_intervals, which would blank the refresh picker', () => {
+    const source = { timepicker: { hidden: false } }
+
+    expect(convertJson(source).timepicker).not.toHaveProperty('refresh_intervals')
+  })
+
+  it('should not emit empty quick_ranges', () => {
+    const source = { timepicker: { hidden: false } }
+
+    expect(convertJson(source).timepicker).not.toHaveProperty('quick_ranges')
+  })
+
+  it('should still map refresh_intervals and quick_ranges the source does have', () => {
+    const source = { timepicker: { refresh_intervals: ['10s', '1m'], time_options: ['5m', '1h'] } }
+
+    const timepicker = convertJson(source).timepicker
+
+    expect(timepicker.refresh_intervals).toEqual(['10s', '1m'])
+    expect(timepicker.quick_ranges).toEqual([
+      { display: '5m', from: 'now-5m', to: 'now' },
+      { display: '1h', from: 'now-1h', to: 'now' }
+    ])
+  })
+
+  it('should not emit empty staticOptions on a variable that has none', () => {
+    const source = { templating: { list: [{ name: 'Env', type: 'constant', query: 'prod' }] } }
+
+    expect(convertJson(source).templating.list[0]).not.toHaveProperty('staticOptions')
+  })
+
+  it('should not emit a selected flag on a variable option that has none', () => {
+    const source = {
+      templating: { list: [{ name: 'Nodes', type: 'query', current: { text: 'srv01', value: '1' } }] }
+    }
+
+    expect(convertJson(source).templating.list[0].current).not.toHaveProperty('selected')
+  })
+
+  it('should keep an empty multi-value selection as an array rather than an empty string', () => {
+    const source = {
+      templating: { list: [{ name: 'Nodes', type: 'query', multi: true, current: { text: [], value: [] } }] }
+    }
+
+    const current = convertJson(source).templating.list[0].current
+
+    expect(current.text).toEqual([])
+    expect(current.value).toEqual([])
   })
 })
