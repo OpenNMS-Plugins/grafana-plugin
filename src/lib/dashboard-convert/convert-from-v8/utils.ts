@@ -3,7 +3,8 @@ import { DatasourceMetadata, DsType } from '../types'
 
 // add 'name', '$name' and '${name}' variations
 export const addVariationsToMap = (varName: string, dsType: DsType,  datasourceMap: Map<string,DsType>) => {
-  const rawName = varName.replaceAll(/[${}]/i, '')
+  // the regex must be global: replaceAll throws a TypeError on a non-global RegExp
+  const rawName = varName.replaceAll(/[${}]/g, '')
 
   datasourceMap.set(rawName, dsType)
   datasourceMap.set('$' + rawName, dsType)
