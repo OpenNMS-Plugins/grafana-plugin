@@ -379,3 +379,115 @@ describe('convertToV12 :: annotation target query fields', () => {
     expect(target.refId).toEqual('A')
   })
 })
+
+describe('convertToV12 :: datasource references', () => {
+  const panelWithDatasource = (datasource: any) => ({
+    panels: [{ type: 'timeseries', title: 'P', datasource, targets: [{ refId: 'A' }] }]
+  })
+
+  const panelDatasource = (datasource: any) =>
+    (convert(panelWithDatasource(datasource)).dashboardV12!.panels as any[])[0].datasource
+
+  it('should map a plain datasource name to the uid', () => {
+    expect(panelDatasource('OpenNMS Performance')).toEqual({ uid: 'OpenNMS Performance' })
+  })
+
+  it('should map a $var template variable to the uid, not the type', () => {
+    expect(panelDatasource('$datasource')).toEqual({ uid: '$datasource' })
+  })
+
+  it('should map a ${var} template variable to the uid', () => {
+    expect(panelDatasource('${datasource}')).toEqual({ uid: '${datasource}' })
+  })
+
+  it('should map a legacy [[var]] template variable to the uid', () => {
+    expect(panelDatasource('[[datasource]]')).toEqual({ uid: '[[datasource]]' })
+  })
+
+  it('should treat an empty datasource name as no datasource', () => {
+    expect(panelDatasource('')).toBeNull()
+  })
+
+  it('should preserve an explicit null datasource', () => {
+    expect(panelDatasource(null)).toBeNull()
+  })
+
+  it('should preserve a full DataSourceRef object', () => {
+    const ref = { type: 'opennms-performance-datasource', uid: 'xT5Xzsq7z' }
+
+    expect(panelDatasource(ref)).toEqual(ref)
+  })
+
+  it('should not emit empty apiVersion or uid placeholders', () => {
+    const json = JSON.parse(convert(panelWithDatasource('$datasource')).json)
+
+    expect(json.panels[0].datasource.apiVersion).toBeUndefined()
+    expect(json.panels[0].datasource.type).toBeUndefined()
+  })
+
+  it('should map annotation datasource names the same way', () => {
+    const source = {
+      annotations: { list: [{ enable: true, iconColor: 'red', name: 'A', datasource: '$datasource' }] }
+    }
+
+    expect(convert(source).dashboardV12!.annotations!.list![0].datasource).toEqual({ uid: '$datasource' })
+  })
+
+  it('should map variable datasource names the same way', () => {
+    const source = {
+      templating: { list: [{ name: 'Nodes', type: 'query', datasource: 'OpenNMS Entities' }] }
+    }
+
+    expect(convert(source).dashboardV12!.templating!.list![0].datasource).toEqual({ uid: 'OpenNMS Entities' })
+  })
+})
+
+describe('convertToV12 :: target level datasource references', () => {
+  const targetDatasource = (datasource: any) => {
+    const source = {
+      panels: [{ type: 'timeseries', title: 'P', targets: [{ refId: 'A', datasource }] }]
+    }
+
+    return (convert(source).dashboardV12!.panels as any[])[0].targets[0].datasource
+  }
+
+  it('should normalize a plain datasource name on a target', () => {
+    expect(targetDatasource('OpenNMS Performance')).toEqual({ uid: 'OpenNMS Performance' })
+  })
+
+  it('should normalize a template variable on a target', () => {
+    expect(targetDatasource('$datasource')).toEqual({ uid: '$datasource' })
+  })
+
+  it('should preserve a full DataSourceRef object on a target', () => {
+    const ref = { type: 'opennms-performance-datasource', uid: 'xT5Xzsq7z' }
+
+    expect(targetDatasource(ref)).toEqual(ref)
+  })
+
+  it('should leave a target without a datasource alone', () => {
+    expect(targetDatasource(undefined)).toBeUndefined()
+  })
+})
+
+describe('convertToV12 :: graph to timeseries panel time overrides', () => {
+  it('should preserve timeFrom and timeShift when converting a graph panel', () => {
+    const source = {
+      panels: [{
+        type: 'graph',
+        title: 'A graph',
+        timeFrom: 'now-2d',
+        timeShift: '1d',
+        yaxes: [{ format: 'Bps', label: '' }],
+        targets: [{ refId: 'A' }]
+      }]
+    }
+    const options = { ...defaultOptions, convertGraphToTimeSeries: true }
+
+    const panel = (convert(source, options).dashboardV12!.panels as any[])[0]
+
+    expect(panel.type).toEqual('timeseries')
+    expect(panel.timeFrom).toEqual('now-2d')
+    expect(panel.timeShift).toEqual('1d')
+  })
+})

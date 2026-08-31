@@ -35,9 +35,7 @@ export const convertLegacyGraphToTimeSeriesPanel = (source: any) => {
   delete panel.stack
   delete panel.steppedLine
   delete panel.thresholds
-  delete panel.timeFrom
   delete panel.timeRegions
-  delete panel.timeShift
   delete panel.tooltip
   delete panel.xaxis
   delete panel.yaxes

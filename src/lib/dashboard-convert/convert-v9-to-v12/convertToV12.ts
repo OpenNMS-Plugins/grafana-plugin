@@ -30,7 +30,6 @@ import {
   isNonEmptyArray
 } from '../../parseUtils'
 import { convertLegacyGraphToTimeSeriesPanel, isLegacyGraphPanel } from '../convert-from-v8/graphToTimeSeriesPanel'
-import { isTemplateVariableCandidate } from 'lib/utils'
 
 /**
  * Parse a request into a ConvertResponse containing a Grafana v12 compatible Dashboard.
@@ -238,20 +237,21 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
     return null
   }
   
-  // template variable reference
-  // Not sure this parsing is accurate, the 'datasource' property of annotations,
-  // panels, etc. used to be able to contain a string which was a template variable
-  // but now only seems to support DataSourceRef.
-  // For now, going to put the template variable in the datasource.type field,
-  // but we may need to fix this
-  if (typeof obj === 'string' && isTemplateVariableCandidate(String(obj))) {
-    const datasource = {
-      apiVersion: '',
-      type: String(obj),
-      uid: ''
-    } as DataSourceRef
+  // In older dashboards the 'datasource' of a panel, target, annotation or variable could be
+  // a plain string: either a template variable ('$datasource', '${datasource}', '[[datasource]]')
+  // or the name of a datasource ('OpenNMS Performance').
+  // Both become the 'uid', which is how Grafana resolves a DataSourceRef; this mirrors
+  // Grafana's own schema migration (migrateDatasourceNameToRef). Putting either of them in
+  // 'type' instead would leave the panel unable to find its datasource.
+  if (typeof obj === 'string') {
+    const nameOrVariable = obj.trim()
 
-    return datasource
+    // nothing to reference, so fall back to the default datasource
+    if (!nameOrVariable) {
+      return null
+    }
+
+    return { uid: nameOrVariable } as DataSourceRef
   }
 
   // full DataSourceRef object
@@ -398,17 +398,27 @@ const mapPanelOrRowPanel = (obj: any, options: ConvertOptions): Panel | RowPanel
 }
 
 // The 'targets' are OPG (or other datasource) queries which we do not parse further here.
+// We do normalize the target's own 'datasource', the same way we do the panel's, since a
+// target can carry a legacy name or template variable string too.
 // If the user asked to unhide all queries, clear the 'hide' flag on each of them.
 const mapTargets = (obj: any, options: ConvertOptions) => {
   if (!isNonEmptyArray(obj.targets)) {
     return []
   }
 
-  if (options.unhideAllQueries) {
-    return obj.targets.map((t: any) => ({ ...t, hide: false }))
-  }
+  return obj.targets.map((t: any) => {
+    const target = { ...t }
 
-  return obj.targets
+    if (isDefined(t.datasource)) {
+      target.datasource = mapDataSourceRef(t.datasource)
+    }
+
+    if (options.unhideAllQueries) {
+      target.hide = false
+    }
+
+    return target
+  })
 }
 
 const mapPanel = (source: any, options: ConvertOptions): Panel => {
