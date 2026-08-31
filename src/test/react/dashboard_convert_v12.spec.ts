@@ -1,4 +1,5 @@
 import { AnnotationTarget, defaultDashboard, defaultGridPos } from '@grafana/schema'
+import pluginJson from '../../plugin.json'
 import { convertDashboardToV12 } from '../../lib/dashboard-convert/convert-v9-to-v12'
 import { ConvertOptions, ConvertResponse } from '../../lib/dashboard-convert/types'
 
@@ -638,5 +639,47 @@ describe('convertToV12 :: sub-object defaults', () => {
 
     expect(current.text).toEqual([])
     expect(current.value).toEqual([])
+  })
+})
+
+describe('convertToV12 :: panel pluginVersion', () => {
+  const convertPanels = (panels: any[]) =>
+    JSON.parse(convert({ panels }).json).panels
+
+  it('should stamp the real plugin version on an OpenNMS panel', () => {
+    const panels = convertPanels([{ type: 'opennms-alarm-table-panel', title: 'Alarms' }])
+
+    expect(panels[0].pluginVersion).toEqual(pluginJson.info.version)
+  })
+
+  it('should leave a core panel pluginVersion alone', () => {
+    const panels = convertPanels([{ type: 'timeseries', title: 'P', pluginVersion: '12.0.1' }])
+
+    expect(panels[0].pluginVersion).toEqual('12.0.1')
+  })
+
+  it('should not invent a pluginVersion for a core panel that has none', () => {
+    const panels = convertPanels([{ type: 'timeseries', title: 'P' }])
+
+    expect(panels[0]).not.toHaveProperty('pluginVersion')
+  })
+
+  it('should leave a third party panel pluginVersion alone', () => {
+    const panels = convertPanels([{ type: 'grafana-worldmap-panel', title: 'Map', pluginVersion: '0.3.2' }])
+
+    expect(panels[0].pluginVersion).toEqual('0.3.2')
+  })
+
+  it('should stamp OpenNMS panels nested inside a collapsed row', () => {
+    const panels = convertPanels([
+      {
+        type: 'row',
+        title: 'R',
+        collapsed: true,
+        panels: [{ type: 'opennms-filter-panel', title: 'Filter' }]
+      }
+    ])
+
+    expect(panels[0].panels[0].pluginVersion).toEqual(pluginJson.info.version)
   })
 })

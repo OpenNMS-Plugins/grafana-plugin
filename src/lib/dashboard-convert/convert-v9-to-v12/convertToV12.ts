@@ -33,6 +33,7 @@ import {
   isNonEmptyArray
 } from '../../parseUtils'
 import { convertLegacyGraphToTimeSeriesPanel, isLegacyGraphPanel } from '../convert-from-v8/graphToTimeSeriesPanel'
+import pluginJson from '../../../plugin.json'
 
 /**
  * Parse a request into a ConvertResponse containing a Grafana v12 compatible Dashboard.
@@ -423,6 +424,20 @@ const mapTargets = (obj: any, options: ConvertOptions) => {
   })
 }
 
+// 'pluginVersion' is the version of the panel plugin, which Grafana uses to decide which of
+// that plugin's migrations to run. It is only ours to set on our own panels; stamping it onto
+// a core or third party panel would misrepresent which migrations have been applied, so those
+// keep whatever the source had.
+const mapPluginVersion = (obj: any) => {
+  const type = convertToString(obj.type)
+
+  if (type.startsWith('opennms-')) {
+    return pluginJson.info.version
+  }
+
+  return isDefined(obj.pluginVersion) ? convertToString(obj.pluginVersion) : undefined
+}
+
 const mapPanel = (source: any, options: ConvertOptions): Panel => {
   // The Angular 'graph' panel was removed in Grafana 11, so it cannot render under v12.
   // If the user asked for it, convert it to a 'timeseries' panel first, then map that.
@@ -445,7 +460,7 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     maxDataPoints: isDefined(obj.maxDataPoints) ? convertToInt(obj.maxDataPoints) : undefined,
     maxPerRow: isDefined(obj.maxPerRow) ? convertToInt(obj.maxPerRow) : undefined,
     options: obj.options,  // may be undefined. most likely this is our OPG options, we won't parse further here
-    pluginVersion: '12',  // hard-coding to version 12
+    pluginVersion: mapPluginVersion(obj),
     queryCachingTTL: isDefined(obj.queryCachingTTL) ? convertToInt(obj.queryCachingTTL) : undefined,
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     repeatDirection: isDefined(obj.repeatDirection) && (obj.repeatDirection === 'h' || obj.repeatDirection === 'v') ? obj.repeatDirection : undefined,
