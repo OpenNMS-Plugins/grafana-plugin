@@ -839,3 +839,73 @@ describe('convertToV12 :: graph panel with malformed legacy fields', () => {
     expect(panel.fieldConfig.defaults.custom.axisLabel).toEqual('bits/sec')
   })
 })
+
+describe('convertToV12 :: unparseable and null numerics', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it.each([[null], ['abc'], [{}]])(
+    'should fall back to the schema default when schemaVersion is %p', (schemaVersion) => {
+      expect(convertJson({ schemaVersion }).schemaVersion).toEqual(defaultDashboard.schemaVersion)
+    })
+
+  it('should not turn a null annotation target limit into 0', () => {
+    const source = {
+      annotations: { list: [{ name: 'a', iconColor: 'r', target: { limit: null } }] }
+    }
+
+    expect(convertJson(source).annotations.list[0].target.limit).toEqual(100)
+  })
+})
+
+/**
+ * The { ...obj, ...typed } merge writes undefined for a value we could not normalize, and that
+ * undefined overwrites the source value. A field we do not recognise should be left as it was,
+ * not erased, which is what the passthrough contract promises everywhere else.
+ */
+describe('convertToV12 :: unrecognised values are left alone, not erased', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it('should coerce a numeric string for hide, refresh and sort', () => {
+    const source = { templating: { list: [{ name: 'v', type: 'query', hide: '2', refresh: '1', sort: '3' }] } }
+
+    const variable = convertJson(source).templating.list[0]
+
+    expect(variable.hide).toEqual(2)
+    expect(variable.refresh).toEqual(1)
+    expect(variable.sort).toEqual(3)
+  })
+
+  it('should keep a value it cannot interpret rather than deleting it', () => {
+    const source = { templating: { list: [{ name: 'v', type: 'query', hide: 'bogus', staticOptionsOrder: 'sideways' }] } }
+
+    const variable = convertJson(source).templating.list[0]
+
+    expect(variable.hide).toEqual('bogus')
+    expect(variable.staticOptionsOrder).toEqual('sideways')
+  })
+
+  it('should keep an unrecognised repeatDirection', () => {
+    const source = { panels: [{ type: 'timeseries', repeatDirection: 'H' }] }
+
+    expect(convertJson(source).panels[0].repeatDirection).toEqual('H')
+  })
+})
+
+describe('convertToV12 :: library panel elements', () => {
+  it('should keep __elements, which Grafana reads to resolve library panel inputs on import', () => {
+    const source = {
+      __elements: { abc: { uid: 'abc', kind: 1, model: { type: 'timeseries' }, name: 'Shared' } },
+      panels: [{ type: 'timeseries', libraryPanel: { uid: 'abc', name: 'Shared' } }]
+    }
+
+    expect(JSON.parse(convert(source).json).__elements).toEqual(source.__elements)
+  })
+})
+
+describe('convertToV12 :: null fieldConfig defaults', () => {
+  it('should not pass a null through to the non-optional fieldConfig defaults', () => {
+    const source = { panels: [{ type: 'timeseries', fieldConfig: { defaults: null, overrides: [] } }] }
+
+    expect(JSON.parse(convert(source).json).panels[0].fieldConfig.defaults).toEqual({})
+  })
+})

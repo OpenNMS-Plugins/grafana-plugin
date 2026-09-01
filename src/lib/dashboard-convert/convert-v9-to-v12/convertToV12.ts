@@ -110,6 +110,26 @@ const mapRequires = (sourceRequires: any[]) => {
   return targetRequires
 }
 
+// The mappers below build the fields they normalize as a typed object and merge it over the
+// source. A field they could not interpret is left undefined, and merging that undefined would
+// erase the value the source had, so drop those keys before merging: not recognising a value is
+// not a reason to delete it.
+const withoutUndefined = <T extends object>(obj: T): T => {
+  return Object.fromEntries(Object.entries(obj).filter(([, value]) => value !== undefined)) as T
+}
+
+// Convert a value to the numeric member of an enum it names, or undefined if it names none.
+// Convert first, then check, so that a numeric string such as '2' is accepted.
+const mapEnumValue = <T extends Record<string, string | number>>(enumObject: T, value: any) => {
+  if (!isDefined(value) || value === null) {
+    return undefined
+  }
+
+  const num = convertToInt(value, Number.NaN)
+
+  return isEnumValueOfType(enumObject, num) ? num : undefined
+}
+
 // Map an array out of the untyped source Json, giving the result a real element type so the
 // compiler can check it against the schema (a '.map' on an 'any' yields another 'any').
 // Note the callback takes only the item: passing a two-argument function such as
@@ -129,6 +149,13 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
   // leaving __inputs as-is, they should either be ok or else were already converted from OPG v8 to v9
   if (isNonEmptyArray(source['__inputs'])) {
     dashboard['__inputs'] = source['__inputs']
+  }
+
+  // __elements holds the library panel definitions. Grafana's import reads it, in
+  // manage-dashboards/import/utils/inputs.ts, to resolve a dashboard's library panel inputs,
+  // so dropping it breaks any dashboard that uses one.
+  if (isDefinedObject(source['__elements'])) {
+    dashboard['__elements'] = source['__elements']
   }
 
   // leave __requires as-is, except that an opennms entry gets the current plugin version
@@ -191,7 +218,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
   }
 
   if (isDefined(source.schemaVersion)) {
-    dashboard.schemaVersion = convertToInt(source.schemaVersion)
+    dashboard.schemaVersion = convertToInt(source.schemaVersion, defaultDashboard.schemaVersion)
   }
 
   if (isDefinedObject(source.snapshot)) {
@@ -349,7 +376,7 @@ const mapAnnotationQuery = (obj: any): OpgAnnotationQuery => {
     annotation.type = convertToString(obj.type)
   }
 
-  return { ...obj, ...annotation }
+  return { ...obj, ...withoutUndefined(annotation) }
 }
 
 // convert to a DashboardLinkType which is 'link' or 'dashboards'
@@ -384,14 +411,14 @@ const mapDashboardLink = (obj: any): DashboardLink => {
   }
 
   // preserve fields we do not normalize, e.g. the v12 'placement'
-  return { ...obj, ...link }
+  return { ...obj, ...withoutUndefined(link) }
 }
 
 // These are complex fields with lots of optional properties, we will assume they are correct
 // rather than have a ton of mapping code here
 const mapFieldConfigSource = (obj: any): FieldConfigSource => {
   const config = {
-    defaults: isDefined(obj.defaults) ? obj.defaults : {},
+    defaults: isDefinedObject(obj.defaults) ? obj.defaults : {},
     overrides: isNonEmptyArray(obj.overrides) ? obj.overrides : []
   }
 
@@ -515,7 +542,7 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     type: convertToString(obj.type) // panel plugin id
   }
 
-  return { ...obj, ...panel }
+  return { ...obj, ...withoutUndefined(panel) }
 }
 
 const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
@@ -531,7 +558,7 @@ const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
   }
 
   // merge over the source, which carries any properties not in the RowPanel base interface
-  return { ...obj, ...row }
+  return { ...obj, ...withoutUndefined(row) }
 }
 
 const mapDashboardSnapshot = (obj: any) => {
@@ -568,7 +595,7 @@ const mapVariableOption = (obj: any): VariableOption => {
   }
 
   // preserve fields we do not normalize, e.g. 'properties' for multi-prop variables
-  return { ...obj, ...option }
+  return { ...obj, ...withoutUndefined(option) }
 }
 
 type StaticOptionsOrder = NonNullable<VariableModel['staticOptionsOrder']>
@@ -620,7 +647,7 @@ const mapVariableModel = (obj: any): VariableModel => {
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     definition: isDefined(obj.definition) ? convertToString(obj.definition) : undefined,
     description: isDefined(obj.description) ? convertToString(obj.description) : undefined,
-    hide: isDefined(obj.hide) && isEnumValueOfType(VariableHide, obj.hide) ? convertToInt(obj.hide) : undefined,
+    hide: mapEnumValue(VariableHide, obj.hide),
     includeAll: isDefined(obj.includeAll) ? convertToBoolean(obj.includeAll) : undefined,
     label: isDefined(obj.label) ? convertToString(obj.label) : undefined,
     multi: isDefined(obj.multi) ? convertToBoolean(obj.multi) : undefined,
@@ -628,10 +655,10 @@ const mapVariableModel = (obj: any): VariableModel => {
     options: mapArray(obj.options, mapVariableOption),
     query: obj.query,  // not bothering to parse this further,
     queryValue: isDefined(obj.queryValue) ? convertToString(obj.queryValue) : undefined,
-    refresh: isDefined(obj.refresh) && isEnumValueOfType(VariableRefresh, obj.refresh) ? convertToInt(obj.refresh) : undefined,
+    refresh: mapEnumValue(VariableRefresh, obj.refresh),
     regex: isDefined(obj.regex) ? convertToString(obj.regex) : undefined,
     skipUrlSync: isDefined(obj.skipUrlSync) ? convertToBoolean(obj.skipUrlSync) : undefined,
-    sort: isDefined(obj.sort) && isEnumValueOfType(VariableSort, obj.sort) ? convertToInt(obj.sort) : undefined,
+    sort: mapEnumValue(VariableSort, obj.sort),
     staticOptions: isNonEmptyArray(obj.staticOptions) ? mapArray(obj.staticOptions, mapVariableOption) : undefined,
     staticOptionsOrder: mapStaticOptionsOrder(obj.staticOptionsOrder),
     tagsQuery: isDefined(obj.tagsQuery) ? convertToString(obj.tagsQuery) : undefined,
@@ -644,7 +671,7 @@ const mapVariableModel = (obj: any): VariableModel => {
   // interface are preserved: 'filters'/'baseFilters'/'defaultKeys' on adhoc variables,
   // 'defaultValue' on groupby variables, and newer fields such as 'regexApplyTo'
   // and 'valuesFormat'
-  return { ...obj, ...model }
+  return { ...obj, ...withoutUndefined(model) }
 }
 
 const mapTimeOption = (obj: any): TimeOption => {

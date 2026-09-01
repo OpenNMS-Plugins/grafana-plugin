@@ -539,23 +539,18 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
   ],
   "panels": [
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
         "uid": "$datasource",
       },
-      "description": undefined,
-      "fieldConfig": undefined,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
         "y": 0,
       },
-      "hideTimeOverride": undefined,
       "id": 2,
-      "interval": undefined,
       "legend": {
         "avg": true,
         "current": false,
@@ -564,17 +559,9 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "show": true,
         "total": false,
       },
-      "libraryPanel": undefined,
       "linewidth": 2,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
-      "options": undefined,
-      "pluginVersion": undefined,
       "pointradius": 3,
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "seriesOverrides": [
         {
           "alias": "/In/",
@@ -625,7 +612,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "timeShift": "1d",
       "title": "Load Average",
       "transformations": [],
-      "transparent": undefined,
       "type": "graph",
       "yaxes": [
         {
@@ -638,13 +624,11 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       ],
     },
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
         "uid": "$datasource",
       },
-      "description": undefined,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -714,13 +698,8 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "x": 12,
         "y": 0,
       },
-      "hideTimeOverride": undefined,
       "id": 4,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
       "options": {
         "alarmTable": {
           "alarmTableAlarms": {
@@ -748,49 +727,30 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       },
       "pluginVersion": "12",
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "entityType": "alarm",
           "refId": "A",
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Alarms",
       "transformations": [],
-      "transparent": undefined,
       "type": "opennms-alarm-table-panel",
     },
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-entity-datasource",
         "uid": "onms-entity",
       },
-      "description": undefined,
-      "fieldConfig": undefined,
       "gridPos": {
         "h": 9,
         "w": 24,
         "x": 0,
         "y": 9,
       },
-      "hideTimeOverride": undefined,
       "id": 10,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
-      "options": undefined,
-      "pluginVersion": undefined,
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "clauses": [],
@@ -801,16 +761,12 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           },
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Alarms by plugin id",
       "transformations": [],
-      "transparent": undefined,
       "type": "table",
     },
     {
       "collapsed": true,
-      "datasource": undefined,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -820,32 +776,19 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "id": 6,
       "panels": [
         {
-          "cacheTimeout": undefined,
           "datasource": {
             "apiVersion": undefined,
             "type": "opennms-performance-datasource",
             "uid": "$datasource",
           },
-          "description": undefined,
-          "fieldConfig": undefined,
           "gridPos": {
             "h": 8,
             "w": 24,
             "x": 0,
             "y": 10,
           },
-          "hideTimeOverride": undefined,
           "id": 8,
-          "interval": undefined,
-          "libraryPanel": undefined,
           "links": [],
-          "maxDataPoints": undefined,
-          "maxPerRow": undefined,
-          "options": undefined,
-          "pluginVersion": undefined,
-          "queryCachingTTL": undefined,
-          "repeat": undefined,
-          "repeatDirection": undefined,
           "targets": [
             {
               "attribute": {
@@ -885,15 +828,11 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
               "refId": "A",
             },
           ],
-          "timeFrom": undefined,
-          "timeShift": undefined,
           "title": "Nested Traffic",
           "transformations": [],
-          "transparent": undefined,
           "type": "graph",
         },
       ],
-      "repeat": undefined,
       "title": "More Detail",
       "type": "row",
     },
@@ -907,16 +846,10 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
   "templating": {
     "list": [
       {
-        "allValue": undefined,
-        "allowCustomValue": undefined,
         "current": {
-          "selected": undefined,
           "text": "OpenNMS Performance",
           "value": "OpenNMS Performance",
         },
-        "datasource": undefined,
-        "definition": undefined,
-        "description": undefined,
         "hide": 0,
         "includeAll": false,
         "label": "Datasource",
@@ -924,21 +857,13 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "name": "datasource",
         "options": [],
         "query": "opennms-performance-datasource",
-        "queryValue": undefined,
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": undefined,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
-        "tagValuesQuery": undefined,
-        "tagsQuery": undefined,
         "type": "datasource",
-        "useTags": undefined,
       },
       {
         "allValue": "",
-        "allowCustomValue": undefined,
         "current": {
           "selected": false,
           "text": "srv01",
@@ -950,7 +875,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           "uid": "$datasource",
         },
         "definition": "nodeFilter(label like '*')",
-        "description": undefined,
         "hide": 0,
         "includeAll": false,
         "label": "Node",
@@ -958,13 +882,10 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "name": "node",
         "options": [],
         "query": "nodeFilter(label like '*')",
-        "queryValue": undefined,
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
         "tagValuesQuery": "",
         "tagsQuery": "",
         "type": "query",
@@ -1112,13 +1033,11 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
   ],
   "panels": [
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
         "uid": "$datasource",
       },
-      "description": undefined,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1198,13 +1117,8 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "x": 0,
         "y": 0,
       },
-      "hideTimeOverride": undefined,
       "id": 2,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
       "options": {
         "legend": {
           "calcs": [
@@ -1221,9 +1135,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       },
       "pluginVersion": "9.4.7",
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "attribute": {
@@ -1267,17 +1178,14 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "timeShift": "1d",
       "title": "Load Average",
       "transformations": [],
-      "transparent": undefined,
       "type": "timeseries",
     },
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
         "uid": "$datasource",
       },
-      "description": undefined,
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1347,13 +1255,8 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "x": 12,
         "y": 0,
       },
-      "hideTimeOverride": undefined,
       "id": 4,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
       "options": {
         "alarmTable": {
           "alarmTableAlarms": {
@@ -1381,9 +1284,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       },
       "pluginVersion": "12",
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "entityType": "alarm",
@@ -1391,40 +1291,24 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           "refId": "A",
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Alarms",
       "transformations": [],
-      "transparent": undefined,
       "type": "opennms-alarm-table-panel",
     },
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-entity-datasource",
         "uid": "onms-entity",
       },
-      "description": undefined,
-      "fieldConfig": undefined,
       "gridPos": {
         "h": 9,
         "w": 24,
         "x": 0,
         "y": 9,
       },
-      "hideTimeOverride": undefined,
       "id": 10,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
-      "options": undefined,
-      "pluginVersion": undefined,
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "clauses": [],
@@ -1436,16 +1320,12 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           },
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Alarms by plugin id",
       "transformations": [],
-      "transparent": undefined,
       "type": "table",
     },
     {
       "collapsed": true,
-      "datasource": undefined,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1455,13 +1335,11 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "id": 6,
       "panels": [
         {
-          "cacheTimeout": undefined,
           "datasource": {
             "apiVersion": undefined,
             "type": "opennms-performance-datasource",
             "uid": "$datasource",
           },
-          "description": undefined,
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -1521,13 +1399,8 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
             "x": 0,
             "y": 10,
           },
-          "hideTimeOverride": undefined,
           "id": 8,
-          "interval": undefined,
-          "libraryPanel": undefined,
           "links": [],
-          "maxDataPoints": undefined,
-          "maxPerRow": undefined,
           "options": {
             "legend": {
               "calcs": [],
@@ -1541,9 +1414,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
             },
           },
           "pluginVersion": "9.4.7",
-          "queryCachingTTL": undefined,
-          "repeat": undefined,
-          "repeatDirection": undefined,
           "targets": [
             {
               "attribute": {
@@ -1583,15 +1453,11 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
               "refId": "A",
             },
           ],
-          "timeFrom": undefined,
-          "timeShift": undefined,
           "title": "Nested Traffic",
           "transformations": [],
-          "transparent": undefined,
           "type": "timeseries",
         },
       ],
-      "repeat": undefined,
       "title": "More Detail",
       "type": "row",
     },
@@ -1605,16 +1471,10 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
   "templating": {
     "list": [
       {
-        "allValue": undefined,
-        "allowCustomValue": undefined,
         "current": {
-          "selected": undefined,
           "text": "OpenNMS Performance",
           "value": "OpenNMS Performance",
         },
-        "datasource": undefined,
-        "definition": undefined,
-        "description": undefined,
         "hide": 0,
         "includeAll": false,
         "label": "Datasource",
@@ -1622,21 +1482,13 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "name": "datasource",
         "options": [],
         "query": "opennms-performance-datasource",
-        "queryValue": undefined,
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": undefined,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
-        "tagValuesQuery": undefined,
-        "tagsQuery": undefined,
         "type": "datasource",
-        "useTags": undefined,
       },
       {
         "allValue": "",
-        "allowCustomValue": undefined,
         "current": {
           "selected": false,
           "text": "srv01",
@@ -1648,7 +1500,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           "uid": "$datasource",
         },
         "definition": "nodeFilter(label like '*')",
-        "description": undefined,
         "hide": 0,
         "includeAll": false,
         "label": "Node",
@@ -1656,13 +1507,10 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "name": "node",
         "options": [],
         "query": "nodeFilter(label like '*')",
-        "queryValue": undefined,
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
         "tagValuesQuery": "",
         "tagsQuery": "",
         "type": "query",
@@ -1793,13 +1641,11 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
   "liveNow": false,
   "panels": [
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-performance-datasource",
         "uid": "onms-perf",
       },
-      "description": undefined,
       "fieldConfig": {
         "defaults": {
           "unit": "bytes",
@@ -1812,22 +1658,15 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         "x": 0,
         "y": 0,
       },
-      "hideTimeOverride": undefined,
       "id": 1,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
       "maxDataPoints": 300,
-      "maxPerRow": undefined,
       "options": {
         "legend": {
           "showLegend": true,
         },
       },
       "pluginVersion": "11.2.0",
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "attribute": "loadavg1",
@@ -1846,60 +1685,43 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
           "type": "expression",
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Load",
       "transformations": [],
       "transparent": false,
       "type": "timeseries",
     },
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": "opennms-entity-datasource",
         "uid": "onms-entity",
       },
-      "description": undefined,
-      "fieldConfig": undefined,
       "gridPos": {
         "h": 8,
         "w": 12,
         "x": 12,
         "y": 0,
       },
-      "hideTimeOverride": undefined,
       "id": 2,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
       "options": {
         "alarmTable": {
           "pageSize": 10,
         },
       },
       "pluginVersion": "12",
-      "queryCachingTTL": undefined,
-      "repeat": undefined,
-      "repeatDirection": undefined,
       "targets": [
         {
           "entityType": "alarm",
           "refId": "A",
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Alarms",
       "transformations": [],
-      "transparent": undefined,
       "type": "opennms-alarm-table-panel",
     },
     {
       "collapsed": false,
-      "datasource": undefined,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1913,30 +1735,19 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
       "type": "row",
     },
     {
-      "cacheTimeout": undefined,
       "datasource": {
         "apiVersion": undefined,
         "type": undefined,
         "uid": "\${datasource}",
       },
-      "description": undefined,
-      "fieldConfig": undefined,
       "gridPos": {
         "h": 8,
         "w": 24,
         "x": 0,
         "y": 9,
       },
-      "hideTimeOverride": undefined,
       "id": 4,
-      "interval": undefined,
-      "libraryPanel": undefined,
       "links": [],
-      "maxDataPoints": undefined,
-      "maxPerRow": undefined,
-      "options": undefined,
-      "pluginVersion": undefined,
-      "queryCachingTTL": undefined,
       "repeat": "node",
       "repeatDirection": "v",
       "targets": [
@@ -1946,11 +1757,8 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
           "type": "attribute",
         },
       ],
-      "timeFrom": undefined,
-      "timeShift": undefined,
       "title": "Node $node",
       "transformations": [],
-      "transparent": undefined,
       "type": "timeseries",
     },
   ],
@@ -1963,38 +1771,23 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
   "templating": {
     "list": [
       {
-        "allValue": undefined,
-        "allowCustomValue": undefined,
         "current": {
           "selected": true,
           "text": "OpenNMS Performance",
           "value": "onms-perf",
         },
-        "datasource": undefined,
-        "definition": undefined,
-        "description": undefined,
         "hide": 0,
         "includeAll": false,
-        "label": undefined,
         "multi": false,
         "name": "datasource",
         "options": [],
         "query": "opennms-performance-datasource",
-        "queryValue": undefined,
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": undefined,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
-        "tagValuesQuery": undefined,
-        "tagsQuery": undefined,
         "type": "datasource",
-        "useTags": undefined,
       },
       {
-        "allValue": undefined,
-        "allowCustomValue": undefined,
         "current": {
           "selected": false,
           "text": [
@@ -2012,7 +1805,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
           "uid": "onms-entity",
         },
         "definition": "nodeFilter(label like '*')",
-        "description": undefined,
         "hide": 0,
         "includeAll": true,
         "label": "Node",
@@ -2020,30 +1812,19 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         "name": "node",
         "options": [],
         "query": "nodeFilter(label like '*')",
-        "queryValue": undefined,
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
         "sort": 5,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
-        "tagValuesQuery": undefined,
-        "tagsQuery": undefined,
         "type": "query",
-        "useTags": undefined,
       },
       {
-        "allValue": undefined,
-        "allowCustomValue": undefined,
         "baseFilters": [],
-        "current": undefined,
         "datasource": {
           "apiVersion": undefined,
           "type": "opennms-entity-datasource",
           "uid": "onms-entity",
         },
-        "definition": undefined,
-        "description": undefined,
         "filters": [
           {
             "key": "node.label",
@@ -2051,54 +1832,22 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
             "value": "srv01",
           },
         ],
-        "hide": undefined,
-        "includeAll": undefined,
-        "label": undefined,
-        "multi": undefined,
         "name": "Filters",
         "options": [],
-        "query": undefined,
-        "queryValue": undefined,
-        "refresh": undefined,
-        "regex": undefined,
-        "skipUrlSync": undefined,
-        "sort": undefined,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
-        "tagValuesQuery": undefined,
-        "tagsQuery": undefined,
         "type": "adhoc",
-        "useTags": undefined,
       },
       {
-        "allValue": undefined,
-        "allowCustomValue": undefined,
         "current": {
           "selected": false,
           "text": "prod",
           "value": "prod",
         },
-        "datasource": undefined,
-        "definition": undefined,
-        "description": undefined,
         "hide": 2,
-        "includeAll": undefined,
-        "label": undefined,
-        "multi": undefined,
         "name": "env",
         "options": [],
         "query": "prod",
-        "queryValue": undefined,
-        "refresh": undefined,
-        "regex": undefined,
         "skipUrlSync": false,
-        "sort": undefined,
-        "staticOptions": undefined,
-        "staticOptionsOrder": undefined,
-        "tagValuesQuery": undefined,
-        "tagsQuery": undefined,
         "type": "constant",
-        "useTags": undefined,
       },
     ],
   },

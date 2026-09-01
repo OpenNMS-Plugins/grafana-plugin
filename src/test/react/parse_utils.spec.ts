@@ -18,13 +18,19 @@ describe('parseUtils :: convertToInt', () => {
     expect(convertToInt('abc')).toEqual(0)
   })
 
+  it('should return the default when the source is null', () => {
+    // Number(null) is 0, so null has to be treated as absent rather than parsed
+    expect(convertToInt(null, 42)).toEqual(42)
+    expect(convertToInt(null)).toEqual(0)
+  })
+
   it('should return the default when the source is a non-numeric object', () => {
     expect(convertToInt({}, 5)).toEqual(5)
     expect(convertToInt([1, 2], 5)).toEqual(5)
   })
 
   it('should never return NaN', () => {
-    for (const source of ['abc', '', {}, [1, 2], NaN, () => 1]) {
+    for (const source of ['abc', '', {}, [1, 2], NaN, null, () => 1]) {
       expect(Number.isNaN(convertToInt(source, 3))).toEqual(false)
     }
   })

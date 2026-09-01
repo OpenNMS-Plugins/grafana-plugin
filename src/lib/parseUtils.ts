@@ -34,7 +34,9 @@ export const isEnumValueOfType = <T extends Record<string, string | number>>(
 export const convertToInt = (source?: any, defaultValue?: number) => {
   const fallback: number = defaultValue ?? 0
 
-  if (source !== undefined) {
+  // null has to be treated as absent, not parsed: Number(null) is 0, so a null would come back
+  // as a real 0 rather than the caller's default
+  if (source !== undefined && source !== null) {
     const val = typeof source === 'string' ? Number.parseInt(source, 10) : Number(source)
 
     if (!Number.isNaN(val)) {
