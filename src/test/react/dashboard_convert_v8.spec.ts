@@ -156,3 +156,64 @@ describe('convertFromV8 :: null entries', () => {
     expect(dashboardConvert(JSON.stringify(source), 8, 12, '', defaultOptions).isError).toEqual(false)
   })
 })
+
+/**
+ * A v8 dashboard can name its datasource by plugin id rather than by variable, e.g.
+ * "datasource": "opennms-helm-entity-datasource". That id does not exist in Grafana 12, so it
+ * has to be rewritten to the installed v9+ datasource. convertFromV8 rewrote __inputs,
+ * __requires, templating and panel/target refs held as objects, but not a bare plugin id
+ * string, and annotations were passed through untouched by the spread.
+ */
+describe('convertFromV8 :: legacy plugin id datasource strings', () => {
+  const dashboard = {
+    annotations: {
+      list: [{ name: 'Alarms', iconColor: 'red', enable: true, datasource: 'opennms-helm-entity-datasource' }]
+    },
+    panels: [
+      { type: 'graph', title: 'Panel ref', datasource: 'opennms-helm-performance-datasource', targets: [{ refId: 'A' }] },
+      { type: 'graph', title: 'Target ref', targets: [{ refId: 'A', datasource: 'opennms-helm-performance-datasource' }] }
+    ]
+  }
+
+  const convertToV9 = () => dashboardConvert(JSON.stringify(dashboard), 8, 9, '', defaultOptions).dashboardV9
+
+  it('should rewrite a legacy plugin id on a panel to the installed datasource', () => {
+    expect(convertToV9().panels[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: 'onms-perf'
+    })
+  })
+
+  it('should rewrite a legacy plugin id on a target to the installed datasource', () => {
+    expect(convertToV9().panels[1].targets[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: 'onms-perf'
+    })
+  })
+
+  it('should rewrite a legacy plugin id on an annotation to the installed datasource', () => {
+    expect(convertToV9().annotations.list[0].datasource).toEqual({
+      type: 'opennms-entity-datasource',
+      uid: 'onms-entity'
+    })
+  })
+
+  it('should carry the rewritten annotation datasource through to v12', () => {
+    const result = dashboardConvert(JSON.stringify(dashboard), 8, 12, '', defaultOptions)
+
+    expect(result.dashboardV12!.annotations!.list![0].datasource).toEqual({
+      type: 'opennms-entity-datasource',
+      uid: 'onms-entity'
+    })
+  })
+
+  it('should leave a non-OpenNMS annotation datasource alone', () => {
+    const source = {
+      annotations: { list: [{ name: 'G', iconColor: 'red', enable: true, datasource: '-- Grafana --' }] }
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.annotations.list[0].datasource).toEqual('-- Grafana --')
+  })
+})

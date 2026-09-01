@@ -10,14 +10,24 @@
     }
   ],
   "__requires": [
-    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "8.5.0" },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.5.0"
+    },
     {
       "type": "datasource",
       "id": "opennms-helm-performance-datasource",
       "name": "OpenNMS Performance",
       "version": "1.0.0"
     },
-    { "type": "panel", "id": "opennms-helm-alarm-table-panel", "name": "Alarm Table", "version": "" }
+    {
+      "type": "panel",
+      "id": "opennms-helm-alarm-table-panel",
+      "name": "Alarm Table",
+      "version": ""
+    }
   ],
   "annotations": {
     "list": [
@@ -28,8 +38,23 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "target": { "limit": 100, "matchAny": false, "tags": [], "type": "dashboard" },
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
+      },
+      {
+        "datasource": "opennms-helm-entity-datasource",
+        "enable": true,
+        "iconColor": "red",
+        "name": "Major Alarms",
+        "target": {
+          "refId": "A",
+          "entityType": "alarm"
+        }
       }
     ]
   },
@@ -38,45 +63,135 @@
   "graphTooltip": 1,
   "id": 12,
   "links": [
-    { "asDropdown": false, "icon": "external link", "tags": [], "targetBlank": true, "title": "OpenNMS", "type": "link", "url": "https://opennms.com" }
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "tags": [],
+      "targetBlank": true,
+      "title": "OpenNMS",
+      "type": "link",
+      "url": "https://opennms.com"
+    }
   ],
   "panels": [
     {
       "datasource": "$datasource",
-      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "id": 2,
-      "legend": { "avg": true, "current": false, "max": true, "min": false, "show": true, "total": false },
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false
+      },
       "linewidth": 2,
       "pointradius": 3,
       "targets": [
-        { "refId": "A", "type": "attribute", "nodeId": "1", "resourceId": "nodeSnmp[]", "attribute": "loadavg1", "hide": true }
+        {
+          "refId": "A",
+          "type": "attribute",
+          "nodeId": "1",
+          "resourceId": "nodeSnmp[]",
+          "attribute": "loadavg1",
+          "hide": true
+        }
       ],
       "timeFrom": "now-2d",
       "timeShift": "1d",
       "title": "Load Average",
       "type": "graph",
-      "yaxes": [{ "format": "short", "label": "load" }, { "format": "short" }]
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "load"
+        },
+        {
+          "format": "short"
+        }
+      ],
+      "seriesOverrides": [
+        {
+          "alias": "/In/",
+          "stack": "A",
+          "transform": "negative-Y"
+        }
+      ]
     },
     {
       "columns": [],
       "datasource": "$datasource",
-      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "id": 4,
       "severity": "opennms",
-      "targets": [{ "refId": "A", "entityType": "alarm" }],
+      "targets": [
+        {
+          "refId": "A",
+          "entityType": "alarm"
+        }
+      ],
       "title": "Alarms",
       "type": "opennms-helm-alarm-table-panel"
     },
     {
+      "datasource": "opennms-helm-entity-datasource",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 10,
+      "targets": [
+        {
+          "refId": "A",
+          "entityType": "alarm"
+        }
+      ],
+      "title": "Alarms by plugin id",
+      "type": "table"
+    },
+    {
       "collapsed": true,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
       "id": 6,
       "panels": [
         {
-          "datasource": { "type": "opennms-helm-performance-datasource", "uid": "$datasource" },
-          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
+          "datasource": {
+            "type": "opennms-helm-performance-datasource",
+            "uid": "$datasource"
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 10
+          },
           "id": 8,
-          "targets": [{ "refId": "A", "type": "attribute", "nodeId": "2", "attribute": "ifHCInOctets" }],
+          "targets": [
+            {
+              "refId": "A",
+              "type": "attribute",
+              "nodeId": "2",
+              "attribute": "ifHCInOctets"
+            }
+          ],
           "title": "Nested Traffic",
           "type": "graph"
         }
@@ -87,11 +202,18 @@
   ],
   "refresh": "5m",
   "schemaVersion": 27,
-  "tags": ["opennms", "helm"],
+  "tags": [
+    "opennms",
+    "helm"
+  ],
   "templating": {
     "list": [
       {
-        "current": { "selected": true, "text": "OpenNMS Performance", "value": "OpenNMS Performance" },
+        "current": {
+          "selected": true,
+          "text": "OpenNMS Performance",
+          "value": "OpenNMS Performance"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "Datasource",
@@ -106,7 +228,11 @@
       },
       {
         "allValue": null,
-        "current": { "selected": false, "text": "srv01", "value": "1" },
+        "current": {
+          "selected": false,
+          "text": "srv01",
+          "value": "1"
+        },
         "datasource": "$datasource",
         "definition": "nodeFilter(label like '*')",
         "hide": 0,
@@ -127,10 +253,24 @@
       }
     ]
   },
-  "time": { "from": "now-24h", "to": "now" },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
   "timepicker": {
-    "refresh_intervals": ["10s", "30s", "1m", "5m"],
-    "time_options": ["5m", "1h", "6h", "24h", "7d"]
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m"
+    ],
+    "time_options": [
+      "5m",
+      "1h",
+      "6h",
+      "24h",
+      "7d"
+    ]
   },
   "timezone": "",
   "title": "Helm v8 Sample",

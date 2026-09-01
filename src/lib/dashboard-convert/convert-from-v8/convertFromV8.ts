@@ -1,11 +1,12 @@
 import { getDataSourceSrv } from '@grafana/runtime'
+import { convertAnnotations } from './annotations'
 import { getDatasourceMetadata } from './datasources'
 import { parseInputs } from './inputs'
 import { parseRequires } from './requires'
 import { convertPanels } from './panels'
 import { parseTemplating } from './templating'
 import { ConvertOptions, ConvertResponse, DsType } from '../types'
-import { convertToInt, isDefined, isNonEmptyArray } from '../../parseUtils'
+import { convertToInt, isDefined, isDefinedObject, isNonEmptyArray } from '../../parseUtils'
 
 // Convert a Dashboard from HELM v8 to OPG v9 format
 export const convertDashboardFromV8 = (sourceJson: string, dashboardTitle: string, options: ConvertOptions): ConvertResponse => {
@@ -53,6 +54,11 @@ export const convertDashboardFromV8 = (sourceJson: string, dashboardTitle: strin
   const templating = source['templating'] || {}
   const parsedTemplating = parseTemplating(templating, datasourceMap, dsMetas)
   dashboard.templating = parsedTemplating
+
+  // must come after parseInputs and parseTemplating, which populate the datasourceMap
+  if (isDefinedObject(source.annotations)) {
+    dashboard.annotations = convertAnnotations(source.annotations, datasourceMap, dsMetas)
+  }
 
   const panels = source.panels || []
   const convertedPanels = convertPanels(panels, datasourceMap, dsMetas, options.unhideAllQueries, options.convertGraphToTimeSeries)

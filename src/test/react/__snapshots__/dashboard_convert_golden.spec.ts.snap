@@ -49,6 +49,19 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
         "type": "dashboard",
       },
+      {
+        "datasource": {
+          "type": "opennms-entity-datasource",
+          "uid": "onms-entity",
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "Major Alarms",
+        "target": {
+          "entityType": "alarm",
+          "refId": "A",
+        },
+      },
     ],
   },
   "editable": true,
@@ -89,6 +102,13 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       },
       "linewidth": 2,
       "pointradius": 3,
+      "seriesOverrides": [
+        {
+          "alias": "/In/",
+          "stack": "A",
+          "transform": "negative-Y",
+        },
+      ],
       "targets": [
         {
           "attribute": {
@@ -251,6 +271,31 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       ],
       "title": "Alarms",
       "type": "opennms-alarm-table-panel",
+    },
+    {
+      "datasource": {
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 10,
+      "targets": [
+        {
+          "clauses": [],
+          "entityType": "alarm",
+          "refId": "A",
+          "selectType": {
+            "label": undefined,
+          },
+        },
+      ],
+      "title": "Alarms by plugin id",
+      "type": "table",
     },
     {
       "collapsed": true,
@@ -453,6 +498,24 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
         "type": "dashboard",
       },
+      {
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-entity-datasource",
+          "uid": "onms-entity",
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "Major Alarms",
+        "target": {
+          "entityType": "alarm",
+          "limit": 100,
+          "matchAny": false,
+          "refId": "A",
+          "tags": [],
+          "type": "",
+        },
+      },
     ],
   },
   "editable": true,
@@ -512,6 +575,13 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "queryCachingTTL": undefined,
       "repeat": undefined,
       "repeatDirection": undefined,
+      "seriesOverrides": [
+        {
+          "alias": "/In/",
+          "stack": "A",
+          "transform": "negative-Y",
+        },
+      ],
       "targets": [
         {
           "attribute": {
@@ -693,6 +763,50 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "transformations": [],
       "transparent": undefined,
       "type": "opennms-alarm-table-panel",
+    },
+    {
+      "cacheTimeout": undefined,
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "description": undefined,
+      "fieldConfig": undefined,
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "hideTimeOverride": undefined,
+      "id": 10,
+      "interval": undefined,
+      "libraryPanel": undefined,
+      "links": [],
+      "maxDataPoints": undefined,
+      "maxPerRow": undefined,
+      "options": undefined,
+      "pluginVersion": undefined,
+      "queryCachingTTL": undefined,
+      "repeat": undefined,
+      "repeatDirection": undefined,
+      "targets": [
+        {
+          "clauses": [],
+          "entityType": "alarm",
+          "refId": "A",
+          "selectType": {
+            "label": undefined,
+          },
+        },
+      ],
+      "timeFrom": undefined,
+      "timeShift": undefined,
+      "title": "Alarms by plugin id",
+      "transformations": [],
+      "transparent": undefined,
+      "type": "table",
     },
     {
       "collapsed": true,
@@ -957,6 +1071,24 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
         "type": "dashboard",
       },
+      {
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-entity-datasource",
+          "uid": "onms-entity",
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "Major Alarms",
+        "target": {
+          "entityType": "alarm",
+          "limit": 100,
+          "matchAny": false,
+          "refId": "A",
+          "tags": [],
+          "type": "",
+        },
+      },
     ],
   },
   "editable": true,
@@ -1038,7 +1170,27 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           },
           "unit": "short",
         },
-        "overrides": [],
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/In/",
+            },
+            "properties": [
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "group": "A",
+                  "mode": "normal",
+                },
+              },
+              {
+                "id": "custom.transform",
+                "value": "negative-Y",
+              },
+            ],
+          },
+        ],
       },
       "gridPos": {
         "h": 9,
@@ -1245,6 +1397,51 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "transformations": [],
       "transparent": undefined,
       "type": "opennms-alarm-table-panel",
+    },
+    {
+      "cacheTimeout": undefined,
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "description": undefined,
+      "fieldConfig": undefined,
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "hideTimeOverride": undefined,
+      "id": 10,
+      "interval": undefined,
+      "libraryPanel": undefined,
+      "links": [],
+      "maxDataPoints": undefined,
+      "maxPerRow": undefined,
+      "options": undefined,
+      "pluginVersion": undefined,
+      "queryCachingTTL": undefined,
+      "repeat": undefined,
+      "repeatDirection": undefined,
+      "targets": [
+        {
+          "clauses": [],
+          "entityType": "alarm",
+          "hide": false,
+          "refId": "A",
+          "selectType": {
+            "label": undefined,
+          },
+        },
+      ],
+      "timeFrom": undefined,
+      "timeShift": undefined,
+      "title": "Alarms by plugin id",
+      "transformations": [],
+      "transparent": undefined,
+      "type": "table",
     },
     {
       "collapsed": true,
