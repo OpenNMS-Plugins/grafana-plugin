@@ -217,3 +217,43 @@ describe('convertFromV8 :: legacy plugin id datasource strings', () => {
     expect(result.dashboardV9.annotations.list[0].datasource).toEqual('-- Grafana --')
   })
 })
+
+/**
+ * A v8 dashboard can reference an __inputs datasource in any of Grafana's three variable
+ * spellings. If the map does not carry all three, getSourceDatasourceInfo reports the panel as
+ * non-OpenNMS and the query conversion in panels.ts never runs, so the raw v8 target survives.
+ */
+describe('convertFromV8 :: all three template variable spellings', () => {
+  const dashboardUsing = (datasource: string) => ({
+    __inputs: [{
+      name: 'DS_ONMS', type: 'datasource',
+      pluginId: 'opennms-helm-performance-datasource', pluginName: 'OpenNMS Performance'
+    }],
+    panels: [{
+      type: 'graph',
+      datasource,
+      targets: [{ refId: 'A', type: 'attribute', nodeId: '1', resourceId: 'nodeSnmp[]', attribute: 'loadavg1' }]
+    }]
+  })
+
+  const convertPanel = (datasource: string) =>
+    dashboardConvert(JSON.stringify(dashboardUsing(datasource)), 8, 9, '', defaultOptions).dashboardV9.panels[0]
+
+  it.each(['$DS_ONMS', '${DS_ONMS}', '[[DS_ONMS]]'])(
+    'should rewrite the datasource of a panel using %s', (datasource) => {
+      expect(convertPanel(datasource).datasource).toEqual({
+        type: 'opennms-performance-datasource',
+        uid: datasource
+      })
+    })
+
+  it.each(['$DS_ONMS', '${DS_ONMS}', '[[DS_ONMS]]'])(
+    'should convert the v8 query of a panel using %s', (datasource) => {
+      const target = convertPanel(datasource).targets[0]
+
+      // the v9 shape, not the raw v8 { type, nodeId, resourceId, attribute }
+      expect(target.performanceType).toEqual({ label: 'Attribute', value: 1 })
+      expect(target.attribute.attribute).toEqual({ name: 'loadavg1', label: 'loadavg1' })
+      expect(target.nodeId).toBeUndefined()
+    })
+})

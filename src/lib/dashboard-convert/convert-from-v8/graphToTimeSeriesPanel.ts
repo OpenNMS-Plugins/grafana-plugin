@@ -91,7 +91,7 @@ const convertFieldConfig = (source: any) => {
       custom: {
         axisCenteredZero: false,
         axisColorMode: 'text',
-        axisLabel: source.yaxes?.[0].label || '', // e.g. 'bytes/sec'
+        axisLabel: source.yaxes?.[0]?.label || '', // e.g. 'bytes/sec'
         axisPlacement: 'auto',
         barAlignment: 0,
         drawStyle: 'line',  // lines === true ?
@@ -143,9 +143,9 @@ const convertFieldConfig = (source: any) => {
 const convertFieldConfigOverrides = (source: any) => {
   const overrides: any[] = []
 
-  if (source.seriesOverrides) {
+  if (Array.isArray(source.seriesOverrides)) {
     for (const o of source.seriesOverrides) {
-      if (o.alias && o.stack) {
+      if (o?.alias && o.stack) {
         const item = {
           matcher: {
             id: 'byRegexp',

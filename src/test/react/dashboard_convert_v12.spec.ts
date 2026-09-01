@@ -806,3 +806,36 @@ describe('convertToV12 :: null sub-objects', () => {
     expect(convert(source).isError).toEqual(false)
   })
 })
+
+/**
+ * Threading the options through the panel mappers (A.8) made the v8 graph converter reachable
+ * from the v9 paths, so its unguarded dereferences became crashes that escape dashboardConvert.
+ */
+describe('convertToV12 :: graph panel with malformed legacy fields', () => {
+  const graphOptions = { ...defaultOptions, convertGraphToTimeSeries: true }
+  const graph = (extra: any) => ({ panels: [{ type: 'graph', title: 'G', targets: [{ refId: 'A' }], ...extra }] })
+
+  const malformed: Array<[string, any]> = [
+    ['yaxes: []', { yaxes: [] }],
+    ['yaxes: [null]', { yaxes: [null] }],
+    ['yaxes: null', { yaxes: null }],
+    ['no yaxes', {}],
+    ['seriesOverrides: [null]', { seriesOverrides: [null] }],
+    ['seriesOverrides: null', { seriesOverrides: null }],
+    ['seriesOverrides: [{}]', { seriesOverrides: [{}] }],
+    ['legend: null', { legend: null }]
+  ]
+
+  it.each(malformed)('should convert a graph panel with %s without throwing', (_name, extra) => {
+    expect(() => convert(graph(extra), graphOptions)).not.toThrow()
+    expect(convert(graph(extra), graphOptions).isError).toEqual(false)
+  })
+
+  it('should still read the axis label and unit when yaxes is well formed', () => {
+    const source = graph({ yaxes: [{ format: 'Bps', label: 'bits/sec' }] })
+    const panel = JSON.parse(convert(source, graphOptions).json).panels[0]
+
+    expect(panel.fieldConfig.defaults.unit).toEqual('Bps')
+    expect(panel.fieldConfig.defaults.custom.axisLabel).toEqual('bits/sec')
+  })
+})
