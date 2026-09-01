@@ -68,17 +68,17 @@ describe('convertFromV8 :: datasource template variable', () => {
     expect(result.dashboardV9.templating.list[0].query).toEqual('opennms-performance-datasource')
   })
 
-  it('should retain the variable when the datasource is the bare string form', () => {
+  it('should retain the variable, normalized to the braced form, from a bare string', () => {
     const result = dashboardConvert(
       JSON.stringify(helmDashboardWithDatasourceVariable), 8, 9, '', defaultOptions)
 
     expect(result.dashboardV9.panels[0].datasource).toEqual({
       type: 'opennms-performance-datasource',
-      uid: '$datasource'
+      uid: '${datasource}'
     })
   })
 
-  it('should retain the ${} form of the variable', () => {
+  it('should leave a variable that is already in the braced form alone', () => {
     const source = {
       ...helmDashboardWithDatasourceVariable,
       panels: [{ ...helmDashboardWithDatasourceVariable.panels[0], datasource: '${datasource}' }]
@@ -105,7 +105,7 @@ describe('convertFromV8 :: datasource template variable', () => {
 
     expect(result.dashboardV9.panels[0].targets[0].datasource).toEqual({
       type: 'opennms-performance-datasource',
-      uid: '$datasource'
+      uid: '${datasource}'
     })
   })
 
@@ -137,7 +137,7 @@ describe('convertFromV8 :: datasource template variable', () => {
 
     expect(result.dashboardV9.panels[0].datasource).toEqual({
       type: 'opennms-performance-datasource',
-      uid: '$datasource'
+      uid: '${datasource}'
     })
   })
 })
@@ -222,11 +222,14 @@ describe('convertFromV8 :: all three template variable spellings', () => {
   const convertPanel = (datasource: string) =>
     dashboardConvert(JSON.stringify(dashboardUsing(datasource)), 8, 9, '', defaultOptions).dashboardV9.panels[0]
 
+  // '${NAME}' is the only spelling Grafana 12 resolves in both places it has to: the import
+  // substitution in dash_template_evaluator.go matches (\$\{.+?\}) only, and getInstanceSettings
+  // interpolates only a uid starting with '$'. All three inputs therefore converge on it.
   it.each(['$DS_ONMS', '${DS_ONMS}', '[[DS_ONMS]]'])(
-    'should rewrite the datasource of a panel using %s', (datasource) => {
+    'should emit the braced form for a panel using %s', (datasource) => {
       expect(convertPanel(datasource).datasource).toEqual({
         type: 'opennms-performance-datasource',
-        uid: datasource
+        uid: '${DS_ONMS}'
       })
     })
 

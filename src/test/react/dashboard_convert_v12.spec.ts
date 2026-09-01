@@ -426,17 +426,11 @@ describe('convertToV12 :: datasource references', () => {
     expect(panelDatasource('OpenNMS Performance')).toEqual({ uid: 'OpenNMS Performance' })
   })
 
-  it('should map a $var template variable to the uid, not the type', () => {
-    expect(panelDatasource('$datasource')).toEqual({ uid: '$datasource' })
-  })
-
-  it('should map a ${var} template variable to the uid', () => {
-    expect(panelDatasource('${datasource}')).toEqual({ uid: '${datasource}' })
-  })
-
-  it('should map a legacy [[var]] template variable to the uid', () => {
-    expect(panelDatasource('[[datasource]]')).toEqual({ uid: '[[datasource]]' })
-  })
+  // the uid, not the type; and always in the braced spelling, see the block below
+  it.each(['$datasource', '${datasource}', '[[datasource]]'])(
+    'should map the template variable %s to the uid', (datasource) => {
+      expect(panelDatasource(datasource)).toEqual({ uid: '${datasource}' })
+    })
 
   it('should treat an empty datasource name as no datasource', () => {
     expect(panelDatasource('')).toBeNull()
@@ -464,7 +458,7 @@ describe('convertToV12 :: datasource references', () => {
       annotations: { list: [{ enable: true, iconColor: 'red', name: 'A', datasource: '$datasource' }] }
     }
 
-    expect(convert(source).dashboardV12!.annotations!.list![0].datasource).toEqual({ uid: '$datasource' })
+    expect(convert(source).dashboardV12!.annotations!.list![0].datasource).toEqual({ uid: '${datasource}' })
   })
 
   it('should map variable datasource names the same way', () => {
@@ -490,7 +484,7 @@ describe('convertToV12 :: target level datasource references', () => {
   })
 
   it('should normalize a template variable on a target', () => {
-    expect(targetDatasource('$datasource')).toEqual({ uid: '$datasource' })
+    expect(targetDatasource('$datasource')).toEqual({ uid: '${datasource}' })
   })
 
   it('should preserve a full DataSourceRef object on a target', () => {
@@ -993,5 +987,31 @@ describe('convertToV12 :: graph panel pluginVersion', () => {
     const source = { panels: [{ type: 'graph', title: 'G', pluginVersion: '9.5.1', targets: [{ refId: 'A' }] }] }
 
     expect(JSON.parse(convert(source, options).json).panels[0].pluginVersion).toEqual('9.5.1')
+  })
+})
+
+/**
+ * The v9 to v12 path has the same exposure: a v9 dashboard can already carry any of the three
+ * spellings, and only '${NAME}' resolves in Grafana 12's datasource picker.
+ */
+describe('convertToV12 :: datasource variable spelling', () => {
+  const panelDatasource = (datasource: any) => {
+    const source = { panels: [{ type: 'timeseries', title: 'P', datasource }] }
+
+    return (convert(source).dashboardV12!.panels as any[])[0].datasource
+  }
+
+  it.each(['$datasource', '${datasource}', '[[datasource]]'])(
+    'should emit the braced form for %s', (datasource) => {
+      expect(panelDatasource(datasource)).toEqual({ uid: '${datasource}' })
+    })
+
+  it('should leave a plain datasource name alone', () => {
+    expect(panelDatasource('OpenNMS Performance')).toEqual({ uid: 'OpenNMS Performance' })
+  })
+
+  it('should normalize the spelling inside a DataSourceRef object too', () => {
+    expect(panelDatasource({ type: 'opennms-performance-datasource', uid: '[[datasource]]' }))
+      .toEqual({ type: 'opennms-performance-datasource', uid: '${datasource}' })
   })
 })

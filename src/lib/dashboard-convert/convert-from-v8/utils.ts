@@ -1,6 +1,6 @@
 import { SourceDatasourceInfo } from './datasources';
 import { DatasourceMetadata, DsType } from '../types'
-import { isTemplateVariableCandidate } from '../../utils'
+import { toBracedVariable } from '../templateVariables'
 
 // add 'name', '$name', '${name}' and '[[name]]' variations.
 // All three spellings are valid in a dashboard, and a v8 dashboard exported from Grafana 8 may
@@ -14,15 +14,6 @@ export const addVariationsToMap = (varName: string, dsType: DsType,  datasourceM
   datasourceMap.set('$' + rawName, dsType)
   datasourceMap.set('${' + rawName + '}', dsType)
   datasourceMap.set('[[' + rawName + ']]', dsType)
-}
-
-// Grafana accepts three spellings of a variable reference. isTemplateVariableCandidate covers
-// the two '$' forms only, and is paired elsewhere with extractRawVariableName, which cannot
-// parse the '[[name]]' form, so this check stays local rather than widening the shared helper.
-const isVariableReference = (value: string) => {
-  const trimmed = value.trim()
-
-  return isTemplateVariableCandidate(trimmed) || (trimmed.startsWith('[[') && trimmed.endsWith(']]'))
 }
 
 // returns a string which is one of the DsTypes or else empty string, and
@@ -118,8 +109,8 @@ const getTemplateVariableUid = (datasource: any): string | undefined => {
   // typeof rather than the isString helper: that also accepts a String wrapper object, and
   // everything here comes from JSON.parse, so it is always a primitive
   if (typeof datasource === 'string') {
-    return isVariableReference(datasource) ? datasource : undefined
+    return toBracedVariable(datasource)
   }
 
-  return datasource?.uid && isVariableReference(datasource.uid) ? datasource.uid : undefined
+  return toBracedVariable(datasource?.uid)
 }

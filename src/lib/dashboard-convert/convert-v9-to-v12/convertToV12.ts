@@ -36,6 +36,7 @@ import {
 } from '../../parseUtils'
 import { convertLegacyGraphToTimeSeriesPanel, isLegacyGraphPanel } from '../convert-from-v8/graphToTimeSeriesPanel'
 import { getOpenNmsPluginVersion } from '../pluginVersions'
+import { toBracedVariable } from '../templateVariables'
 
 /**
  * Parse a request into a ConvertResponse containing a Grafana v12 compatible Dashboard.
@@ -293,7 +294,9 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
       return null
     }
 
-    return { uid: nameOrVariable }
+    // a variable reference is normalized to the braced spelling, the only one Grafana 12
+    // resolves both at import and in the datasource picker
+    return { uid: toBracedVariable(nameOrVariable) ?? nameOrVariable }
   }
 
   // full DataSourceRef object
@@ -301,7 +304,7 @@ const mapDataSourceRef = (obj: any): DataSourceRef | null => {
     const datasource: DataSourceRef = {
       apiVersion: isDefined(obj.apiVersion) ? convertToString(obj?.apiVersion) : undefined,
       type: isDefined(obj.type) ? convertToString(obj?.type) : undefined,
-      uid: isDefined(obj.uid) ? convertToString(obj?.uid) : undefined
+      uid: isDefined(obj.uid) ? (toBracedVariable(obj.uid) ?? convertToString(obj?.uid)) : undefined
     }
 
     return datasource
