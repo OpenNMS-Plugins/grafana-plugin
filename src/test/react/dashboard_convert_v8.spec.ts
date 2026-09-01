@@ -162,13 +162,10 @@ describe('convertFromV8 :: null entries', () => {
  * "datasource": "opennms-helm-entity-datasource". That id does not exist in Grafana 12, so it
  * has to be rewritten to the installed v9+ datasource. convertFromV8 rewrote __inputs,
  * __requires, templating and panel/target refs held as objects, but not a bare plugin id
- * string, and annotations were passed through untouched by the spread.
+ * string.
  */
 describe('convertFromV8 :: legacy plugin id datasource strings', () => {
   const dashboard = {
-    annotations: {
-      list: [{ name: 'Alarms', iconColor: 'red', enable: true, datasource: 'opennms-helm-entity-datasource' }]
-    },
     panels: [
       { type: 'graph', title: 'Panel ref', datasource: 'opennms-helm-performance-datasource', targets: [{ refId: 'A' }] },
       { type: 'graph', title: 'Target ref', targets: [{ refId: 'A', datasource: 'opennms-helm-performance-datasource' }] }
@@ -191,23 +188,9 @@ describe('convertFromV8 :: legacy plugin id datasource strings', () => {
     })
   })
 
-  it('should rewrite a legacy plugin id on an annotation to the installed datasource', () => {
-    expect(convertToV9().annotations.list[0].datasource).toEqual({
-      type: 'opennms-entity-datasource',
-      uid: 'onms-entity'
-    })
-  })
-
-  it('should carry the rewritten annotation datasource through to v12', () => {
-    const result = dashboardConvert(JSON.stringify(dashboard), 8, 12, '', defaultOptions)
-
-    expect(result.dashboardV12!.annotations!.list![0].datasource).toEqual({
-      type: 'opennms-entity-datasource',
-      uid: 'onms-entity'
-    })
-  })
-
-  it('should leave a non-OpenNMS annotation datasource alone', () => {
+  // Annotations are not rewritten: no OPG or Helm datasource has ever supported annotation
+  // queries, so an annotation cannot be backed by one.
+  it('should leave an annotation datasource alone', () => {
     const source = {
       annotations: { list: [{ name: 'G', iconColor: 'red', enable: true, datasource: '-- Grafana --' }] }
     }

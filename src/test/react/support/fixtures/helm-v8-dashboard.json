@@ -45,16 +45,6 @@
           "type": "dashboard"
         },
         "type": "dashboard"
-      },
-      {
-        "datasource": "opennms-helm-entity-datasource",
-        "enable": true,
-        "iconColor": "red",
-        "name": "Major Alarms",
-        "target": {
-          "refId": "A",
-          "entityType": "alarm"
-        }
       }
     ]
   },

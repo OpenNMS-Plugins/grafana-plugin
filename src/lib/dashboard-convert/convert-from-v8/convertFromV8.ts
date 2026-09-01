@@ -1,12 +1,11 @@
 import { getDataSourceSrv } from '@grafana/runtime'
-import { convertAnnotations } from './annotations'
 import { getDatasourceMetadata } from './datasources'
 import { parseInputs } from './inputs'
 import { parseRequires } from './requires'
 import { convertPanels } from './panels'
 import { parseTemplating } from './templating'
 import { ConvertOptions, ConvertResponse, DsType } from '../types'
-import { convertToInt, isDefined, isDefinedObject, isNonEmptyArray } from '../../parseUtils'
+import { convertToInt, isDefined, isNonEmptyArray } from '../../parseUtils'
 
 // Convert a Dashboard from HELM v8 to OPG v9 format
 export const convertDashboardFromV8 = (sourceJson: string, dashboardTitle: string, options: ConvertOptions): ConvertResponse => {
@@ -55,11 +54,9 @@ export const convertDashboardFromV8 = (sourceJson: string, dashboardTitle: strin
   const parsedTemplating = parseTemplating(templating, datasourceMap, dsMetas)
   dashboard.templating = parsedTemplating
 
-  // must come after parseInputs and parseTemplating, which populate the datasourceMap
-  if (isDefinedObject(source.annotations)) {
-    dashboard.annotations = convertAnnotations(source.annotations, datasourceMap, dsMetas)
-  }
-
+  // Annotations are deliberately not rewritten. Every OPG datasource, and every Helm one before
+  // them, declares "annotations": false in its plugin.json and implements no annotationQuery, so
+  // no annotation can be backed by one and there is no legacy ref here to convert.
   const panels = source.panels || []
   const convertedPanels = convertPanels(panels, datasourceMap, dsMetas, options.unhideAllQueries, options.convertGraphToTimeSeries)
   dashboard.panels = convertedPanels
