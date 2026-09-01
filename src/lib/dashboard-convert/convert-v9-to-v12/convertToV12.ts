@@ -34,7 +34,7 @@ import {
   isNonEmptyArray
 } from '../../parseUtils'
 import { convertLegacyGraphToTimeSeriesPanel, isLegacyGraphPanel } from '../convert-from-v8/graphToTimeSeriesPanel'
-import pluginJson from '../../../plugin.json'
+import { getOpenNmsPluginVersion } from '../pluginVersions'
 
 /**
  * Parse a request into a ConvertResponse containing a Grafana v12 compatible Dashboard.
@@ -90,15 +90,17 @@ const mapRequires = (sourceRequires: any[]) => {
   for (const r of sourceRequires) {
     let obj = { ...r }
 
-    if (isDefined(r.type) &&
-      (r.type === 'datasource' || r.type === 'panel') &&
-      isDefined(r.id) &&
-      typeof r.id === 'string' &&
-      String(r.id).startsWith('opennms-')) {
-      // '__requires[].version' is the minimum plugin version the dashboard needs, and Grafana
-      // reads it as a semver string, so use the plugin's own version rather than a bare 12.
+    if (isDefined(r.type) && (r.type === 'datasource' || r.type === 'panel')) {
+      // '__requires[].version' is the minimum version of the plugin named by 'id', which is one
+      // of our datasource or panel plugins rather than the app, and Grafana reads it as a semver
+      // string. An id we do not recognise is left alone rather than given a version we would be
+      // guessing at.
       // Set it on the copy; mutating 'r' would corrupt the caller's source dashboard.
-      obj['version'] = pluginJson.info.version
+      const version = getOpenNmsPluginVersion(r.id)
+
+      if (version) {
+        obj['version'] = version
+      }
     }
 
     targetRequires.push(obj)
@@ -451,10 +453,11 @@ const mapTargets = (obj: any, options: ConvertOptions) => {
 // a core or third party panel would misrepresent which migrations have been applied, so those
 // keep whatever the source had.
 const mapPluginVersion = (obj: any) => {
-  const type = convertToString(obj.type)
+  // the version of the panel plugin named by 'type', which is one of ours or nobody's
+  const version = getOpenNmsPluginVersion(obj.type)
 
-  if (type.startsWith('opennms-')) {
-    return pluginJson.info.version
+  if (version) {
+    return version
   }
 
   return isDefined(obj.pluginVersion) ? convertToString(obj.pluginVersion) : undefined

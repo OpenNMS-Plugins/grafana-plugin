@@ -30,7 +30,7 @@ export const convertLegacyGraphToTimeSeriesPanel = (source: any) => {
   delete panel.pointradius
   delete panel.points
   delete panel.renderer
-  delete panel.seriesOverride
+  delete panel.seriesOverrides
   delete panel.spaceLength
   delete panel.stack
   delete panel.steppedLine

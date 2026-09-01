@@ -1,5 +1,7 @@
 import { AnnotationTarget, defaultDashboard, defaultGridPos } from '@grafana/schema'
-import pluginJson from '../../plugin.json'
+import alarmTablePluginJson from '../../panels/alarm-table/plugin.json'
+import filterPanelPluginJson from '../../panels/filter-panel/plugin.json'
+import performanceDsPluginJson from '../../datasources/perf-ds/plugin.json'
 import { convertDashboardToV12 } from '../../lib/dashboard-convert/convert-v9-to-v12'
 import { ConvertOptions, ConvertResponse } from '../../lib/dashboard-convert/types'
 
@@ -28,7 +30,9 @@ describe('convertToV12 :: __requires', () => {
   it('should set OpenNMS entries to the plugin version, as a semver string', () => {
     const result = convert({ __requires: [...openNmsRequires.map(r => ({ ...r }))] })
 
-    expect(result.dashboardV12!['__requires'][0].version).toEqual(pluginJson.info.version)
+    // the entry names the nested datasource plugin, not the app, so its version is the one
+    // Grafana will compare against at runtime
+    expect(result.dashboardV12!['__requires'][0].version).toEqual(performanceDsPluginJson.info.version)
     expect(typeof result.dashboardV12!['__requires'][0].version).toEqual('string')
   })
 
@@ -39,7 +43,25 @@ describe('convertToV12 :: __requires', () => {
       ]
     }
 
-    expect(convert(source).dashboardV12!['__requires'][0].version).toEqual(pluginJson.info.version)
+    expect(convert(source).dashboardV12!['__requires'][0].version).toEqual(alarmTablePluginJson.info.version)
+  })
+
+  it('should resolve a legacy Helm panel id to its current equivalent version', () => {
+    const source = {
+      __requires: [
+        { type: 'panel', id: 'opennms-helm-alarm-table-panel', name: 'Alarm Table', version: '' }
+      ]
+    }
+
+    expect(convert(source).dashboardV12!['__requires'][0].version).toEqual(alarmTablePluginJson.info.version)
+  })
+
+  it('should not invent a version for an unrecognised opennms entry', () => {
+    const source = {
+      __requires: [{ type: 'panel', id: 'opennms-not-a-real-panel', name: 'Nope', version: '3.1.4' }]
+    }
+
+    expect(convert(source).dashboardV12!['__requires'][0].version).toEqual('3.1.4')
   })
 
   it('should not mutate the source dashboard', () => {
@@ -660,7 +682,7 @@ describe('convertToV12 :: panel pluginVersion', () => {
   it('should stamp the real plugin version on an OpenNMS panel', () => {
     const panels = convertPanels([{ type: 'opennms-alarm-table-panel', title: 'Alarms' }])
 
-    expect(panels[0].pluginVersion).toEqual(pluginJson.info.version)
+    expect(panels[0].pluginVersion).toEqual(alarmTablePluginJson.info.version)
   })
 
   it('should leave a core panel pluginVersion alone', () => {
@@ -691,7 +713,7 @@ describe('convertToV12 :: panel pluginVersion', () => {
       }
     ])
 
-    expect(panels[0].panels[0].pluginVersion).toEqual(pluginJson.info.version)
+    expect(panels[0].panels[0].pluginVersion).toEqual(filterPanelPluginJson.info.version)
   })
 })
 
@@ -718,5 +740,31 @@ describe('convertToV12 :: string array mapping', () => {
     }
 
     expect(convertJson(source).annotations.list[0].target.tags).toEqual(['x', '', 'y'])
+  })
+})
+
+describe('convertToV12 :: graph panel legacy field removal', () => {
+  const graphPanelWithOverrides = {
+    panels: [{
+      type: 'graph',
+      title: 'A graph',
+      seriesOverrides: [{ alias: '/In/', stack: 'A', transform: 'negative-Y' }],
+      yaxes: [{ format: 'Bps', label: '' }],
+      targets: [{ refId: 'A' }]
+    }]
+  }
+
+  const convertGraph = () => {
+    const options = { ...defaultOptions, convertGraphToTimeSeries: true }
+
+    return JSON.parse(convert(graphPanelWithOverrides, options).json).panels[0]
+  }
+
+  it('should read seriesOverrides into the fieldConfig overrides', () => {
+    expect(convertGraph().fieldConfig.overrides).toHaveLength(1)
+  })
+
+  it('should remove the legacy seriesOverrides array from the converted panel', () => {
+    expect(convertGraph()).not.toHaveProperty('seriesOverrides')
   })
 })
