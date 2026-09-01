@@ -909,3 +909,89 @@ describe('convertToV12 :: null fieldConfig defaults', () => {
     expect(JSON.parse(convert(source).json).panels[0].fieldConfig.defaults).toEqual({})
   })
 })
+
+/**
+ * The same two rules the rest of the converter follows, applied to the mappers that were missed:
+ * preserve what we do not normalize (B), and do not invent what the source did not set (D).
+ */
+describe('convertToV12 :: remaining allowlist mappers', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it('should preserve timepicker fields it does not normalize', () => {
+    const source = { timepicker: { hidden: false, collapse: false, newField: 'x' } }
+
+    expect(convertJson(source).timepicker).toEqual({ hidden: false, collapse: false, newField: 'x' })
+  })
+
+  it('should preserve gridPos fields it does not normalize', () => {
+    const source = { panels: [{ type: 'timeseries', gridPos: { h: 8, w: 12, x: 0, y: 0, custom: 'keep' } }] }
+
+    expect(convertJson(source).panels[0].gridPos.custom).toEqual('keep')
+  })
+
+  it('should preserve quick_range fields it does not normalize', () => {
+    const source = { timepicker: { quick_ranges: [{ display: '5m', from: 'now-5m', to: 'now', section: 3 }] } }
+
+    expect(convertJson(source).timepicker.quick_ranges[0].section).toEqual(3)
+  })
+
+  it('should not pad a snapshot with fields the source did not have', () => {
+    expect(convertJson({ snapshot: { name: 'snap' } }).snapshot).toEqual({ name: 'snap' })
+  })
+
+  it('should still normalize the snapshot fields that are present', () => {
+    const source = { snapshot: { name: 'snap', id: '7', external: 'true', extra: 'keep' } }
+
+    expect(convertJson(source).snapshot).toEqual({ name: 'snap', id: 7, external: true, extra: 'keep' })
+  })
+})
+
+describe('convertToV12 :: no invented empty arrays', () => {
+  const convertJson = (source: any) => JSON.parse(convert(source).json)
+
+  it('should not add links, targets and transformations to a panel that has none', () => {
+    const panel = convertJson({ panels: [{ type: 'text', options: { content: 'hi' } }] }).panels[0]
+
+    expect(panel).not.toHaveProperty('links')
+    expect(panel).not.toHaveProperty('targets')
+    expect(panel).not.toHaveProperty('transformations')
+  })
+
+  it('should not add options to a variable that has none', () => {
+    const source = { templating: { list: [{ name: 'c', type: 'constant', query: 'p' }] } }
+
+    expect(convertJson(source).templating.list[0]).not.toHaveProperty('options')
+  })
+
+  it('should keep the arrays a panel does have', () => {
+    const source = {
+      panels: [{ type: 'timeseries', targets: [{ refId: 'A' }], transformations: [{ id: 'organize' }] }]
+    }
+    const panel = convertJson(source).panels[0]
+
+    expect(panel.targets).toHaveLength(1)
+    expect(panel.transformations).toHaveLength(1)
+  })
+
+  it('should not add an empty panels array to a row that has none', () => {
+    const source = { panels: [{ type: 'row', collapsed: false, title: 'R' }] }
+
+    expect(convertJson(source).panels[0]).not.toHaveProperty('panels')
+  })
+})
+
+describe('convertToV12 :: graph panel pluginVersion', () => {
+  it('should not stamp a hard-coded 9.4.7 on a converted graph panel', () => {
+    const options = { ...defaultOptions, convertGraphToTimeSeries: true }
+    const source = { panels: [{ type: 'graph', title: 'G', targets: [{ refId: 'A' }] }] }
+
+    expect(JSON.parse(convert(source, options).json).panels[0]).not.toHaveProperty('pluginVersion')
+  })
+
+  it('should keep the source pluginVersion of a converted graph panel', () => {
+    const options = { ...defaultOptions, convertGraphToTimeSeries: true }
+    const source = { panels: [{ type: 'graph', title: 'G', pluginVersion: '9.5.1', targets: [{ refId: 'A' }] }] }
+
+    expect(JSON.parse(convert(source, options).json).panels[0].pluginVersion).toEqual('9.5.1')
+  })
+})

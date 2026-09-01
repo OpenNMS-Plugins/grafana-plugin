@@ -24,7 +24,7 @@ import {
   VariableSort,
   VariableType
 } from '@grafana/schema'
-import { ConvertOptions, ConvertResponse } from '../types'
+import { ConvertedDashboard, ConvertOptions, ConvertResponse } from '../types'
 import {
   convertToBoolean,
   convertToInt,
@@ -70,7 +70,7 @@ export const convertDashboardToV12 = (request: ConvertResponse, dashboardTitle: 
   // Make an empty Grafana V12 Dashboard object
   // Then we map everything from 'source' into it
   // See @grafana/schema, dashboard_types.gen.d.ts, interface Dashboard
-  const dashboard: Dashboard = mapV9toV12(source, dashboardTitle, options)
+  const dashboard: ConvertedDashboard = mapV9toV12(source, dashboardTitle, options)
 
   const json = JSON.stringify(dashboard, null, 2)
 
@@ -144,7 +144,7 @@ const mapArray = <T>(obj: any, mapItem: (item: any) => T): T[] => {
 // We then map it into a Grafana 12 Dashboard typed object
 // See @grafana/schema, dashboard_types.gen.d.ts, interface Dashboard
 const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions) => {
-  const dashboard: Dashboard = createEmptyV12Dashboard()
+  const dashboard: ConvertedDashboard = createEmptyV12Dashboard()
 
   // leaving __inputs as-is, they should either be ok or else were already converted from OPG v8 to v9
   if (isNonEmptyArray(source['__inputs'])) {
@@ -439,7 +439,7 @@ const mapGridPos = (obj: any): GridPos => {
     pos.static = convertToBoolean(obj.static)
   }
 
-  return pos
+  return { ...obj, ...pos }
 }
 
 const mapPanelOrRowPanel = (obj: any, options: ConvertOptions): Panel | RowPanel => {
@@ -459,10 +459,6 @@ const mapPanelOrRowPanel = (obj: any, options: ConvertOptions): Panel | RowPanel
 // target can carry a legacy name or template variable string too.
 // If the user asked to unhide all queries, clear the 'hide' flag on each of them.
 const mapTargets = (obj: any, options: ConvertOptions) => {
-  if (!isNonEmptyArray(obj.targets)) {
-    return []
-  }
-
   return mapArray(obj.targets, (t: any) => {
     const target = { ...t }
 
@@ -502,7 +498,7 @@ type OpgPanel = Omit<Panel, 'datasource'> & { datasource?: DataSourceRef | null 
 type OpgRowPanel = Omit<RowPanel, 'datasource' | 'id' | 'panels'> & {
   datasource?: DataSourceRef | null
   id?: number
-  panels: Array<Panel | RowPanel>
+  panels?: Array<Panel | RowPanel>
 }
 
 const mapPanel = (source: any, options: ConvertOptions): Panel => {
@@ -525,7 +521,7 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
     interval: isDefined(obj.interval) ? convertToString(obj.interval) : undefined,
     libraryPanel: obj.libraryPanel, // may be undefined. we are not bothering to parse further
-    links: mapArray(obj.links, mapDashboardLink),
+    links: isNonEmptyArray(obj.links) ? mapArray(obj.links, mapDashboardLink) : undefined,
     maxDataPoints: isDefined(obj.maxDataPoints) ? convertToInt(obj.maxDataPoints) : undefined,
     maxPerRow: isDefined(obj.maxPerRow) ? convertToInt(obj.maxPerRow) : undefined,
     options: obj.options,  // may be undefined. most likely this is our OPG options, we won't parse further here
@@ -533,11 +529,11 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     queryCachingTTL: isDefined(obj.queryCachingTTL) ? convertToInt(obj.queryCachingTTL) : undefined,
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     repeatDirection: isDefined(obj.repeatDirection) && (obj.repeatDirection === 'h' || obj.repeatDirection === 'v') ? obj.repeatDirection : undefined,
-    targets: mapTargets(obj, options),  // these should be OPG targets
+    targets: isNonEmptyArray(obj.targets) ? mapTargets(obj, options) : undefined,  // these should be OPG targets
     timeFrom: isDefined(obj.timeFrom) ? convertToString(obj.timeFrom) : undefined,
     timeShift: isDefined(obj.timeShift) ? convertToString(obj.timeShift) : undefined,
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
-    transformations: isNonEmptyArray(obj.transformations) ? obj.transformations : [],  // not bothering to parse these further into DataTransformerConfig objects
+    transformations: isNonEmptyArray(obj.transformations) ? obj.transformations : undefined,  // not bothering to parse these further into DataTransformerConfig objects
     transparent: isDefined(obj.transparent) ? convertToBoolean(obj.transparent) : undefined,
     type: convertToString(obj.type) // panel plugin id
   }
@@ -551,7 +547,7 @@ const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     gridPos: isDefinedObject(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
     id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
-    panels: mapArray(obj.panels, p => mapPanelOrRowPanel(p, options)),
+    panels: isNonEmptyArray(obj.panels) ? mapArray(obj.panels, p => mapPanelOrRowPanel(p, options)) : undefined,
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
     type: 'row'
@@ -561,23 +557,27 @@ const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
   return { ...obj, ...withoutUndefined(row) }
 }
 
-const mapDashboardSnapshot = (obj: any) => {
-  const snapshot = {
-    created: convertToString(obj.created),
-    expires: convertToString(obj.expires),
-    external: convertToBoolean(obj.external),
-    externalUrl: convertToString(obj.externalUrl),
-    originalUrl: convertToString(obj.originalUrl),
-    id: convertToInt(obj.id),
-    key: convertToString(obj.key),
-    name: convertToString(obj.name),
-    orgId: convertToInt(obj.orgId),
-    updated: convertToString(obj.updated),
+// The schema types every snapshot field as required, but only Grafana writes a complete one, so
+// normalize what the source has rather than padding the rest with empty strings and zeroes.
+type OpgDashboardSnapshot = Partial<NonNullable<Dashboard['snapshot']>>
+
+const mapDashboardSnapshot = (obj: any): OpgDashboardSnapshot => {
+  const snapshot: OpgDashboardSnapshot = {
+    created: isDefined(obj.created) ? convertToString(obj.created) : undefined,
+    expires: isDefined(obj.expires) ? convertToString(obj.expires) : undefined,
+    external: isDefined(obj.external) ? convertToBoolean(obj.external) : undefined,
+    externalUrl: isDefined(obj.externalUrl) ? convertToString(obj.externalUrl) : undefined,
+    originalUrl: isDefined(obj.originalUrl) ? convertToString(obj.originalUrl) : undefined,
+    id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
+    key: isDefined(obj.key) ? convertToString(obj.key) : undefined,
+    name: isDefined(obj.name) ? convertToString(obj.name) : undefined,
+    orgId: isDefined(obj.orgId) ? convertToInt(obj.orgId) : undefined,
+    updated: isDefined(obj.updated) ? convertToString(obj.updated) : undefined,
     url: isDefined(obj.url) ? convertToString(obj.url) : undefined,
-    userId: convertToInt(obj.userId)
+    userId: isDefined(obj.userId) ? convertToInt(obj.userId) : undefined
   }
 
-  return snapshot
+  return { ...obj, ...withoutUndefined(snapshot) }
 }
 
 // 'text' and 'value' are a string, or an array of strings for a multi-value variable.
@@ -652,7 +652,7 @@ const mapVariableModel = (obj: any): VariableModel => {
     label: isDefined(obj.label) ? convertToString(obj.label) : undefined,
     multi: isDefined(obj.multi) ? convertToBoolean(obj.multi) : undefined,
     name: convertToString(obj.name),
-    options: mapArray(obj.options, mapVariableOption),
+    options: isNonEmptyArray(obj.options) ? mapArray(obj.options, mapVariableOption) : undefined,
     query: obj.query,  // not bothering to parse this further,
     queryValue: isDefined(obj.queryValue) ? convertToString(obj.queryValue) : undefined,
     refresh: mapEnumValue(VariableRefresh, obj.refresh),
@@ -675,13 +675,13 @@ const mapVariableModel = (obj: any): VariableModel => {
 }
 
 const mapTimeOption = (obj: any): TimeOption => {
-  const option = {
+  const option: TimeOption = {
     display: convertToString(obj.display),
     from: convertToString(obj.from),
-    to: convertToString(obj.to),
+    to: convertToString(obj.to)
   }
 
-  return option
+  return { ...obj, ...option }
 }
 
 const mapTimeOptionsFromStrings = (options: string[]): TimeOption[] => {
@@ -722,7 +722,10 @@ const mapTimePickerConfig = (obj: any): TimePickerConfig => {
     refresh_intervals: isNonEmptyArray(obj.refresh_intervals) ? mapArray(obj.refresh_intervals, i => convertToString(i)) : undefined,
   }
 
-  return config
+  // 'time_options' is deliberately not carried over; it is replaced by 'quick_ranges' above
+  const { time_options, ...rest } = obj
+
+  return { ...rest, ...withoutUndefined(config) }
 }
 
 // Build the Dashboard we map the source onto.
@@ -731,7 +734,7 @@ const mapTimePickerConfig = (obj: any): TimePickerConfig => {
 // inventing a value (a refresh interval, a timezone, liveNow) silently changes how the
 // converted dashboard behaves. See defaultDashboard in @grafana/schema.
 const createEmptyV12Dashboard = () => {
-  const dashboard: Dashboard = {
+  const dashboard: ConvertedDashboard = {
     /**
      * Contains the list of annotations that are associated with the dashboard.
      */

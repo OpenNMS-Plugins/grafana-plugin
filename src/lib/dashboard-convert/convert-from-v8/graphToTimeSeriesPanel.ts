@@ -5,12 +5,10 @@ export const isLegacyGraphPanel = (panel: any) => {
 export const convertLegacyGraphToTimeSeriesPanel = (source: any) => {
   const panel = {
     ...source,
-    gridPos: source.gridPos,
-    id: source.id,
-    links: source.links,
+    // gridPos, id and links come through the spread; restating them here only added explicit
+    // undefined keys when the source had none
     fieldConfig: convertFieldConfig(source),
     options: convertOptions(source),
-    pluginVersion: '9.4.7',
     type: 'timeseries'
   }
 

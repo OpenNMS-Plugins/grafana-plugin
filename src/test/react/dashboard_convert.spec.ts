@@ -146,3 +146,16 @@ describe('dashboardConvert :: source 9 to target 9 options', () => {
     expect(panels[0].targets[0].hide).toEqual(true)
   })
 })
+
+describe('dashboardConvert :: dashboard id across paths', () => {
+  const withId = { title: 'T', id: 47, uid: 'abc12345', panels: [] }
+
+  it.each([[9, 9], [9, 12]] as Array<[number, number]>)(
+    'should null the id and drop the uid converting %i to %i', (sourceVersion, targetVersion) => {
+      const result = dashboardConvert(JSON.stringify(withId), sourceVersion, targetVersion, '', defaultOptions)
+      const json = JSON.parse(result.json)
+
+      expect(json.id).toBeNull()
+      expect(json).not.toHaveProperty('uid')
+    })
+})

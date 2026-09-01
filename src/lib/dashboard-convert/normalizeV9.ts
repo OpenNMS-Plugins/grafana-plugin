@@ -59,8 +59,11 @@ export const normalizeDashboardV9 = (sourceJson: string, dashboardTitle: string,
     dashboard.panels = applyPanelOptions(source.panels, options)
   }
 
-  // remove uid, Grafana will create a new unique one when user imports the Dashboard json
+  // 'id' and 'uid' identify the dashboard within the Grafana instance it came from. Drop the uid
+  // and null the id, the way Grafana's own export for sharing externally does, so the importing
+  // instance assigns its own. The v9 to v12 path does the same.
   delete dashboard.uid
+  dashboard.id = null
 
   if (dashboardTitle) {
     dashboard.title = dashboardTitle

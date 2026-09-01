@@ -67,7 +67,7 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
   "editable": true,
   "gnetId": null,
   "graphTooltip": 1,
-  "id": 12,
+  "id": null,
   "links": [
     {
       "asDropdown": false,
@@ -560,7 +560,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "total": false,
       },
       "linewidth": 2,
-      "links": [],
       "pointradius": 3,
       "seriesOverrides": [
         {
@@ -611,7 +610,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "timeFrom": "now-2d",
       "timeShift": "1d",
       "title": "Load Average",
-      "transformations": [],
       "type": "graph",
       "yaxes": [
         {
@@ -699,7 +697,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "y": 0,
       },
       "id": 4,
-      "links": [],
       "options": {
         "alarmTable": {
           "alarmTableAlarms": {
@@ -734,7 +731,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       ],
       "title": "Alarms",
-      "transformations": [],
       "type": "opennms-alarm-table-panel",
     },
     {
@@ -750,7 +746,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "y": 9,
       },
       "id": 10,
-      "links": [],
       "targets": [
         {
           "clauses": [],
@@ -762,7 +757,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       ],
       "title": "Alarms by plugin id",
-      "transformations": [],
       "type": "table",
     },
     {
@@ -788,7 +782,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
             "y": 10,
           },
           "id": 8,
-          "links": [],
           "targets": [
             {
               "attribute": {
@@ -829,7 +822,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
             },
           ],
           "title": "Nested Traffic",
-          "transformations": [],
           "type": "graph",
         },
       ],
@@ -898,8 +890,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
     "to": "now",
   },
   "timepicker": {
-    "hidden": undefined,
-    "nowDelay": undefined,
     "quick_ranges": [
       {
         "display": "5m",
@@ -1118,7 +1108,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "y": 0,
       },
       "id": 2,
-      "links": [],
       "options": {
         "legend": {
           "calcs": [
@@ -1134,7 +1123,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
           "sort": "none",
         },
       },
-      "pluginVersion": "9.4.7",
       "targets": [
         {
           "attribute": {
@@ -1177,7 +1165,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
       "timeFrom": "now-2d",
       "timeShift": "1d",
       "title": "Load Average",
-      "transformations": [],
       "type": "timeseries",
     },
     {
@@ -1256,7 +1243,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "y": 0,
       },
       "id": 4,
-      "links": [],
       "options": {
         "alarmTable": {
           "alarmTableAlarms": {
@@ -1292,7 +1278,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       ],
       "title": "Alarms",
-      "transformations": [],
       "type": "opennms-alarm-table-panel",
     },
     {
@@ -1308,7 +1293,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         "y": 9,
       },
       "id": 10,
-      "links": [],
       "targets": [
         {
           "clauses": [],
@@ -1321,7 +1305,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
         },
       ],
       "title": "Alarms by plugin id",
-      "transformations": [],
       "type": "table",
     },
     {
@@ -1400,7 +1383,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
             "y": 10,
           },
           "id": 8,
-          "links": [],
           "options": {
             "legend": {
               "calcs": [],
@@ -1413,7 +1395,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
               "sort": "none",
             },
           },
-          "pluginVersion": "9.4.7",
           "targets": [
             {
               "attribute": {
@@ -1454,7 +1435,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
             },
           ],
           "title": "Nested Traffic",
-          "transformations": [],
           "type": "timeseries",
         },
       ],
@@ -1523,8 +1503,6 @@ exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to
     "to": "now",
   },
   "timepicker": {
-    "hidden": undefined,
-    "nowDelay": undefined,
     "quick_ranges": [
       {
         "display": "5m",
@@ -1659,7 +1637,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         "y": 0,
       },
       "id": 1,
-      "links": [],
       "maxDataPoints": 300,
       "options": {
         "legend": {
@@ -1686,7 +1663,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         },
       ],
       "title": "Load",
-      "transformations": [],
       "transparent": false,
       "type": "timeseries",
     },
@@ -1703,7 +1679,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         "y": 0,
       },
       "id": 2,
-      "links": [],
       "options": {
         "alarmTable": {
           "pageSize": 10,
@@ -1717,7 +1692,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         },
       ],
       "title": "Alarms",
-      "transformations": [],
       "type": "opennms-alarm-table-panel",
     },
     {
@@ -1747,7 +1721,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         "y": 9,
       },
       "id": 4,
-      "links": [],
       "repeat": "node",
       "repeatDirection": "v",
       "targets": [
@@ -1758,7 +1731,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         },
       ],
       "title": "Node $node",
-      "transformations": [],
       "type": "timeseries",
     },
   ],
@@ -1833,7 +1805,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
           },
         ],
         "name": "Filters",
-        "options": [],
         "type": "adhoc",
       },
       {
@@ -1844,7 +1815,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
         },
         "hide": 2,
         "name": "env",
-        "options": [],
         "query": "prod",
         "skipUrlSync": false,
         "type": "constant",
@@ -1857,8 +1827,6 @@ exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to
   },
   "timepicker": {
     "hidden": false,
-    "nowDelay": undefined,
-    "quick_ranges": undefined,
     "refresh_intervals": [
       "10s",
       "1m",
