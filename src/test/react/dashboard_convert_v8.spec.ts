@@ -141,3 +141,18 @@ describe('convertFromV8 :: datasource template variable', () => {
     })
   })
 })
+
+describe('convertFromV8 :: null entries', () => {
+  const nullCases: Array<[string, any]> = [
+    ['__requires', { __requires: [null] }],
+    ['__inputs', { __inputs: [null] }],
+    ['templating list', { templating: { list: [null] } }],
+    ['panels', { panels: [null] }],
+    ['panel targets', { panels: [{ type: 'graph', targets: [null] }] }]
+  ]
+
+  it.each(nullCases)('should convert a v8 dashboard with a null %s entry without throwing', (_name, source) => {
+    expect(() => dashboardConvert(JSON.stringify(source), 8, 12, '', defaultOptions)).not.toThrow()
+    expect(dashboardConvert(JSON.stringify(source), 8, 12, '', defaultOptions).isError).toEqual(false)
+  })
+})

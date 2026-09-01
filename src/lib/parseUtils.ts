@@ -6,6 +6,12 @@ export const isDefined = (obj?: any) => {
   return obj !== undefined
 }
 
+// A Json value may be null, which passes isDefined but cannot have properties read off it.
+// Use this to guard a call that is going to dereference the object.
+export const isDefinedObject = (obj?: any) => {
+  return obj !== undefined && obj !== null && typeof obj === 'object'
+}
+
 export const isNonEmptyArray = (obj?: any) => {
   return isDefined(obj) && Array.isArray(obj) && obj.length > 0
 }

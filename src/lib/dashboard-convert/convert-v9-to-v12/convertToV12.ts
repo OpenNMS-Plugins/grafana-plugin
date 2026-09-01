@@ -30,6 +30,7 @@ import {
   convertToInt,
   convertToString,
   isDefined,
+  isDefinedObject,
   isEnumValueOfType,
   isNonEmptyArray
 } from '../../parseUtils'
@@ -90,7 +91,7 @@ const mapRequires = (sourceRequires: any[]) => {
   for (const r of sourceRequires) {
     let obj = { ...r }
 
-    if (isDefined(r.type) && (r.type === 'datasource' || r.type === 'panel')) {
+    if (isDefinedObject(r) && (r.type === 'datasource' || r.type === 'panel')) {
       // '__requires[].version' is the minimum version of the plugin named by 'id', which is one
       // of our datasource or panel plugins rather than the app, and Grafana reads it as a semver
       // string. An id we do not recognise is left alone rather than given a version we would be
@@ -114,7 +115,9 @@ const mapRequires = (sourceRequires: any[]) => {
 // Note the callback takes only the item: passing a two-argument function such as
 // convertToString straight to Array.map would feed it the index as its second argument.
 const mapArray = <T>(obj: any, mapItem: (item: any) => T): T[] => {
-  return isNonEmptyArray(obj) ? (obj as any[]).map(item => mapItem(item)) : []
+  // a null entry is mapped as an empty object: the item mappers read properties off it, and a
+  // Json array can legitimately contain nulls
+  return isNonEmptyArray(obj) ? (obj as any[]).map(item => mapItem(item ?? {})) : []
 }
 
 // source is a Grafana V9 dashboard compatible object.
@@ -133,7 +136,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
     dashboard['__requires'] = mapRequires(source['__requires'])
   }
 
-  if (isDefined(source.annotations) && isDefined(source.annotations.list) && isNonEmptyArray(source.annotations.list)) {
+  if (isDefinedObject(source.annotations) && isNonEmptyArray(source.annotations.list)) {
     dashboard.annotations = {
       list: mapArray(source.annotations.list, mapAnnotationQuery)
     }
@@ -172,7 +175,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
   }
   
   if (isNonEmptyArray(source.panels)) {
-    dashboard.panels = source.panels.map((p: any) => mapPanelOrRowPanel(p, options))
+    dashboard.panels = mapArray(source.panels, p => mapPanelOrRowPanel(p, options))
   }
 
   if (isDefined(source.preload)) {
@@ -191,7 +194,7 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
     dashboard.schemaVersion = convertToInt(source.schemaVersion)
   }
 
-  if (isDefined(source.snapshot)) {
+  if (isDefinedObject(source.snapshot)) {
     dashboard.snapshot = mapDashboardSnapshot(source.snapshot)
   }
 
@@ -199,20 +202,20 @@ const mapV9toV12 = (source: any, dashboardTitle: string, options: ConvertOptions
     dashboard.tags = mapArray(source.tags, t => convertToString(t))
   }  
 
-  if (isDefined(source.templating) && isNonEmptyArray(source.templating.list)) {
+  if (isDefinedObject(source.templating) && isNonEmptyArray(source.templating.list)) {
     dashboard.templating = {
       list: mapArray(source.templating.list, mapVariableModel)
     }
   }
 
-  if (isDefined(source.time) && isDefined(source.time.from) && isDefined(source.time.to)) {
+  if (isDefinedObject(source.time) && isDefined(source.time.from) && isDefined(source.time.to)) {
     dashboard.time = {
       from: convertToString(source.time.from),
       to: convertToString(source.time.to)
     }
   }
 
-  if (isDefined(source.timepicker)) {
+  if (isDefinedObject(source.timepicker)) {
     dashboard.timepicker = mapTimePickerConfig(source.timepicker)
   }
 
@@ -305,7 +308,7 @@ const mapAnnotationQuery = (obj: any): OpgAnnotationQuery => {
     annotation.enable = convertToBoolean(obj.enable)
   }
 
-  if (isDefined(obj.filter)) {
+  if (isDefinedObject(obj.filter)) {
     const filter: AnnotationPanelFilter = {
       exclude: convertToBoolean(obj.filter.exclude),
       // AnnotationPanelFilter.ids is a list of numeric panel ids
@@ -327,7 +330,7 @@ const mapAnnotationQuery = (obj: any): OpgAnnotationQuery => {
     annotation.name = convertToString(obj.name)
   }
 
-  if (isDefined(obj.target)) {
+  if (isDefinedObject(obj.target)) {
     const target: AnnotationTarget & DataQuery = {
       limit: convertToInt(obj.target.limit, 100),  // 100 is the Grafana default annotation limit
       matchAny: convertToBoolean(obj.target.matchAny),
@@ -433,7 +436,7 @@ const mapTargets = (obj: any, options: ConvertOptions) => {
     return []
   }
 
-  return obj.targets.map((t: any) => {
+  return mapArray(obj.targets, (t: any) => {
     const target = { ...t }
 
     if (isDefined(t.datasource)) {
@@ -489,8 +492,8 @@ const mapPanel = (source: any, options: ConvertOptions): Panel => {
     cacheTimeout: isDefined(obj.cacheTimeout) ? convertToString(obj.cacheTimeout) : undefined,
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     description: isDefined(obj.description) ? convertToString(obj.description) : undefined,
-    fieldConfig: isDefined(obj.fieldConfig) ? mapFieldConfigSource(obj.fieldConfig) : undefined,
-    gridPos: isDefined(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
+    fieldConfig: isDefinedObject(obj.fieldConfig) ? mapFieldConfigSource(obj.fieldConfig) : undefined,
+    gridPos: isDefinedObject(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
     hideTimeOverride: isDefined(obj.hideTimeOverride) ? convertToBoolean(obj.hideTimeOverride) : undefined,
     id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
     interval: isDefined(obj.interval) ? convertToString(obj.interval) : undefined,
@@ -519,9 +522,9 @@ const mapRowPanel = (obj: any, options: ConvertOptions): RowPanel => {
   const row: OpgRowPanel = {
     collapsed: convertToBoolean(obj.collapsed),
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
-    gridPos: isDefined(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
+    gridPos: isDefinedObject(obj.gridPos) ? mapGridPos(obj.gridPos) : undefined,
     id: isDefined(obj.id) ? convertToInt(obj.id) : undefined,
-    panels: isNonEmptyArray(obj.panels) ? obj.panels.map((p: any) => mapPanelOrRowPanel(p, options)) : [],
+    panels: mapArray(obj.panels, p => mapPanelOrRowPanel(p, options)),
     repeat: isDefined(obj.repeat) ? convertToString(obj.repeat) : undefined,
     title: isDefined(obj.title) ? convertToString(obj.title) : undefined,
     type: 'row'
@@ -613,7 +616,7 @@ const mapVariableModel = (obj: any): VariableModel => {
   const model: OpgVariableModel = {
     allValue: isDefined(obj.allValue) ? convertToString(obj.allValue) : undefined,
     allowCustomValue: isDefined(obj.allowCustomValue) ? convertToBoolean(obj.allowCustomValue) : undefined,
-    current: isDefined(obj.current) ? mapVariableOption(obj.current) : undefined,
+    current: isDefinedObject(obj.current) ? mapVariableOption(obj.current) : undefined,
     datasource: isDefined(obj.datasource) ? mapDataSourceRef(obj.datasource) : undefined,
     definition: isDefined(obj.definition) ? convertToString(obj.definition) : undefined,
     description: isDefined(obj.description) ? convertToString(obj.description) : undefined,

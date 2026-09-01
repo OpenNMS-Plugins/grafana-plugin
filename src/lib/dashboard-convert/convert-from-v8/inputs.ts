@@ -39,7 +39,7 @@ export const parseInputs = (source: any[], datasourceMap: Map<string,DsType>, ds
 }
 
 const isOpenNmsDatasource = (s: any) => {
-  return s.type === 'datasource' && s.pluginId?.startsWith('opennms-')
+  return s?.type === 'datasource' && s.pluginId?.startsWith('opennms-')
 }
 
 const parseSource = (s: any, datasourceMap: Map<string,DsType>, dsMetas: DatasourceMetadata[]) => {

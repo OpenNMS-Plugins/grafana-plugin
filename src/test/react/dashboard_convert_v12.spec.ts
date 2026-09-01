@@ -768,3 +768,41 @@ describe('convertToV12 :: graph panel legacy field removal', () => {
     expect(convertGraph()).not.toHaveProperty('seriesOverrides')
   })
 })
+
+/**
+ * isDefined is '!== undefined', so a null passes it and the guarded call then dereferences.
+ * Real dashboards do carry nulls in these places, and nothing catches the TypeError between
+ * here and the panel's onClick, so the Convert button would silently do nothing.
+ */
+describe('convertToV12 :: null sub-objects', () => {
+  const nullCases: Array<[string, any]> = [
+    ['timepicker', { timepicker: null }],
+    ['annotations', { annotations: null }],
+    ['annotations.list', { annotations: { list: null } }],
+    ['templating', { templating: null }],
+    ['templating.list', { templating: { list: null } }],
+    ['time', { time: null }],
+    ['snapshot', { snapshot: null }],
+    ['links', { links: null }],
+    ['tags', { tags: null }],
+    ['panels', { panels: null }],
+    ['annotation filter', { annotations: { list: [{ name: 'a', iconColor: 'r', filter: null }] } }],
+    ['annotation target', { annotations: { list: [{ name: 'a', iconColor: 'r', target: null }] } }],
+    ['annotation entry', { annotations: { list: [null] } }],
+    ['variable current', { templating: { list: [{ name: 'v', type: 'query', current: null }] } }],
+    ['variable entry', { templating: { list: [null] } }],
+    ['variable options entry', { templating: { list: [{ name: 'v', type: 'query', options: [null] }] } }],
+    ['panel gridPos', { panels: [{ type: 'timeseries', gridPos: null }] }],
+    ['panel fieldConfig', { panels: [{ type: 'timeseries', fieldConfig: null }] }],
+    ['panel targets', { panels: [{ type: 'timeseries', targets: null }] }],
+    ['panel links entry', { panels: [{ type: 'timeseries', links: [null] }] }],
+    ['panel entry', { panels: [null] }],
+    ['row panels entry', { panels: [{ type: 'row', collapsed: true, panels: [null] }] }],
+    ['timepicker quick_ranges entry', { timepicker: { quick_ranges: [null] } }]
+  ]
+
+  it.each(nullCases)('should convert a dashboard with a null %s without throwing', (_name, source) => {
+    expect(() => convert(source)).not.toThrow()
+    expect(convert(source).isError).toEqual(false)
+  })
+})
