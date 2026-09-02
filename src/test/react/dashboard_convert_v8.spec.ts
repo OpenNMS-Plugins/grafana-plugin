@@ -1,0 +1,245 @@
+import { fakeDataSourceSrv } from './support/datasourceSrvFakes'
+
+jest.mock('@grafana/runtime', () => ({
+  ...jest.requireActual('@grafana/runtime'),
+  getDataSourceSrv: () => fakeDataSourceSrv
+}))
+
+import { dashboardConvert } from '../../lib/dashboard-convert'
+import { addVariationsToMap } from '../../lib/dashboard-convert/convert-from-v8/utils'
+import { ConvertOptions, DsType } from '../../lib/dashboard-convert/types'
+
+const defaultOptions: ConvertOptions = {
+  incrementDashboardVersion: false,
+  unhideAllQueries: false,
+  convertGraphToTimeSeries: false
+}
+
+describe('convertFromV8 :: addVariationsToMap', () => {
+  it('should register the bare, $ and ${} forms of a variable name', () => {
+    const map = new Map<string, DsType>()
+
+    addVariationsToMap('datasource', 'performance', map)
+
+    expect(map.get('datasource')).toEqual('performance')
+    expect(map.get('$datasource')).toEqual('performance')
+    expect(map.get('${datasource}')).toEqual('performance')
+  })
+
+  it('should strip every $ { } from a name that is already decorated', () => {
+    const map = new Map<string, DsType>()
+
+    addVariationsToMap('${datasource}', 'entity', map)
+
+    expect(map.get('datasource')).toEqual('entity')
+    expect(map.get('$datasource')).toEqual('entity')
+    expect(map.get('${datasource}')).toEqual('entity')
+  })
+})
+
+describe('convertFromV8 :: datasource template variable', () => {
+  const helmDashboardWithDatasourceVariable = {
+    templating: {
+      list: [
+        {
+          current: { selected: true, text: 'OpenNMS Performance', value: 'OpenNMS Performance' },
+          name: 'datasource',
+          query: 'opennms-helm-performance-datasource',
+          refresh: 1,
+          type: 'datasource'
+        }
+      ]
+    },
+    panels: [
+      {
+        datasource: '$datasource',
+        type: 'graph',
+        title: 'Load',
+        targets: [{ refId: 'A', type: 'attribute', nodeId: '1', attribute: 'loadavg1' }]
+      }
+    ]
+  }
+
+  it('should convert a dashboard whose panels point at a datasource variable', () => {
+    const result = dashboardConvert(
+      JSON.stringify(helmDashboardWithDatasourceVariable), 8, 9, '', defaultOptions)
+
+    expect(result.isError).toEqual(false)
+    expect(result.dashboardV9.templating.list[0].query).toEqual('opennms-performance-datasource')
+  })
+
+  it('should retain the variable, normalized to the braced form, from a bare string', () => {
+    const result = dashboardConvert(
+      JSON.stringify(helmDashboardWithDatasourceVariable), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: '${datasource}'
+    })
+  })
+
+  it('should leave a variable that is already in the braced form alone', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [{ ...helmDashboardWithDatasourceVariable.panels[0], datasource: '${datasource}' }]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].datasource.uid).toEqual('${datasource}')
+  })
+
+  it('should retain the variable on a target as well as on the panel', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [
+        {
+          ...helmDashboardWithDatasourceVariable.panels[0],
+          datasource: undefined,
+          targets: [{ refId: 'A', datasource: '$datasource', type: 'attribute', nodeId: '1' }]
+        }
+      ]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].targets[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: '${datasource}'
+    })
+  })
+
+  // A bare variable name with no $ is not a usable Grafana reference, so it is treated as a
+  // datasource name and resolved to the concrete uid rather than retained.
+  it('should resolve a name with no variable sigil to the concrete datasource uid', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [{ ...helmDashboardWithDatasourceVariable.panels[0], datasource: 'datasource' }]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].datasource.uid).toEqual('onms-perf')
+  })
+
+  it('should retain the variable when the datasource is the object form', () => {
+    const source = {
+      ...helmDashboardWithDatasourceVariable,
+      panels: [
+        {
+          ...helmDashboardWithDatasourceVariable.panels[0],
+          datasource: { type: 'opennms-helm-performance-datasource', uid: '$datasource' }
+        }
+      ]
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.panels[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: '${datasource}'
+    })
+  })
+})
+
+describe('convertFromV8 :: null entries', () => {
+  const nullCases: Array<[string, any]> = [
+    ['__requires', { __requires: [null] }],
+    ['__inputs', { __inputs: [null] }],
+    ['templating list', { templating: { list: [null] } }],
+    ['panels', { panels: [null] }],
+    ['panel targets', { panels: [{ type: 'graph', targets: [null] }] }]
+  ]
+
+  it.each(nullCases)('should convert a v8 dashboard with a null %s entry without throwing', (_name, source) => {
+    expect(() => dashboardConvert(JSON.stringify(source), 8, 12, '', defaultOptions)).not.toThrow()
+    expect(dashboardConvert(JSON.stringify(source), 8, 12, '', defaultOptions).isError).toEqual(false)
+  })
+})
+
+/**
+ * A v8 dashboard can name its datasource by plugin id rather than by variable, e.g.
+ * "datasource": "opennms-helm-entity-datasource". That id does not exist in Grafana 12, so it
+ * has to be rewritten to the installed v9+ datasource. convertFromV8 rewrote __inputs,
+ * __requires, templating and panel/target refs held as objects, but not a bare plugin id
+ * string.
+ */
+describe('convertFromV8 :: legacy plugin id datasource strings', () => {
+  const dashboard = {
+    panels: [
+      { type: 'graph', title: 'Panel ref', datasource: 'opennms-helm-performance-datasource', targets: [{ refId: 'A' }] },
+      { type: 'graph', title: 'Target ref', targets: [{ refId: 'A', datasource: 'opennms-helm-performance-datasource' }] }
+    ]
+  }
+
+  const convertToV9 = () => dashboardConvert(JSON.stringify(dashboard), 8, 9, '', defaultOptions).dashboardV9
+
+  it('should rewrite a legacy plugin id on a panel to the installed datasource', () => {
+    expect(convertToV9().panels[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: 'onms-perf'
+    })
+  })
+
+  it('should rewrite a legacy plugin id on a target to the installed datasource', () => {
+    expect(convertToV9().panels[1].targets[0].datasource).toEqual({
+      type: 'opennms-performance-datasource',
+      uid: 'onms-perf'
+    })
+  })
+
+  // Annotations are not rewritten: no OPG or Helm datasource has ever supported annotation
+  // queries, so an annotation cannot be backed by one.
+  it('should leave an annotation datasource alone', () => {
+    const source = {
+      annotations: { list: [{ name: 'G', iconColor: 'red', enable: true, datasource: '-- Grafana --' }] }
+    }
+
+    const result = dashboardConvert(JSON.stringify(source), 8, 9, '', defaultOptions)
+
+    expect(result.dashboardV9.annotations.list[0].datasource).toEqual('-- Grafana --')
+  })
+})
+
+/**
+ * A v8 dashboard can reference an __inputs datasource in any of Grafana's three variable
+ * spellings. If the map does not carry all three, getSourceDatasourceInfo reports the panel as
+ * non-OpenNMS and the query conversion in panels.ts never runs, so the raw v8 target survives.
+ */
+describe('convertFromV8 :: all three template variable spellings', () => {
+  const dashboardUsing = (datasource: string) => ({
+    __inputs: [{
+      name: 'DS_ONMS', type: 'datasource',
+      pluginId: 'opennms-helm-performance-datasource', pluginName: 'OpenNMS Performance'
+    }],
+    panels: [{
+      type: 'graph',
+      datasource,
+      targets: [{ refId: 'A', type: 'attribute', nodeId: '1', resourceId: 'nodeSnmp[]', attribute: 'loadavg1' }]
+    }]
+  })
+
+  const convertPanel = (datasource: string) =>
+    dashboardConvert(JSON.stringify(dashboardUsing(datasource)), 8, 9, '', defaultOptions).dashboardV9.panels[0]
+
+  // '${NAME}' is the only spelling Grafana 12 resolves in both places it has to: the import
+  // substitution in dash_template_evaluator.go matches (\$\{.+?\}) only, and getInstanceSettings
+  // interpolates only a uid starting with '$'. All three inputs therefore converge on it.
+  it.each(['$DS_ONMS', '${DS_ONMS}', '[[DS_ONMS]]'])(
+    'should emit the braced form for a panel using %s', (datasource) => {
+      expect(convertPanel(datasource).datasource).toEqual({
+        type: 'opennms-performance-datasource',
+        uid: '${DS_ONMS}'
+      })
+    })
+
+  it.each(['$DS_ONMS', '${DS_ONMS}', '[[DS_ONMS]]'])(
+    'should convert the v8 query of a panel using %s', (datasource) => {
+      const target = convertPanel(datasource).targets[0]
+
+      // the v9 shape, not the raw v8 { type, nodeId, resourceId, attribute }
+      expect(target.performanceType).toEqual({ label: 'Attribute', value: 1 })
+      expect(target.attribute.attribute).toEqual({ name: 'loadavg1', label: 'loadavg1' })
+      expect(target.nodeId).toBeUndefined()
+    })
+})

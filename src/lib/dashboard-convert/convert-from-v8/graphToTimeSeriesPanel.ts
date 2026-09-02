@@ -5,12 +5,10 @@ export const isLegacyGraphPanel = (panel: any) => {
 export const convertLegacyGraphToTimeSeriesPanel = (source: any) => {
   const panel = {
     ...source,
-    gridPos: source.gridPos,
-    id: source.id,
-    links: source.links,
+    // gridPos, id and links come through the spread; restating them here only added explicit
+    // undefined keys when the source had none
     fieldConfig: convertFieldConfig(source),
     options: convertOptions(source),
-    pluginVersion: '9.4.7',
     type: 'timeseries'
   }
 
@@ -30,14 +28,12 @@ export const convertLegacyGraphToTimeSeriesPanel = (source: any) => {
   delete panel.pointradius
   delete panel.points
   delete panel.renderer
-  delete panel.seriesOverride
+  delete panel.seriesOverrides
   delete panel.spaceLength
   delete panel.stack
   delete panel.steppedLine
   delete panel.thresholds
-  delete panel.timeFrom
   delete panel.timeRegions
-  delete panel.timeShift
   delete panel.tooltip
   delete panel.xaxis
   delete panel.yaxes
@@ -93,7 +89,7 @@ const convertFieldConfig = (source: any) => {
       custom: {
         axisCenteredZero: false,
         axisColorMode: 'text',
-        axisLabel: source.yaxes?.[0].label || '', // e.g. 'bytes/sec'
+        axisLabel: source.yaxes?.[0]?.label || '', // e.g. 'bytes/sec'
         axisPlacement: 'auto',
         barAlignment: 0,
         drawStyle: 'line',  // lines === true ?
@@ -145,9 +141,9 @@ const convertFieldConfig = (source: any) => {
 const convertFieldConfigOverrides = (source: any) => {
   const overrides: any[] = []
 
-  if (source.seriesOverrides) {
+  if (Array.isArray(source.seriesOverrides)) {
     for (const o of source.seriesOverrides) {
-      if (o.alias && o.stack) {
+      if (o?.alias && o.stack) {
         const item = {
           matcher: {
             id: 'byRegexp',
