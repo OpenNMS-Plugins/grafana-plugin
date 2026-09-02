@@ -135,8 +135,18 @@ A full reinstall also re-resolves every `^` range, so it can surface breakage un
 
 - CI runs `@grafana/plugin-validator` with `grafana-plugin-validator-config.yaml`
 - `osv-scanner` checks CVEs in `package-lock.json`; to temporarily disable: set `osv-scanner.enabled: false` in the config yaml (revert before production builds)
-- Build artifacts are RPM/DEB/ZIP via `makerpm.js`, `makedeb.js`, `makezip.js`
-- `makerpm.js` has `const isDebug = false` — set `true` for CircleCI debugging
+- Build artifacts are RPM/DEB/ZIP via `makerpm.js`, `makedeb.js`, `makezip.js`; the reusable
+  pieces live in `scripts/` and are tested by `src/test/packaging/`
+- `MAKERPM_DEBUG=1` turns on verbose `makerpm.js` output for CircleCI debugging
+- `makerpm.js` renders `src/rpm/spec.mustache` itself. Do **not** reintroduce `speculate`: 6.x
+  hardcodes its own systemd-service spec template and ignores `spec.specTemplate` /
+  `spec.installDir`, which silently packaged the plugin into `/usr/lib` with a bogus service
+  unit. `src/test/packaging/rpm_spec.spec.ts` guards against this
+- The spec template must use triple-stache (`{{{ }}}`): mustache escapes `/` as `&#x2F;`,
+  which would mangle every path in the spec
+- `scripts/distContents.js` is the single list of what to keep out of a package. webpack
+  copies `src/**/*.json` into `dist`, so the jest fixtures under `src/test` land in `dist/test`
+  and must be excluded from all three artifacts
 
 ## Support Matrix
 

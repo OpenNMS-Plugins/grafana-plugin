@@ -3,7 +3,6 @@
 /* jshint esversion: 6 */
 
 const fs = require('fs-extra');
-const os = require('os');
 const path = require('path');
 const spawn = require('child_process').spawnSync;
 const copy = require('recursive-copy');
@@ -11,6 +10,8 @@ const rimraf = require('rimraf');
 const which = require('which');
 const program = require('commander');
 
+const { recursiveCopyFilter } = require('./scripts/distContents');
+const { resolveVersionAndRelease } = require('./scripts/packageVersion');
 const pkginfo = require('./package.json');
 const plugininfo = require('./src/plugin.json');
 
@@ -21,27 +22,19 @@ try {
   process.exit(1);
 }
 
-let version = pkginfo.version;
-let release = 1;
-
-if (version.indexOf('-SNAPSHOT')) {
-  version = version.replace('-SNAPSHOT', '');
-  release = 0;
-}
+// The previous `if (version.indexOf('-SNAPSHOT'))` was truthy for -1 too, so every
+// build was released as 0 whether or not it was a snapshot.
+const { version, release: defaultRelease } = resolveVersionAndRelease(pkginfo.version);
 
 program
   .version(pkginfo.version)
-  .option('-r --release <release>', 'Specify release number of package')
+  .option('-r --release <release>', 'Specify release number of package', defaultRelease)
   .parse(process.argv);
 
-const options = program.opts();
-if (options.release === undefined) {
-  options.release = release;
-}
+const release = program.opts().release;
 
 pkginfo.version = version;
 pkginfo.release = release;
-release = options.release;
 
 
 const date = new Date().toUTCString().replace(/ [^ ]+$/, ' +0000');
@@ -61,17 +54,12 @@ fs.mkdirsSync(workdir);
 return copy(distdir, workdir, {
   dot: true,
   junk: false,
-  filter: [
-    '**/*',
-    '!.git',
-    '!.git/**',
+  filter: recursiveCopyFilter([
     '!**/*.changes',
     '!**/*.deb',
     '!**/*.dsc',
     '!**/*.tar.gz',
-    '!test',
-    '!test/**',
-  ]
+  ])
 }).then((results) => {
   console.log(results.length + ' files copied to ' + workdir);
 
@@ -92,7 +80,13 @@ return copy(distdir, workdir, {
       stdio: ['inherit', 'inherit', 'inherit'],
     });
     if (ret.error) {
-      console.log('dpkg-buildpackage failed');
+      console.log('dpkg-buildpackage failed: ' + ret.error.message);
+      process.exit(1);
+    }
+
+    // spawnSync reports a non-zero exit only in `status`, never in `error`.
+    if (ret.status !== 0) {
+      console.log('dpkg-buildpackage exited with status ' + ret.status);
       process.exit(1);
     }
 
