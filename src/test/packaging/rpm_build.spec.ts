@@ -155,6 +155,23 @@ describeIfRpmbuild('buildRpm :: build behaviour', () => {
     expect(fs.existsSync(rpmPath)).toEqual(true)
   }, 120000)
 
+  it('should find the rpm when a dist tag qualifies the release', async () => {
+    // The spec template emits `Release: %{release}.%{?dist}` when spec.dist is set,
+    // so the built file is name-version-release.dist.arch.rpm. Reconstructing the
+    // filename without the dist tag reported a successful build as a failure.
+    const { rpmPath } = await build({ pkgInfo: { spec: { ...pkgInfo.spec, dist: 'el9' } } })
+
+    expect(path.basename(rpmPath)).toEqual('opennms-grafana-plugin-12.0.2-0.el9.noarch.rpm')
+    expect(fs.existsSync(rpmPath)).toEqual(true)
+  }, 120000)
+
+  it('should build for the host architecture when noarch is disabled', async () => {
+    const { rpmPath } = await build({ pkgInfo: { spec: { ...pkgInfo.spec, noarch: false } } })
+
+    expect(path.basename(rpmPath)).not.toContain('noarch')
+    expect(fs.existsSync(rpmPath)).toEqual(true)
+  }, 120000)
+
   it('should fail when rpmbuild fails', async () => {
     // rpmbuild -ba refuses to build when a BuildRequires cannot be satisfied. The
     // old script only inspected spawn's `error`, never its exit status, so a failed

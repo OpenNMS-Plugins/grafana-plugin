@@ -10,12 +10,33 @@ const { spawnSync } = require('child_process');
 const which = require('which');
 
 const { createSourceArchive } = require('./archive');
-const { renderSpec } = require('./spec');
+const { renderSpec, isNoarch } = require('./spec');
 
 const PROJECT_DIR = path.resolve(__dirname, '..', '..');
 
 function findRpmbuild() {
   return which.sync('rpmbuild', { nothrow: true });
+}
+
+// The built file is name-version-release[.dist].arch.rpm, and both the dist tag and
+// the architecture depend on spec config. Reconstructing that name got it wrong and
+// reported successful builds as failures, so ask the filesystem instead.
+function findBuiltRpms(topDir) {
+  const rpmsDir = path.join(topDir, 'RPMS');
+
+  if (!fs.existsSync(rpmsDir)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(rpmsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((archDir) =>
+      fs
+        .readdirSync(path.join(rpmsDir, archDir.name))
+        .filter((file) => file.endsWith('.rpm'))
+        .map((file) => path.join(rpmsDir, archDir.name, file))
+    );
 }
 
 function buildRpm({
@@ -63,6 +84,9 @@ function buildRpm({
       const buildSourcesDir = path.join(topDir, 'SOURCES');
       const tmpDir = path.join(topDir, 'tmp');
 
+      // topDir is ours to own: starting from empty is what makes the rpm produced by
+      // this build unambiguous below.
+      fs.rmSync(topDir, { recursive: true, force: true });
       ['SOURCES', 'RPMS', 'BUILD', 'SRPMS', 'tmp'].forEach((dir) =>
         fs.mkdirSync(path.join(topDir, dir), { recursive: true })
       );
@@ -72,7 +96,8 @@ function buildRpm({
       const result = spawnSync(
         rpmbuild,
         [
-          '--target', 'noarch',
+          // Must agree with the template's BuildArch, which follows the same flag.
+          ...(isNoarch(pkgInfo) ? ['--target', 'noarch'] : []),
           '--define', '_topdir ' + topDir,
           // rpmbuild defaults %_tmppath to a directory that need not exist on the
           // build host, which fails the build before it starts.
@@ -95,18 +120,19 @@ function buildRpm({
         );
       }
 
-      const rpmPath = path.join(
-        topDir,
-        'RPMS',
-        'noarch',
-        pkgInfo.name + '-' + version + '-' + release + '.noarch.rpm'
-      );
+      const rpms = findBuiltRpms(topDir);
 
-      if (!fs.existsSync(rpmPath)) {
-        throw new Error('makerpm: rpmbuild reported success but produced no rpm at ' + rpmPath);
+      if (rpms.length !== 1) {
+        throw new Error(
+          'makerpm: expected exactly one rpm under ' +
+            path.join(topDir, 'RPMS') +
+            ', found ' +
+            rpms.length +
+            (rpms.length ? ': ' + rpms.join(', ') : '')
+        );
       }
 
-      return { rpmPath, specPath, archivePath };
+      return { rpmPath: rpms[0], specPath, archivePath };
     })
     .finally(cleanDist);
 }

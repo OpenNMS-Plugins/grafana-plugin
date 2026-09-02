@@ -150,7 +150,12 @@ describe('createSourceArchive :: reproducibility', () => {
 })
 
 describe('createSourceArchive :: failure handling', () => {
-  it('should reject rather than write a truncated archive when a file cannot be read', async () => {
+  // root bypasses the permission bits, so this can only be provoked as a normal
+  // user. We do not want the packaging build running as root anyway.
+  const isRoot = typeof process.getuid === 'function' && process.getuid() === 0
+  const itUnlessRoot = isRoot ? it.skip : it
+
+  itUnlessRoot('should reject rather than write a truncated archive when a file cannot be read', async () => {
     // .pipe() does not forward errors, so a mid-stream read failure could otherwise
     // let the write stream close normally and resolve with a partial tarball.
     writeFile('readable.js', 'x'.repeat(1024))
@@ -164,5 +169,24 @@ describe('createSourceArchive :: failure handling', () => {
     } finally {
       fs.chmodSync(unreadable, 0o644)
     }
+  })
+
+  itUnlessRoot('should not leave a partial archive behind when packing fails', async () => {
+    // Rejecting the promise is not enough: nothing downstream destroys the gzip and
+    // write streams, so a truncated .tar.gz would survive on disk for a caller to
+    // pick up.
+    writeFile('readable.js', 'x'.repeat(1024))
+    const unreadable = path.join(distDir, 'unreadable.js')
+    fs.writeFileSync(unreadable, 'y'.repeat(1024))
+    fs.chmodSync(unreadable, 0o000)
+    const archivePath = path.join(workDir, 'plugin.tar.gz')
+
+    try {
+      await createSourceArchive(distDir, archivePath).catch(() => undefined)
+    } finally {
+      fs.chmodSync(unreadable, 0o644)
+    }
+
+    expect(fs.existsSync(archivePath)).toEqual(false)
   })
 })

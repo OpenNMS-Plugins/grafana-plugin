@@ -25,6 +25,10 @@ function requireValue(value, message) {
   return value;
 }
 
+function isNoarch(pkgInfo) {
+  return (pkgInfo.spec || {}).noarch !== false;
+}
+
 function buildView({ pkgInfo, pluginInfo, version, release }) {
   const specConfig = pkgInfo.spec || {};
   const installDir = requireValue(specConfig.installDir, 'package.json spec.installDir is required');
@@ -42,7 +46,7 @@ function buildView({ pkgInfo, pluginInfo, version, release }) {
     installDir,
     requires: specConfig.requires || [],
     buildRequires: specConfig.buildRequires || [],
-    noarch: specConfig.noarch !== false,
+    noarch: isNoarch(pkgInfo),
     dist: specConfig.dist,
     postInstallCommands,
     hasPostInstallCommands: postInstallCommands.length > 0,
@@ -65,4 +69,4 @@ function renderSpec({ pkgInfo, pluginInfo, version, release, projectDir = PROJEC
   return mustache.render(fs.readFileSync(templatePath, 'utf-8'), buildView({ pkgInfo, pluginInfo, version, release }));
 }
 
-module.exports = { renderSpec };
+module.exports = { renderSpec, isNoarch };

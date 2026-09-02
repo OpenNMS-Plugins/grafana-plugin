@@ -6,6 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { pipeline } = require('stream/promises');
 const tar = require('tar-fs');
 
 const { EXCLUDED_TOP_LEVEL } = require('../distContents');
@@ -29,7 +30,7 @@ function normalizeOwnership(header) {
   return header;
 }
 
-function createSourceArchive(sourceDir, targetFile) {
+async function createSourceArchive(sourceDir, targetFile) {
   fs.mkdirSync(path.dirname(targetFile), { recursive: true });
 
   const pack = tar.pack(sourceDir, {
@@ -38,17 +39,15 @@ function createSourceArchive(sourceDir, targetFile) {
     sort: true
   });
 
-  const target = fs.createWriteStream(targetFile);
-  const gzip = zlib.createGzip();
-
-  return new Promise((resolve, reject) => {
-    pack.on('error', reject);
-    gzip.on('error', reject);
-    target.on('error', reject);
-    target.on('close', resolve);
-
-    pack.pipe(gzip).pipe(target);
-  });
+  try {
+    // pipeline, not pipe: pipe forwards neither errors nor teardown, so a read
+    // failure part way through would close the write stream normally and leave a
+    // truncated archive that looks complete.
+    await pipeline(pack, zlib.createGzip(), fs.createWriteStream(targetFile));
+  } catch (err) {
+    fs.rmSync(targetFile, { force: true });
+    throw err;
+  }
 }
 
 module.exports = { createSourceArchive };

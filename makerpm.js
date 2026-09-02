@@ -50,8 +50,6 @@ async function main() {
     'Building RPM for ' + pluginInfo.name + ' (' + pluginInfo.id + ') ' + version + '-' + release
   );
 
-  fs.rmSync(topDir, { recursive: true, force: true });
-
   let failure = null;
 
   try {
@@ -80,4 +78,9 @@ async function main() {
   }
 }
 
-main();
+// Backstop: anything thrown outside the try above (or from an async rejection)
+// should still report as a build failure rather than an unhandled rejection.
+main().catch((err) => {
+  console.error('RPM generation failed: ' + err.message);
+  process.exit(1);
+});

@@ -183,10 +183,14 @@ Monitor https://community.grafana.com/t/build-a-panel-plugin-error/100984/3 for 
 
 #### RPM Build Details (makerpm.js)
 
-- Uses `bbc/speculate` instead of unmaintained `specit`
-- Only includes `dist/` in RPM (not `node_modules`)
-- Set `const isDebug = true` in `makerpm.js` for CircleCI debugging
-- Spec template is in `src/rpm/spec.mustache`
+- Renders `src/rpm/spec.mustache` directly with `mustache`; the reusable pieces live in
+  `scripts/` and are tested by `src/test/packaging/`
+- Do **not** reintroduce `speculate`: 6.x hardcodes its own systemd-service spec template and
+  ignores `spec.specTemplate` / `spec.installDir`, which silently packaged the plugin into
+  `/usr/lib` with a bogus service unit instead of into the Grafana plugin directory
+- Only includes `dist/` in the RPM (not `node_modules`), minus the entries in
+  `scripts/distContents.js`
+- Set `MAKERPM_DEBUG=1` for CircleCI debugging
 
 ## Support Matrix
 
