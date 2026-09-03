@@ -39,7 +39,7 @@ describe('EXCLUDED_TOP_LEVEL', () => {
 })
 
 /**
- * makezip.js and makedeb.js both hand these patterns to recursive-copy, so the
+ * make-zip.js and make-deb.js both hand these patterns to recursive-copy, so the
  * assertion that matters is what actually lands in the copied tree.
  */
 describe('recursiveCopyFilter', () => {

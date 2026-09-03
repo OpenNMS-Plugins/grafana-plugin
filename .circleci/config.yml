@@ -261,7 +261,7 @@ jobs:
       - run:
           name: Create Plugin ZIP File
           command: |
-            ./makezip.js
+            npm run package:zip
       - store_artifacts:
           path: ./artifacts
       - persist_to_workspace:
@@ -322,7 +322,7 @@ jobs:
             if [ "$(grep -c -- -SNAPSHOT package.json)" -eq 0 ]; then
               RELEASE=1
             fi
-            ./makerpm.js --release "$RELEASE"
+            npm run package:rpm -- --release "$RELEASE"
       - sign-packages/sign-rpms:
           skip_if_forked_pr: true
           gnupg_key: opennms@opennms.org
@@ -351,7 +351,7 @@ jobs:
             if [ "$(grep -c -- -SNAPSHOT package.json)" -eq 0 ]; then
               RELEASE=1
             fi
-            ./makedeb.js --release "$RELEASE"
+            npm run package:deb -- --release "$RELEASE"
       - sign-packages/sign-debs:
           skip_if_forked_pr: true
           gnupg_key: opennms@opennms.org

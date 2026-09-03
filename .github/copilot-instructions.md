@@ -170,7 +170,9 @@ See `.config/README.md` for examples.
 
 - **Grafana Plugin Validator**: Runs in `validate-packages` job (see `.circleci/grafana-plugin-validator-config.yaml`)
 - **Security Scanning**: Uses `osv-scanner` to check for CVEs in dependencies
-- **Build artifacts**: Creates RPM, DEB, and ZIP packages via `makerpm.js`, `makedeb.js`, `makezip.js`
+- **Build artifacts**: Creates RPM, DEB, and ZIP packages via `npm run package:rpm`,
+  `npm run package:deb`, `npm run package:zip` (entry points under `scripts/rpm/`,
+  `scripts/deb/`, `scripts/zip/`)
 - **Signing**: Plugin must be signed via `@grafana/sign-plugin` for Grafana to load it
 
 ### Known Issues
@@ -181,10 +183,10 @@ Force use of `@swc/core` version `1.3.75` or compatible. Version `1.3.76+` has i
 
 Monitor https://community.grafana.com/t/build-a-panel-plugin-error/100984/3 for resolution.
 
-#### RPM Build Details (makerpm.js)
+#### RPM Build Details (scripts/rpm/make-rpm.js)
 
-- Renders `src/rpm/spec.mustache` directly with `mustache`; the reusable pieces live in
-  `scripts/` and are tested by `src/test/packaging/`
+- Renders `scripts/rpm/spec.mustache` directly with `mustache`; the reusable pieces live
+  alongside it under `scripts/` and are tested by `src/test/packaging/`
 - Do **not** reintroduce `speculate`: 6.x hardcodes its own systemd-service spec template and
   ignores `spec.specTemplate` / `spec.installDir`, which silently packaged the plugin into
   `/usr/lib` with a bogus service unit instead of into the Grafana plugin directory

@@ -1,4 +1,4 @@
 .circleci/config.yml
 .circleci/get-version.sh
-makedeb.js
-makerpm.js
+scripts/packageVersion.js
+src/test/packaging/package_version.spec.ts

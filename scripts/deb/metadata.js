@@ -8,8 +8,9 @@ const fs = require('fs');
 const path = require('path');
 const mustache = require('mustache');
 
-const PROJECT_DIR = path.resolve(__dirname, '..', '..');
-const CONTROL_TEMPLATE = path.join('src', 'debian', 'control.mustache');
+const { DEBIAN_DIR } = require('../paths');
+
+const CONTROL_TEMPLATE = 'control.mustache';
 
 // package.json's spec.requires is written RPM-style ("grafana >= 12.0.0"); dpkg wants
 // "grafana (>= 12.0.0)". Sharing the list keeps the deb and the rpm from disagreeing
@@ -32,11 +33,14 @@ function toDebianDepends(requires) {
     .join(', ');
 }
 
-function renderControl({ pkgInfo, maintainer, projectDir = PROJECT_DIR }) {
-  const templatePath = path.resolve(projectDir, CONTROL_TEMPLATE);
+// debianDir is a parameter so the template can be pointed elsewhere in a test; the
+// default is the directory the template actually ships in, so nothing has to restate
+// where scripts/deb/debian is relative to anything else.
+function renderControl({ pkgInfo, maintainer, debianDir = DEBIAN_DIR }) {
+  const templatePath = path.join(debianDir, CONTROL_TEMPLATE);
 
   if (!fs.existsSync(templatePath)) {
-    throw new Error('makedeb: control template not found: ' + templatePath);
+    throw new Error('make-deb: control template not found: ' + templatePath);
   }
 
   return mustache.render(fs.readFileSync(templatePath, 'utf-8'), {

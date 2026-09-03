@@ -1,6 +1,6 @@
 'use strict';
 
-// Renders the RPM spec file from src/rpm/spec.mustache.
+// Renders the RPM spec file from scripts/rpm/spec.mustache.
 //
 // This used to be delegated to speculate, but speculate 6.x hardcodes its own
 // systemd-service spec template and silently ignores package.json's
@@ -15,11 +15,11 @@ const fs = require('fs');
 const path = require('path');
 const mustache = require('mustache');
 
-const PROJECT_DIR = path.resolve(__dirname, '..', '..');
+const { PROJECT_DIR } = require('../paths');
 
 function requireValue(value, message) {
   if (value === undefined || value === null || value === '') {
-    throw new Error('makerpm: ' + message);
+    throw new Error('make-rpm: ' + message);
   }
 
   return value;
@@ -63,7 +63,7 @@ function renderSpec({ pkgInfo, pluginInfo, version, release, projectDir = PROJEC
   );
 
   if (!fs.existsSync(templatePath)) {
-    throw new Error('makerpm: spec template not found: ' + templatePath);
+    throw new Error('make-rpm: spec template not found: ' + templatePath);
   }
 
   return mustache.render(fs.readFileSync(templatePath, 'utf-8'), buildView({ pkgInfo, pluginInfo, version, release }));

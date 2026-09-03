@@ -10,7 +10,7 @@ describe('resolveVersionAndRelease', () => {
   })
 
   it('should not treat a version without -SNAPSHOT as a snapshot', () => {
-    // makedeb.js used `if (version.indexOf('-SNAPSHOT'))`, which is truthy for -1,
+    // make-deb.js used `if (version.indexOf('-SNAPSHOT'))`, which is truthy for -1,
     // so every non-snapshot build was also released as 0.
     expect(resolveVersionAndRelease('12.0.2').release).toEqual('1')
   })

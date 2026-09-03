@@ -10,12 +10,13 @@ const rimraf = require('rimraf');
 const which = require('which');
 const program = require('commander');
 
-const { recursiveCopyFilter } = require('./scripts/distContents');
-const { resolveMaintainer } = require('./scripts/deb/maintainer');
-const { renderChangelog, renderControl } = require('./scripts/deb/metadata');
-const { resolveVersionAndRelease } = require('./scripts/packageVersion');
-const pkginfo = require('./package.json');
-const plugininfo = require('./src/plugin.json');
+const { recursiveCopyFilter } = require('../distContents');
+const { DEBIAN_DIR, PROJECT_DIR } = require('../paths');
+const { resolveMaintainer } = require('./maintainer');
+const { renderChangelog, renderControl } = require('./metadata');
+const { resolveVersionAndRelease } = require('../packageVersion');
+const pkginfo = require('../../package.json');
+const plugininfo = require('../../src/plugin.json');
 
 try {
   which.sync('dpkg-buildpackage');
@@ -24,8 +25,6 @@ try {
   process.exit(1);
 }
 
-// The previous `if (version.indexOf('-SNAPSHOT'))` was truthy for -1 too, so every
-// build was released as 0 whether or not it was a snapshot.
 const { version, release: defaultRelease } = resolveVersionAndRelease(pkginfo.version);
 
 program
@@ -44,8 +43,8 @@ pkginfo.release = release;
 const maintainer = resolveMaintainer();
 
 const pkgid   = plugininfo.id;
-const workdir = path.join(process.cwd(), 'artifacts', pkgid);
-const distdir = path.join(process.cwd(), 'dist');
+const workdir = path.join(PROJECT_DIR, 'artifacts', pkgid);
+const distdir = path.join(PROJECT_DIR, 'dist');
 
 rimraf.sync(workdir);
 fs.mkdirsSync(workdir);
@@ -65,7 +64,7 @@ return copy(distdir, workdir, {
   fs.mkdirsSync(debian);
 
   // The templates are rendered below; they must not be copied through as-is.
-  return copy(path.join(process.cwd(), 'src', 'debian'), debian, {
+  return copy(DEBIAN_DIR, debian, {
     filter: ['**/*', '!**/*.mustache']
   }).then((_copyResults) => {
     console.log('debian/ directory copied');
@@ -80,7 +79,7 @@ return copy(distdir, workdir, {
     console.log('* running dpkg-buildpackage');
     // -us -uc: do not sign the .dsc/.changes here. dpkg-buildpackage would sign as the
     // changelog's maintainer identity, which is not a key we hold; CI signs the built
-    // .deb separately with the OpenNMS release key. Before makedeb.js checked the exit
+    // .deb separately with the OpenNMS release key. Before make-deb.js checked the exit
     // status, that signing failure (status 25) was discarded and the build looked green.
     const ret = spawn('dpkg-buildpackage', ['-us', '-uc'], {
       cwd: workdir,

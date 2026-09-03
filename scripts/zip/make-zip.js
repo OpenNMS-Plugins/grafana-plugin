@@ -7,9 +7,10 @@ const copy = require('recursive-copy');
 const rimraf = require('rimraf');
 const which = require('which');
 
-const { recursiveCopyFilter } = require('./scripts/distContents');
-const pkginfo = require('./package.json');
-const plugininfo = require('./src/plugin.json');
+const { recursiveCopyFilter } = require('../distContents');
+const { PROJECT_DIR } = require('../paths');
+const pkginfo = require('../../package.json');
+const plugininfo = require('../../src/plugin.json');
 
 try {
   which.sync('zip');
@@ -18,16 +19,14 @@ try {
   process.exit(1);
 }
 
-const topdir = process.cwd();
-
 const version = pkginfo.version;
 
 const pkgname = pkginfo.name;
 const pkgid = plugininfo.id;
-const srcdir = path.join(topdir, 'dist');
-const tmpdir = path.join(topdir, 'tmp');
+const srcdir = path.join(PROJECT_DIR, 'dist');
+const tmpdir = path.join(PROJECT_DIR, 'tmp');
 const workdir = path.join(tmpdir, pkgid);
-const packagedir = path.join(topdir, 'artifacts');
+const packagedir = path.join(PROJECT_DIR, 'artifacts');
 const zipfile = path.join(packagedir, `${pkgname}-${version}.zip`);
 
 rimraf.sync(workdir);

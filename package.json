@@ -23,6 +23,9 @@
     "e2e:update": "playwright test --update-screenshots",
     "lint": "eslint --cache --ignore-pattern './.gitignore' --ignore-pattern 'public/**' --ext .js,.jsx,.ts,.tsx .",
     "lint:fix": "npm run lint -- --fix",
+    "package:deb": "./scripts/deb/make-deb.js",
+    "package:rpm": "./scripts/rpm/make-rpm.js",
+    "package:zip": "./scripts/zip/make-zip.js",
     "server": "docker-compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "start": "npm run watch",
@@ -241,7 +244,7 @@
     "yaml@^2.0.0": "^2.8.3"
   },
   "spec": {
-    "specTemplate": "src/rpm/spec.mustache",
+    "specTemplate": "scripts/rpm/spec.mustache",
     "installDir": "/var/lib/grafana/plugins",
     "requires": [
       "grafana >= 12.0.0"
