@@ -19,4 +19,13 @@ function recursiveCopyFilter(additionalPatterns = []) {
     .concat(additionalPatterns);
 }
 
-module.exports = { EXCLUDED_TOP_LEVEL, recursiveCopyFilter };
+// The same list, as ignore globs for webpack's CopyWebpackPlugin. Keeping these
+// entries out of dist in the first place matters because `npm run sign` walks dist and
+// writes a signed MANIFEST.txt: anything copied in gets attested, and stripping it
+// afterwards leaves the manifest declaring files the package does not contain.
+// Most of these never exist under src/ anyway; ignoring them is a harmless no-op.
+function copyIgnorePatterns() {
+  return EXCLUDED_TOP_LEVEL.map((name) => '**/' + name + '/**');
+}
+
+module.exports = { EXCLUDED_TOP_LEVEL, recursiveCopyFilter, copyIgnorePatterns };

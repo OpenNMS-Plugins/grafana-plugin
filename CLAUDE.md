@@ -144,9 +144,13 @@ A full reinstall also re-resolves every `^` range, so it can surface breakage un
   unit. `src/test/packaging/rpm_spec.spec.ts` guards against this
 - The spec template must use triple-stache (`{{{ }}}`): mustache escapes `/` as `&#x2F;`,
   which would mangle every path in the spec
-- `scripts/distContents.js` is the single list of what to keep out of a package. webpack
-  copies `src/**/*.json` into `dist`, so the jest fixtures under `src/test` land in `dist/test`
-  and must be excluded from all three artifacts
+- `scripts/distContents.js` is the single list of what never belongs in a distributable. The
+  scaffolded webpack config copies `src/**/*.json` into `dist` with no ignore list, which used
+  to drag the jest fixtures under `src/test` into `dist/test`; `webpack.config.ts` now adds
+  that list as a `CopyWebpackPlugin` ignore. This matters because `npm run sign` walks `dist`
+  and writes a **signed** `MANIFEST.txt` — anything in `dist` gets attested, and stripping it
+  at packaging time leaves the manifest declaring files the package does not contain, which
+  fails `@grafana/plugin-validator`. Keep things out of `dist`; do not strip them later
 
 ## Support Matrix
 

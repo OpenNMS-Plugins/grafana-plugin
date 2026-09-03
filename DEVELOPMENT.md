@@ -83,10 +83,24 @@ here — it was being handed `dist`, which has no `package.json` — and it tell
 ### Package contents
 
 Only the contents of `dist` belong in the package, so the source tarball is rooted at `dist`
-and the spec's `%install` copies the archive root. `scripts/distContents.js` lists what to
-leave out. Note that webpack copies `src/**/*.json` into `dist` with no ignore list, which
-drags the jest fixtures under `src/test` along with it; all three packages exclude `test`
-for that reason.
+and the spec's `%install` copies the archive root. `scripts/distContents.js` lists what never
+belongs in a distributable, and is used in two places.
+
+The important one is the build. `npm run build` is followed by `npm run sign`, which walks
+`dist` and writes a **signed** `MANIFEST.txt` listing every file it finds. The scaffolded
+webpack config copies `src/**/*.json` into `dist` with no ignore list, so the jest fixtures
+under `src/test` used to land in `dist/test`, get signed into the manifest, and then be
+stripped again by the packaging scripts — leaving a manifest that declared files the package
+did not contain, which `@grafana/plugin-validator` rejects. `webpack.config.ts` therefore
+applies the list as a `CopyWebpackPlugin` ignore so those files never reach `dist` at all.
+`.config/` is scaffolded and webpack-merge concatenates plugin arrays rather than
+reconfiguring the existing plugin, so `scripts/webpack/excludeFromCopy.js` reaches into the
+`CopyWebpackPlugin` instance. It throws if it cannot find one, because silently not excluding
+would break the signature again.
+
+The packaging scripts apply the same list as a second line of defence. That is now redundant
+for `test`, but it still matters for the `SPECS`/`SOURCES` directories the RPM build creates
+inside `dist` while it runs.
 
 ### Tests
 
