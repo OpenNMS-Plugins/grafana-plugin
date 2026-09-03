@@ -62,6 +62,11 @@ describe('renderControl', () => {
     expect(control()).toContain('Package: opennms-grafana-plugin')
   })
 
+  it('should take the description from package.json', () => {
+    expect(control()).toContain('Description: An OpenNMS Integration for Grafana')
+    expect(control()).not.toContain('An OpenNMS Console for Grafana')
+  })
+
   it('should take Depends from the same spec.requires the RPM uses', () => {
     expect(control()).toContain('Depends: grafana (>= 12.0.0)')
     expect(control()).not.toContain('9.0')

@@ -41,6 +41,7 @@ function renderControl({ pkgInfo, maintainer, projectDir = PROJECT_DIR }) {
 
   return mustache.render(fs.readFileSync(templatePath, 'utf-8'), {
     name: pkgInfo.name,
+    description: pkgInfo.description,
     maintainer,
     depends: toDebianDepends((pkgInfo.spec || {}).requires)
   });
