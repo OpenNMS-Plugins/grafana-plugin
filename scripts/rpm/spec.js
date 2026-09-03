@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const mustache = require('mustache');
 
-const PROJECT_DIR = path.resolve(__dirname, '..', '..');
+const { PROJECT_DIR } = require('../paths');
 
 function requireValue(value, message) {
   if (value === undefined || value === null || value === '') {

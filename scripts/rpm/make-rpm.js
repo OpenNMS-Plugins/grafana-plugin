@@ -14,15 +14,14 @@ const path = require('path');
 
 const program = require('commander');
 
+const { PROJECT_DIR } = require('../paths');
 const { resolveVersionAndRelease } = require('../packageVersion');
-const { buildRpm, copyToArtifacts, findRpmbuild, PROJECT_DIR } = require('./build');
+const { buildRpm, copyToArtifacts, findRpmbuild } = require('./build');
 const pkgInfo = require('../../package.json');
 const pluginInfo = require('../../src/plugin.json');
 
 const isDebug = process.env.MAKERPM_DEBUG === '1';
 
-// Resolved from this file rather than from process.cwd(): the script no longer sits
-// at the project root, so the two are only the same by convention.
 const distDir = path.join(PROJECT_DIR, 'dist');
 const artifactsDir = path.join(PROJECT_DIR, 'artifacts');
 const topDir = path.join(os.tmpdir(), 'rpmbuild');

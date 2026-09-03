@@ -12,9 +12,9 @@ import performanceDatasource from '../../datasources/perf-ds/plugin.json'
  *
  * These are the versions Grafana sees at runtime: '__requires[].version' names one of these
  * plugins, not the app, and so does a panel's 'pluginVersion'. They are deliberately NOT the
- * app's version from src/plugin.json, which is a different number ('12.0.2-SNAPSHOT' against
- * the nested plugins' '12'). Writing the app version into either field would claim a minimum
- * that a correctly installed plugin does not meet.
+ * app's version from src/plugin.json, which tracks the release train and is a different
+ * number entirely (the nested plugins are all at '12'). Writing the app version into either
+ * field would claim a minimum that a correctly installed plugin does not meet.
  */
 const openNmsPlugins = [
   alarmHistogramPanel,

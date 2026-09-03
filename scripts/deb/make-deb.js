@@ -11,8 +11,9 @@ const which = require('which');
 const program = require('commander');
 
 const { recursiveCopyFilter } = require('../distContents');
+const { DEBIAN_DIR, PROJECT_DIR } = require('../paths');
 const { resolveMaintainer } = require('./maintainer');
-const { renderChangelog, renderControl, PROJECT_DIR } = require('./metadata');
+const { renderChangelog, renderControl } = require('./metadata');
 const { resolveVersionAndRelease } = require('../packageVersion');
 const pkginfo = require('../../package.json');
 const plugininfo = require('../../src/plugin.json');
@@ -24,8 +25,6 @@ try {
   process.exit(1);
 }
 
-// The previous `if (version.indexOf('-SNAPSHOT'))` was truthy for -1 too, so every
-// build was released as 0 whether or not it was a snapshot.
 const { version, release: defaultRelease } = resolveVersionAndRelease(pkginfo.version);
 
 program
@@ -43,8 +42,6 @@ pkginfo.release = release;
 // generated from one value. DEBFULLNAME/DEBEMAIL override it.
 const maintainer = resolveMaintainer();
 
-// Resolved from this file rather than from process.cwd(): the script no longer sits
-// at the project root, so the two are only the same by convention.
 const pkgid   = plugininfo.id;
 const workdir = path.join(PROJECT_DIR, 'artifacts', pkgid);
 const distdir = path.join(PROJECT_DIR, 'dist');
@@ -67,7 +64,7 @@ return copy(distdir, workdir, {
   fs.mkdirsSync(debian);
 
   // The templates are rendered below; they must not be copied through as-is.
-  return copy(path.join(__dirname, 'debian'), debian, {
+  return copy(DEBIAN_DIR, debian, {
     filter: ['**/*', '!**/*.mustache']
   }).then((_copyResults) => {
     console.log('debian/ directory copied');

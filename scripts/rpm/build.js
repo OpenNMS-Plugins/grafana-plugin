@@ -10,9 +10,8 @@ const { spawnSync } = require('child_process');
 const which = require('which');
 
 const { createSourceArchive } = require('./archive');
+const { PROJECT_DIR } = require('../paths');
 const { renderSpec, isNoarch } = require('./spec');
-
-const PROJECT_DIR = path.resolve(__dirname, '..', '..');
 
 function findRpmbuild() {
   return which.sync('rpmbuild', { nothrow: true });
@@ -149,4 +148,4 @@ function copyToArtifacts(rpmPath, artifactsDir) {
   return target;
 }
 
-module.exports = { buildRpm, copyToArtifacts, findRpmbuild, PROJECT_DIR };
+module.exports = { buildRpm, copyToArtifacts, findRpmbuild };

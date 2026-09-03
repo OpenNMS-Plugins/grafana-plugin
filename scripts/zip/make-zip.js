@@ -8,6 +8,7 @@ const rimraf = require('rimraf');
 const which = require('which');
 
 const { recursiveCopyFilter } = require('../distContents');
+const { PROJECT_DIR } = require('../paths');
 const pkginfo = require('../../package.json');
 const plugininfo = require('../../src/plugin.json');
 
@@ -18,18 +19,14 @@ try {
   process.exit(1);
 }
 
-// Resolved from this file rather than from process.cwd(): the script no longer sits
-// at the project root, so the two are only the same by convention.
-const topdir = path.resolve(__dirname, '..', '..');
-
 const version = pkginfo.version;
 
 const pkgname = pkginfo.name;
 const pkgid = plugininfo.id;
-const srcdir = path.join(topdir, 'dist');
-const tmpdir = path.join(topdir, 'tmp');
+const srcdir = path.join(PROJECT_DIR, 'dist');
+const tmpdir = path.join(PROJECT_DIR, 'tmp');
 const workdir = path.join(tmpdir, pkgid);
-const packagedir = path.join(topdir, 'artifacts');
+const packagedir = path.join(PROJECT_DIR, 'artifacts');
 const zipfile = path.join(packagedir, `${pkgname}-${version}.zip`);
 
 rimraf.sync(workdir);
