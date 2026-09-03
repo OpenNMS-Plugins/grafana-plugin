@@ -11,6 +11,27 @@ const mustache = require('mustache');
 const PROJECT_DIR = path.resolve(__dirname, '..', '..');
 const CONTROL_TEMPLATE = path.join('src', 'debian', 'control.mustache');
 
+// package.json's spec.requires is written RPM-style ("grafana >= 12.0.0"); dpkg wants
+// "grafana (>= 12.0.0)". Sharing the list keeps the deb and the rpm from disagreeing
+// about which Grafana the plugin needs.
+const DEBIAN_OPERATORS = { '>=': '>=', '<=': '<=', '=': '=', '>': '>>', '<': '<<' };
+
+function toDebianDepends(requires) {
+  return (requires || [])
+    .map((requirement) => {
+      const match = /^\s*(\S+?)\s*(>=|<=|>|<|=)\s*(\S+)\s*$/.exec(requirement);
+
+      if (!match) {
+        return requirement.trim();
+      }
+
+      const [, name, operator, version] = match;
+
+      return name + ' (' + DEBIAN_OPERATORS[operator] + ' ' + version + ')';
+    })
+    .join(', ');
+}
+
 function renderControl({ pkgInfo, maintainer, projectDir = PROJECT_DIR }) {
   const templatePath = path.resolve(projectDir, CONTROL_TEMPLATE);
 
@@ -20,7 +41,8 @@ function renderControl({ pkgInfo, maintainer, projectDir = PROJECT_DIR }) {
 
   return mustache.render(fs.readFileSync(templatePath, 'utf-8'), {
     name: pkgInfo.name,
-    maintainer
+    maintainer,
+    depends: toDebianDepends((pkgInfo.spec || {}).requires)
   });
 }
 
@@ -38,4 +60,4 @@ function renderChangelog({ pkgInfo, version, release, maintainer, date = new Dat
 `;
 }
 
-module.exports = { renderControl, renderChangelog, formatChangelogDate };
+module.exports = { renderControl, renderChangelog, toDebianDepends, formatChangelogDate };

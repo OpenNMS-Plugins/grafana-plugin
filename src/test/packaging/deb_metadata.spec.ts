@@ -1,10 +1,11 @@
 import { resolveMaintainer } from '../../../scripts/deb/maintainer'
-import { renderChangelog, renderControl } from '../../../scripts/deb/metadata'
+import { renderChangelog, renderControl, toDebianDepends } from '../../../scripts/deb/metadata'
 import realPkgInfo from '../../../package.json'
 
 const pkgInfo = {
   name: 'opennms-grafana-plugin',
-  description: 'An OpenNMS Integration for Grafana'
+  description: 'An OpenNMS Integration for Grafana',
+  spec: { requires: ['grafana >= 12.0.0'] }
 }
 
 describe('resolveMaintainer', () => {
@@ -59,6 +60,59 @@ describe('renderControl', () => {
   it('should name the source and binary package from package.json', () => {
     expect(control()).toContain('Source: opennms-grafana-plugin')
     expect(control()).toContain('Package: opennms-grafana-plugin')
+  })
+
+  it('should take Depends from the same spec.requires the RPM uses', () => {
+    expect(control()).toContain('Depends: grafana (>= 12.0.0)')
+    expect(control()).not.toContain('9.0')
+  })
+
+  it('should omit Depends entirely when nothing is required', () => {
+    const bare = renderControl({ pkgInfo: { ...pkgInfo, spec: {} }, maintainer: 'A <a@b.c>' })
+
+    // Careful: Build-Depends also contains "Depends:", so match the field at line start.
+    expect(bare.split('\n').some((line) => line.startsWith('Depends:'))).toEqual(false)
+    expect(bare).toContain('Build-Depends: debhelper (>= 9)')
+    expect(bare).toContain('Package: opennms-grafana-plugin')
+  })
+})
+
+/**
+ * The RPM takes its Requires straight from package.json spec.requires. The deb takes
+ * the same list so the two packages cannot disagree about which Grafana they need,
+ * which they previously did: the deb said 9.0 while the RPM and plugin.json said 12.
+ */
+describe('toDebianDepends', () => {
+  it('should parenthesise a versioned dependency the way dpkg expects', () => {
+    expect(toDebianDepends(['grafana >= 12.0.0'])).toEqual('grafana (>= 12.0.0)')
+  })
+
+  it('should join multiple dependencies with commas', () => {
+    expect(toDebianDepends(['grafana >= 12.0.0', 'jq >= 1.6'])).toEqual('grafana (>= 12.0.0), jq (>= 1.6)')
+  })
+
+  it('should leave an unversioned dependency bare', () => {
+    expect(toDebianDepends(['jq'])).toEqual('jq')
+  })
+
+  it('should translate strict inequalities to the Debian spelling', () => {
+    // Debian reads `>` and `<` as `>=` and `<=`; `>>` and `<<` are the strict forms.
+    expect(toDebianDepends(['grafana > 12.0.0'])).toEqual('grafana (>> 12.0.0)')
+    expect(toDebianDepends(['grafana < 13.0.0'])).toEqual('grafana (<< 13.0.0)')
+  })
+
+  it('should pass through the remaining operators unchanged', () => {
+    expect(toDebianDepends(['grafana <= 12.9'])).toEqual('grafana (<= 12.9)')
+    expect(toDebianDepends(['grafana = 12.0.0'])).toEqual('grafana (= 12.0.0)')
+  })
+
+  it('should tolerate irregular spacing', () => {
+    expect(toDebianDepends(['grafana>=12.0.0'])).toEqual('grafana (>= 12.0.0)')
+  })
+
+  it('should return nothing for an empty list', () => {
+    expect(toDebianDepends([])).toEqual('')
+    expect(toDebianDepends(undefined)).toEqual('')
   })
 })
 

@@ -7,5 +7,7 @@ Standards-Version: 3.7.3
 
 Package: {{{name}}}
 Architecture: all
-Depends: grafana (>= 9.0)
+{{#depends}}
+Depends: {{{depends}}}
+{{/depends}}
 Description: An OpenNMS Console for Grafana

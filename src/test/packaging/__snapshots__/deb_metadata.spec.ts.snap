@@ -10,7 +10,7 @@ Standards-Version: 3.7.3
 
 Package: opennms-grafana-plugin
 Architecture: all
-Depends: grafana (>= 9.0)
+Depends: grafana (>= 12.0.0)
 Description: An OpenNMS Console for Grafana
 "
 `;
