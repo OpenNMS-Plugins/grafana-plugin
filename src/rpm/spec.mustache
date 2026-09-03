@@ -1,22 +1,22 @@
-%define name {{name}}
-%define version {{version}}
-%define release {{release}}
+%define name {{{name}}}
+%define version {{{version}}}
+%define release {{{release}}}
 %define buildroot %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-%define pluginid opennms-opennms-app
+%define pluginid {{{pluginId}}}
 
 Name: %{name}
 Version: %{version}
 {{#dist}}
-%define dist {{dist}}
+%define dist {{{dist}}}
 Release: %{release}.%{?dist}
 {{/dist}}
 {{^dist}}
 Release: %{release}
 {{/dist}}
-Summary: {{description}}
+Summary: {{{description}}}
 
 Group: Installation Script
-License: {{license}}
+License: {{{license}}}
 Source: %{name}.tar.gz
 BuildRoot: %{buildroot}
 {{#noarch}}
@@ -33,46 +33,31 @@ BuildRequires: {{{.}}}
 AutoReqProv: no
 
 %description
-{{description}}
+{{{description}}}
 
 %prep
 %setup -q -c -n %{name}
 
-%build
-{{#buildCommands}}
-{{.}}
-{{/buildCommands}}
-{{#prune}}
-rm -rf .git
-rm -rf node_modules
-rm -rf artifacts
-rm -rf dist/test
-{{/prune}}
-{{#noarch}}
-# skip npm rebuild
-{{/noarch}}
-{{^noarch}}
-npm rebuild
-{{/noarch}}
-
 %install
-mkdir -p %{buildroot}{{installDir}}/%{pluginid}
-cp -r ./dist/* %{buildroot}{{installDir}}/%{pluginid}
+mkdir -p %{buildroot}{{{installDir}}}/%{pluginid}
+cp -r ./. %{buildroot}{{{installDir}}}/%{pluginid}
+{{#hasPostInstallCommands}}
 
 %post
 {{#postInstallCommands}}
-{{.}}
+{{{.}}}
 {{/postInstallCommands}}
+{{/hasPostInstallCommands}}
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(644, grafana, grafana, 755)
-{{installDir}}/%{pluginid}
+{{{installDir}}}/%{pluginid}
 {{#hasExecutableFiles}}
 %defattr(755, grafana, grafana, 755)
 {{#executableFiles}}
-{{.}}
+{{{.}}}
 {{/executableFiles}}
 {{/hasExecutableFiles}}

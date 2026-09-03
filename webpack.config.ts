@@ -6,9 +6,17 @@ import grafanaConfig from './.config/webpack/webpack.config'
 import { DIST_DIR } from './.config/webpack/constants'
 import { getPluginJson } from './.config/webpack/utils'
 
+const { copyIgnorePatterns } = require('./scripts/distContents')
+const { applyCopyIgnore } = require('./scripts/webpack/excludeFromCopy')
+
 const config = async (env): Promise<Configuration> => {
   const baseConfig = await grafanaConfig(env)
   const pluginJson = getPluginJson()
+
+  // The scaffolded config copies src/**/*.json into dist, which drags the jest
+  // fixtures under src/test in with it. `npm run sign` then attests to them in
+  // MANIFEST.txt while the packages strip them, so the signature no longer matches.
+  applyCopyIgnore(baseConfig.plugins, copyIgnorePatterns())
 
   return merge(baseConfig, {
     // Add custom config here...

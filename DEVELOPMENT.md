@@ -44,22 +44,70 @@ https://community.grafana.com/t/build-a-panel-plugin-error/100984/3
 
 ## makerpm.js
 
-This is a script that uses `bbc/speculate` to create RPM `spec` files, and then create an RPM.
+`makerpm.js` renders the RPM `spec` file from `src/rpm/spec.mustache` and then runs `rpmbuild`.
+It is a thin wrapper; the work lives in `scripts/rpm/` so that it can be unit tested:
 
-We previously used the `specit` library, but it hasn't been maintained since 2016 or so, and some dependencies were out of date and had security issues.
+| Module | Responsibility |
+| --- | --- |
+| `scripts/rpm/spec.js` | Renders `src/rpm/spec.mustache` into a spec file |
+| `scripts/rpm/archive.js` | Packs the `dist` tree into the source tarball rpmbuild consumes |
+| `scripts/rpm/build.js` | Lays out an rpmbuild tree, runs rpmbuild, publishes the artifact |
+| `scripts/packageVersion.js` | Derives version and release from `package.json` (shared with `makedeb.js`) |
+| `scripts/distContents.js` | What belongs in a package built from `dist` (shared with `makedeb.js` and `makezip.js`) |
 
-`specit` was a fork of `bbc/speculate`, so we decided to use that instead, with some updates. Another option might be to fork `specit` and just update its libraries.
+The `spec` section of `package.json` supplies `specTemplate`, `installDir` and `requires`.
 
-See https://github.com/bbc/speculate for more info.
+Set `MAKERPM_DEBUG=1` for verbose output, including rpmbuild's own output, when debugging a
+CircleCI build.
 
-Note that the `spec` section in the `package.json` contains options for `speculate`.
+### Why we no longer use speculate
 
-There's a `const isDebug = false` in the `makerpm.js` code, you can set it to true if you want some additional debug log output, useful for debugging issues
-when running in CircleCI.
+We previously used `specit`, an unmaintained fork of `bbc/speculate`, and then moved to
+`bbc/speculate` itself. **`speculate` 6.x hardcodes its own spec template** (see
+[lib/spec.js](https://github.com/bbc/speculate/blob/master/lib/spec.js)) and silently ignores
+`spec.specTemplate` and `spec.installDir`. `specit` honoured both; `speculate` does not.
 
-Note, we only want the files in `dist` to be part of the RPM package; for example we do *not* want `node_modules` to be included. So we pass the root-level `package.json` but then tell `speculate` that the root directory is `dist`. `speculate` creates files under `dist/SPECS` and `dist/SOURCES`, we then copy those back to the main root directory for `rpmbuild` to work correctly and for the artifacts to be in the right place.
+That template is written for a systemd Node service, so the RPM it produced installed the
+plugin into `/usr/lib/opennms-grafana-plugin`, created a system user, ran
+`systemctl enable` on a nonexistent service unit and required `nodejs` — none of which is
+correct for a Grafana plugin, and Grafana never saw the plugin at all. Rather than
+post-process someone else's template, we render our own; `speculate` was only contributing a
+small `tar-fs` wrapper beyond that, so it was dropped in favour of `mustache` and `tar-fs`
+directly.
 
-`speculate` will include `node_modules` by default (see [archiver.js](https://github.com/bbc/speculate/blob/master/lib/archiver.js), `REQUIRED_ENTRIES`), but `specit` does not, so we have to do this extra hacky step.
+`speculate/lib/validator` (note: `speculate/validator` is not a valid module path) only checks
+that a `package.json` can be required from the directory it is given. That is why it failed
+here — it was being handed `dist`, which has no `package.json` — and it tells us nothing that
+`makerpm.js` does not already know, so it is not used.
+
+### Package contents
+
+Only the contents of `dist` belong in the package, so the source tarball is rooted at `dist`
+and the spec's `%install` copies the archive root. `scripts/distContents.js` lists what never
+belongs in a distributable, and is used in two places.
+
+The important one is the build. `npm run build` is followed by `npm run sign`, which walks
+`dist` and writes a **signed** `MANIFEST.txt` listing every file it finds. The scaffolded
+webpack config copies `src/**/*.json` into `dist` with no ignore list, so the jest fixtures
+under `src/test` used to land in `dist/test`, get signed into the manifest, and then be
+stripped again by the packaging scripts — leaving a manifest that declared files the package
+did not contain, which `@grafana/plugin-validator` rejects. `webpack.config.ts` therefore
+applies the list as a `CopyWebpackPlugin` ignore so those files never reach `dist` at all.
+`.config/` is scaffolded and webpack-merge concatenates plugin arrays rather than
+reconfiguring the existing plugin, so `scripts/webpack/excludeFromCopy.js` reaches into the
+`CopyWebpackPlugin` instance. It throws if it cannot find one, because silently not excluding
+would break the signature again.
+
+The packaging scripts apply the same list as a second line of defence. That is now redundant
+for `test`, but it still matters for the `SPECS`/`SOURCES` directories the RPM build creates
+inside `dist` while it runs.
+
+### Tests
+
+`src/test/packaging/` covers spec rendering, the source archive, the shared exclusions and a
+full `rpmbuild` run whose output is interrogated with `rpm -qp`. The end-to-end tests skip
+themselves when `rpmbuild` is not on `PATH`, so they run locally and on a build host but not
+in the plain test job.
 
 
 ## grafana/plugin-validator

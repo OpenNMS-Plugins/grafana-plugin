@@ -25,5 +25,5 @@ Thanks for taking time to contribute!
 
 # External References
 
-* JIRA (Issue Tracker): http://issues.opennms.org/browse/${JIRA-ISSUE-NUMBER}
-* Continuous Integration: [CircleCI](https://circleci.com/gh/OpenNMS/grafana-plugin)
+* Jira (Issue Tracker): https://opennms.atlassian.net/browse/${JIRA-ISSUE-NUMBER}
+* Continuous Integration: [GitHub Actions](https://github.com/OpenNMS-Plugins/grafana-plugin/actions)

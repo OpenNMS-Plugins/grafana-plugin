@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`renderSpec :: golden output should render the spec for the real package.json and plugin.json 1`] = `
+"%define name opennms-grafana-plugin
+%define version 12.0.2
+%define release 0
+%define buildroot %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+%define pluginid opennms-opennms-app
+
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Summary: An OpenNMS Integration for Grafana
+
+Group: Installation Script
+License: MIT
+Source: %{name}.tar.gz
+BuildRoot: %{buildroot}
+BuildArch: noarch
+%global __strip /bin/true
+%define __spec_build_post true
+Requires: grafana >= 12.0.0
+AutoReqProv: no
+
+%description
+An OpenNMS Integration for Grafana
+
+%prep
+%setup -q -c -n %{name}
+
+%install
+mkdir -p %{buildroot}/var/lib/grafana/plugins/%{pluginid}
+cp -r ./. %{buildroot}/var/lib/grafana/plugins/%{pluginid}
+
+%clean
+rm -rf %{buildroot}
+
+%files
+%defattr(644, grafana, grafana, 755)
+/var/lib/grafana/plugins/%{pluginid}
+"
+`;

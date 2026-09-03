@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`renderControl :: golden output should render control for the real package.json 1`] = `
+"Source: opennms-grafana-plugin
+Section: contrib/net
+Priority: optional
+Maintainer: OpenNMS Build Account <opennms@opennms.org>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.7.3
+
+Package: opennms-grafana-plugin
+Architecture: all
+Depends: grafana (>= 12.0.0)
+Description: An OpenNMS Integration for Grafana
+"
+`;
