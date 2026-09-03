@@ -6,7 +6,7 @@ This section describes the requirements to install the {product-name}.
 
 == Runtime requirements
 
-For runtime operations, you need to install and set up either https://www.opennms.com/horizon/[OpenNMS Horizon 31+] or https://www.opennms.com/[Meridian 2023+].
+For runtime operations, you need to install and set up either https://www.opennms.com/horizon/[OpenNMS Horizon 33+] or https://www.opennms.com/[Meridian 2024+].
 You also need a http://docs.grafana.org/installation[Grafana instance] (version {grafana-version-required} or newer).
 
 NOTE: We have tested the plugin with Grafana version {grafana-version-tested}.
