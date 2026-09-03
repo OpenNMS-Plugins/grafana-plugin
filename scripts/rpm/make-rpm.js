@@ -2,8 +2,8 @@
 
 // Builds the RPM for the OpenNMS plugin for Grafana.
 //
-// The work lives in scripts/rpm so it can be unit tested; this file only resolves
-// the real paths and package metadata and reports the result.
+// The work lives in the sibling modules so it can be unit tested; this file only
+// resolves the real paths and package metadata and reports the result.
 //
 // Set MAKERPM_DEBUG=1 for verbose output (rpmbuild's own output, and the generated
 // spec and archive listings) when debugging a CI build.
@@ -14,16 +14,17 @@ const path = require('path');
 
 const program = require('commander');
 
-const { resolveVersionAndRelease } = require('./scripts/packageVersion');
-const { buildRpm, copyToArtifacts, findRpmbuild } = require('./scripts/rpm/build');
-const pkgInfo = require('./package.json');
-const pluginInfo = require('./src/plugin.json');
+const { resolveVersionAndRelease } = require('../packageVersion');
+const { buildRpm, copyToArtifacts, findRpmbuild, PROJECT_DIR } = require('./build');
+const pkgInfo = require('../../package.json');
+const pluginInfo = require('../../src/plugin.json');
 
 const isDebug = process.env.MAKERPM_DEBUG === '1';
 
-const cwd = process.cwd();
-const distDir = path.join(cwd, 'dist');
-const artifactsDir = path.join(cwd, 'artifacts');
+// Resolved from this file rather than from process.cwd(): the script no longer sits
+// at the project root, so the two are only the same by convention.
+const distDir = path.join(PROJECT_DIR, 'dist');
+const artifactsDir = path.join(PROJECT_DIR, 'artifacts');
 const topDir = path.join(os.tmpdir(), 'rpmbuild');
 
 const { version, release: defaultRelease } = resolveVersionAndRelease(pkgInfo.version);

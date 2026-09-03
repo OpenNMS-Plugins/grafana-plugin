@@ -7,9 +7,9 @@ const copy = require('recursive-copy');
 const rimraf = require('rimraf');
 const which = require('which');
 
-const { recursiveCopyFilter } = require('./scripts/distContents');
-const pkginfo = require('./package.json');
-const plugininfo = require('./src/plugin.json');
+const { recursiveCopyFilter } = require('../distContents');
+const pkginfo = require('../../package.json');
+const plugininfo = require('../../src/plugin.json');
 
 try {
   which.sync('zip');
@@ -18,7 +18,9 @@ try {
   process.exit(1);
 }
 
-const topdir = process.cwd();
+// Resolved from this file rather than from process.cwd(): the script no longer sits
+// at the project root, so the two are only the same by convention.
+const topdir = path.resolve(__dirname, '..', '..');
 
 const version = pkginfo.version;
 

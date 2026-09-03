@@ -80,7 +80,7 @@ describe('createSourceArchive', () => {
 
   /**
    * webpack copies `src/**\/*.json` into dist with no ignore list, so dist/test holds
-   * the jest fixtures. makedeb.js filters `test` out of the .deb for the same reason.
+   * the jest fixtures. make-deb.js filters `test` out of the .deb for the same reason.
    */
   it('should exclude the test fixtures webpack copies into dist', async () => {
     writeFile('module.js')

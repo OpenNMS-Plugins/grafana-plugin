@@ -1,6 +1,6 @@
 'use strict';
 
-// Shared by makerpm.js and makedeb.js so both derive the same version/release from
+// Shared by make-rpm.js and make-deb.js so both derive the same version/release from
 // package.json. A `-SNAPSHOT` version becomes an unqualified version at release 0,
 // so that snapshot packages sort below the eventual release.
 const SNAPSHOT_SUFFIX = '-SNAPSHOT';

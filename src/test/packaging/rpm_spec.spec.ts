@@ -7,7 +7,7 @@ const pkgInfo = {
   description: 'An OpenNMS Integration for Grafana',
   license: 'MIT',
   spec: {
-    specTemplate: 'src/rpm/spec.mustache',
+    specTemplate: 'scripts/rpm/spec.mustache',
     installDir: '/var/lib/grafana/plugins',
     requires: ['grafana >= 12.0.0']
   }
@@ -141,7 +141,7 @@ describe('renderSpec', () => {
 
   it('should reject a missing spec template', () => {
     expect(() =>
-      render({ pkgInfo: { spec: { ...pkgInfo.spec, specTemplate: 'src/rpm/does-not-exist.mustache' } } })
+      render({ pkgInfo: { spec: { ...pkgInfo.spec, specTemplate: 'scripts/rpm/does-not-exist.mustache' } } })
     ).toThrow(/does-not-exist\.mustache/)
   })
 })

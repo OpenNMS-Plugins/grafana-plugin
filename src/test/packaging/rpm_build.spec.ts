@@ -9,7 +9,7 @@ const pkgInfo = {
   description: 'An OpenNMS Integration for Grafana',
   license: 'MIT',
   spec: {
-    specTemplate: 'src/rpm/spec.mustache',
+    specTemplate: 'scripts/rpm/spec.mustache',
     installDir: '/var/lib/grafana/plugins',
     requires: ['grafana >= 12.0.0']
   }
@@ -144,7 +144,7 @@ describeIfRpmbuild('buildRpm :: build behaviour', () => {
   afterEach(tearDownDist)
 
   it('should succeed when dist already holds a previous run\'s SPECS and SOURCES', async () => {
-    // makerpm.js called speculate's clean() on the cwd rather than on dist, so a
+    // make-rpm.js called speculate's clean() on the cwd rather than on dist, so a
     // leftover dist/SPECS made the next build fail with EEXIST.
     fs.mkdirSync(path.join(distDir, 'SPECS'), { recursive: true })
     fs.writeFileSync(path.join(distDir, 'SPECS', 'stale.spec'), 'stale')

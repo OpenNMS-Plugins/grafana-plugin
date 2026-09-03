@@ -42,18 +42,36 @@ https://community.grafana.com/t/build-a-panel-plugin-error/100984/3
 
 
 
-## makerpm.js
+## Packaging layout
 
-`makerpm.js` renders the RPM `spec` file from `src/rpm/spec.mustache` and then runs `rpmbuild`.
-It is a thin wrapper; the work lives in `scripts/rpm/` so that it can be unit tested:
+Everything that builds a distributable lives under `scripts/`, one directory per artifact
+type, and each is driven by an `npm run` script rather than by invoking the file directly:
+
+| Command | Entry point | Inputs alongside it |
+| --- | --- | --- |
+| `npm run package:rpm` | `scripts/rpm/make-rpm.js` | `spec.mustache` |
+| `npm run package:deb` | `scripts/deb/make-deb.js` | `debian/` |
+| `npm run package:zip` | `scripts/zip/make-zip.js` | — |
+
+These used to sit at the repository root (`makerpm.js`, `makedeb.js`, `makezip.js`) with their
+templates under `src/rpm/` and `src/debian/`. The templates in particular do not belong in
+`src/`: webpack sweeps `src/` into `dist` with broad copy globs and `npm run sign` then attests
+everything in `dist` into a signed `MANIFEST.txt`, so a packaging input with a matching
+extension would ship in the plugin and break the signature. See *Package contents* below.
+
+## make-rpm.js
+
+`make-rpm.js` renders the RPM `spec` file from `scripts/rpm/spec.mustache` and then runs
+`rpmbuild`. It is a thin wrapper; the work lives in sibling modules so that it can be unit
+tested:
 
 | Module | Responsibility |
 | --- | --- |
-| `scripts/rpm/spec.js` | Renders `src/rpm/spec.mustache` into a spec file |
+| `scripts/rpm/spec.js` | Renders `scripts/rpm/spec.mustache` into a spec file |
 | `scripts/rpm/archive.js` | Packs the `dist` tree into the source tarball rpmbuild consumes |
 | `scripts/rpm/build.js` | Lays out an rpmbuild tree, runs rpmbuild, publishes the artifact |
-| `scripts/packageVersion.js` | Derives version and release from `package.json` (shared with `makedeb.js`) |
-| `scripts/distContents.js` | What belongs in a package built from `dist` (shared with `makedeb.js` and `makezip.js`) |
+| `scripts/packageVersion.js` | Derives version and release from `package.json` (shared with `make-deb.js`) |
+| `scripts/distContents.js` | What belongs in a package built from `dist` (shared with `make-deb.js` and `make-zip.js`) |
 
 The `spec` section of `package.json` supplies `specTemplate`, `installDir` and `requires`.
 
@@ -78,7 +96,7 @@ directly.
 `speculate/lib/validator` (note: `speculate/validator` is not a valid module path) only checks
 that a `package.json` can be required from the directory it is given. That is why it failed
 here — it was being handed `dist`, which has no `package.json` — and it tells us nothing that
-`makerpm.js` does not already know, so it is not used.
+`make-rpm.js` does not already know, so it is not used.
 
 ### Package contents
 

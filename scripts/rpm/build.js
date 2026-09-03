@@ -54,7 +54,7 @@ function buildRpm({
   const rpmbuild = findRpmbuild();
 
   if (!rpmbuild) {
-    return Promise.reject(new Error('makerpm: rpmbuild executable not found on PATH'));
+    return Promise.reject(new Error('make-rpm: rpmbuild executable not found on PATH'));
   }
 
   const specsDir = path.join(distDir, 'SPECS');
@@ -109,14 +109,14 @@ function buildRpm({
       );
 
       if (result.error) {
-        throw new Error('makerpm: rpmbuild could not be run: ' + result.error.message);
+        throw new Error('make-rpm: rpmbuild could not be run: ' + result.error.message);
       }
 
       // spawnSync reports a non-zero exit only in `status`; checking `error` alone
       // lets a failed build through.
       if (result.status !== 0) {
         throw new Error(
-          'makerpm: rpmbuild exited with status ' + result.status + '\n' + (result.stderr || result.stdout || '')
+          'make-rpm: rpmbuild exited with status ' + result.status + '\n' + (result.stderr || result.stdout || '')
         );
       }
 
@@ -124,7 +124,7 @@ function buildRpm({
 
       if (rpms.length !== 1) {
         throw new Error(
-          'makerpm: expected exactly one rpm under ' +
+          'make-rpm: expected exactly one rpm under ' +
             path.join(topDir, 'RPMS') +
             ', found ' +
             rpms.length +

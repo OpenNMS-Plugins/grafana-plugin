@@ -135,10 +135,15 @@ A full reinstall also re-resolves every `^` range, so it can surface breakage un
 
 - CI runs `@grafana/plugin-validator` with `grafana-plugin-validator-config.yaml`
 - `osv-scanner` checks CVEs in `package-lock.json`; to temporarily disable: set `osv-scanner.enabled: false` in the config yaml (revert before production builds)
-- Build artifacts are RPM/DEB/ZIP via `makerpm.js`, `makedeb.js`, `makezip.js`; the reusable
-  pieces live in `scripts/` and are tested by `src/test/packaging/`
-- `MAKERPM_DEBUG=1` turns on verbose `makerpm.js` output for CircleCI debugging
-- `makerpm.js` renders `src/rpm/spec.mustache` itself. Do **not** reintroduce `speculate`: 6.x
+- Build artifacts are RPM/DEB/ZIP via `npm run package:rpm|deb|zip`. Everything packaging
+  lives under `scripts/` — `scripts/rpm/` (`make-rpm.js`, `spec.mustache`), `scripts/deb/`
+  (`make-deb.js`, `debian/`), `scripts/zip/` (`make-zip.js`) — and is tested by
+  `src/test/packaging/`. Packaging inputs must **not** move back under `src/`: webpack sweeps
+  `src/` into `dist` and `npm run sign` attests everything in `dist`
+- CI invokes the `npm run package:*` scripts, so entry-point paths are not hardcoded in
+  `.circleci/config.yml`
+- `MAKERPM_DEBUG=1` turns on verbose `make-rpm.js` output for CircleCI debugging
+- `make-rpm.js` renders `scripts/rpm/spec.mustache` itself. Do **not** reintroduce `speculate`: 6.x
   hardcodes its own systemd-service spec template and ignores `spec.specTemplate` /
   `spec.installDir`, which silently packaged the plugin into `/usr/lib` with a bogus service
   unit. `src/test/packaging/rpm_spec.spec.ts` guards against this
