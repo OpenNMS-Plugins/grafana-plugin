@@ -69,9 +69,7 @@ tested:
 | --- | --- |
 | `scripts/rpm/spec.js` | Renders `scripts/rpm/spec.mustache` into a spec file |
 | `scripts/rpm/archive.js` | Packs the `dist` tree into the source tarball rpmbuild consumes |
-| `scripts/rpm/build.js` | Lays out an rpmbuild tree, runs rpmbuild, publishes the artifact |
-| `scripts/packageVersion.js` | Derives version and release from `package.json` (shared with `make-deb.js`) |
-| `scripts/distContents.js` | What belongs in a package built from `dist` (shared with `make-deb.js` and `make-zip.js`) |
+| `scripts/rpm/build.js` | Lays out an rpmbuild tree, runs rpmbuild, returns the built rpm |
 
 The `spec` section of `package.json` supplies `specTemplate`, `installDir` and `requires`.
 
@@ -98,7 +96,57 @@ that a `package.json` can be required from the directory it is given. That is wh
 here — it was being handed `dist`, which has no `package.json` — and it tells us nothing that
 `make-rpm.js` does not already know, so it is not used.
 
-### Package contents
+## make-deb.js
+
+`make-deb.js` stages `dist` with a generated `debian/` directory beside it and runs
+`dpkg-buildpackage`. Like the rpm it is a thin wrapper over testable modules:
+
+| Module | Responsibility |
+| --- | --- |
+| `scripts/deb/build.js` | Stages the build tree, runs dpkg-buildpackage, publishes the deb |
+| `scripts/deb/metadata.js` | Renders `debian/control` and the changelog |
+| `scripts/deb/maintainer.js` | Resolves the maintainer identity from `DEBFULLNAME`/`DEBEMAIL` |
+
+`Depends` is derived from the same `package.json` `spec.requires` the rpm's `Requires` comes
+from, so the two cannot disagree about which Grafana the plugin needs.
+
+The build happens in a directory under the system temp directory, **not** under `artifacts/`.
+`dpkg-buildpackage` writes a `.dsc`, a `.changes`, a `.buildinfo` and a source tarball beside
+the `.deb`, and only the `.deb` is signed and published; building in `artifacts/` meant CI
+stored all of them, and left a full copy of `dist` there whenever a build failed.
+
+Set `MAKEDEB_DEBUG=1` for verbose output, including dpkg-buildpackage's own output.
+
+## make-zip.js
+
+`make-zip.js` stages `dist` into a directory named for the plugin id and zips that directory —
+Grafana identifies a plugin by the zip's top-level directory name. `scripts/zip/build.js` holds
+the work.
+
+The zip is named with the raw `package.json` version, so a snapshot build keeps its snapshot
+suffix in the filename. That is deliberate: the rpm and deb split the version into version and
+release because their packaging formats need it for sort order, and a zip has no such
+semantics. Keeping the suffix also distinguishes a snapshot from a release, which a bare
+version with a release number of 0 would not.
+
+Set `MAKEZIP_DEBUG=1` for verbose output, including zip's own output.
+
+## Shared packaging modules
+
+| Module | Responsibility |
+| --- | --- |
+| `scripts/paths.js` | `PROJECT_DIR` and `DEBIAN_DIR`, resolved from the file's own location |
+| `scripts/packageVersion.js` | Derives version and release from `package.json` (rpm and deb) |
+| `scripts/distContents.js` | What belongs in a package built from `dist` (all three) |
+| `scripts/stageDist.js` | Copies `dist` into a staging directory, applying that list (deb and zip) |
+| `scripts/artifacts.js` | Publishes a built package into `artifacts/` (all three) |
+
+All three builders resolve their paths from `scripts/paths.js` rather than `process.cwd()`, so
+they work from any working directory, and each removes its own working tree in a `finally`
+rather than only on the success path.
+
+
+## Package contents
 
 Only the contents of `dist` belong in the package, so the source tarball is rooted at `dist`
 and the spec's `%install` copies the archive root. `scripts/distContents.js` lists what never
@@ -120,12 +168,25 @@ The packaging scripts apply the same list as a second line of defence. That is n
 for `test`, but it still matters for the `SPECS`/`SOURCES` directories the RPM build creates
 inside `dist` while it runs.
 
-### Tests
+## Packaging tests
 
-`src/test/packaging/` covers spec rendering, the source archive, the shared exclusions and a
-full `rpmbuild` run whose output is interrogated with `rpm -qp`. The end-to-end tests skip
-themselves when `rpmbuild` is not on `PATH`, so they run locally and on a build host but not
-in the plain test job.
+`src/test/packaging/` covers all three builders: spec rendering and the source archive for the
+rpm, `debian/control` and changelog rendering and build-tree staging for the deb, the shared
+`dist` exclusions and staging, and the resolved packaging paths.
+
+The end-to-end tests build a real package from a fixture `dist` and interrogate the result —
+`rpm -qp` for the rpm, `unzip -Z1` for the zip. Each skips itself when its tool is not on
+`PATH`: `rpmbuild` and `zip` are usually present on a developer machine, `dpkg-buildpackage`
+generally is not, so the deb's end-to-end tests skip outside a Debian build host. To run those,
+use the CI image:
+
+```bash
+docker run --rm -v "$PWD":/work -w /work opennms/build-env:debian-jdk11-b10453 \
+  bash -lc './scripts/deb/make-deb.js --release 1'
+```
+
+Note that the jest suite is not currently run by `.circleci/config.yml` at all, so every one of
+these tests is a local-and-pre-commit check rather than a CI gate.
 
 
 ## grafana/plugin-validator

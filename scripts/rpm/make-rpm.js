@@ -16,7 +16,8 @@ const program = require('commander');
 
 const { PROJECT_DIR } = require('../paths');
 const { resolveVersionAndRelease } = require('../packageVersion');
-const { buildRpm, copyToArtifacts, findRpmbuild } = require('./build');
+const { copyToArtifacts } = require('../artifacts');
+const { buildRpm, findRpmbuild } = require('./build');
 const pkgInfo = require('../../package.json');
 const pluginInfo = require('../../src/plugin.json');
 
