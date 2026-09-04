@@ -142,7 +142,14 @@ A full reinstall also re-resolves every `^` range, so it can surface breakage un
   `src/` into `dist` and `npm run sign` attests everything in `dist`
 - CI invokes the `npm run package:*` scripts, so entry-point paths are not hardcoded in
   `.circleci/config.yml`
-- `MAKERPM_DEBUG=1` turns on verbose `make-rpm.js` output for CircleCI debugging
+- `MAKERPM_DEBUG=1` / `MAKEDEB_DEBUG=1` / `MAKEZIP_DEBUG=1` turn on verbose output for
+  CircleCI debugging. Each entry point is a thin wrapper; the work lives in a sibling
+  `build.js` that takes paths as arguments so it can be tested against a fixture `dist`
+- The deb builds under the system temp directory, never under `artifacts/`.
+  `dpkg-buildpackage` writes a `.dsc`, `.changes`, `.buildinfo` and source tarball beside the
+  `.deb`, and only the `.deb` is signed and published; building in `artifacts/` shipped all of
+  them to CI and left a full copy of `dist` there on failure. Each builder cleans its working
+  tree in a `finally`, not on the success path only
 - `make-rpm.js` renders `scripts/rpm/spec.mustache` itself. Do **not** reintroduce `speculate`: 6.x
   hardcodes its own systemd-service spec template and ignores `spec.specTemplate` /
   `spec.installDir`, which silently packaged the plugin into `/usr/lib` with a bogus service

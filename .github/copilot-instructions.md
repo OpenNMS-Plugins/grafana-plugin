@@ -192,7 +192,11 @@ Monitor https://community.grafana.com/t/build-a-panel-plugin-error/100984/3 for 
   `/usr/lib` with a bogus service unit instead of into the Grafana plugin directory
 - Only includes `dist/` in the RPM (not `node_modules`), minus the entries in
   `scripts/distContents.js`
-- Set `MAKERPM_DEBUG=1` for CircleCI debugging
+- Set `MAKERPM_DEBUG=1` for CircleCI debugging (`MAKEDEB_DEBUG` / `MAKEZIP_DEBUG` for the
+  other two)
+- The deb and zip follow the same shape: a thin entry point over a testable
+  `scripts/<type>/build.js`, staging via `scripts/stageDist.js` and publishing via
+  `scripts/artifacts.js`. Neither builds inside `artifacts/`
 
 ## Support Matrix
 

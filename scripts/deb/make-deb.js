@@ -1,106 +1,82 @@
 #!/usr/bin/env node
 
-/* jshint esversion: 6 */
+// Builds the DEB for the OpenNMS plugin for Grafana.
+//
+// The work lives in the sibling build module so it can be unit tested; this file only
+// resolves the real paths and package metadata and reports the result.
+//
+// Set MAKEDEB_DEBUG=1 for verbose output (dpkg-buildpackage's own output and the
+// staging progress) when debugging a CI build.
 
-const fs = require('fs-extra');
+const os = require('os');
 const path = require('path');
-const spawn = require('child_process').spawnSync;
-const copy = require('recursive-copy');
-const rimraf = require('rimraf');
-const which = require('which');
+
 const program = require('commander');
 
-const { recursiveCopyFilter } = require('../distContents');
-const { DEBIAN_DIR, PROJECT_DIR } = require('../paths');
-const { resolveMaintainer } = require('./maintainer');
-const { renderChangelog, renderControl } = require('./metadata');
+const { PROJECT_DIR } = require('../paths');
 const { resolveVersionAndRelease } = require('../packageVersion');
-const pkginfo = require('../../package.json');
-const plugininfo = require('../../src/plugin.json');
+const { buildDeb, findDpkgBuildpackage } = require('./build');
+const { resolveMaintainer } = require('./maintainer');
+const pkgInfo = require('../../package.json');
+const pluginInfo = require('../../src/plugin.json');
 
-try {
-  which.sync('dpkg-buildpackage');
-} catch (err) {
-  console.log('dpkg-buildpackage executable not found');
-  process.exit(1);
-}
+const isDebug = process.env.MAKEDEB_DEBUG === '1';
 
-const { version, release: defaultRelease } = resolveVersionAndRelease(pkginfo.version);
+const distDir = path.join(PROJECT_DIR, 'dist');
+const artifactsDir = path.join(PROJECT_DIR, 'artifacts');
+// Deliberately not under artifacts/: dpkg-buildpackage writes a .dsc, a .changes, a
+// .buildinfo and a source tarball beside the .deb, and building in artifacts/ meant CI
+// stored all of them, plus a full copy of dist whenever a build failed.
+const buildRoot = path.join(os.tmpdir(), 'opennms-grafana-plugin-deb');
+
+const { version, release: defaultRelease } = resolveVersionAndRelease(pkgInfo.version);
 
 program
-  .version(pkginfo.version)
+  .version(pkgInfo.version)
   .option('-r --release <release>', 'Specify release number of package', defaultRelease)
   .parse(process.argv);
 
 const release = program.opts().release;
 
-pkginfo.version = version;
-pkginfo.release = release;
-
-
 // debian/control and the changelog trailer must name the same identity, so both are
 // generated from one value. DEBFULLNAME/DEBEMAIL override it.
 const maintainer = resolveMaintainer();
 
-const pkgid   = plugininfo.id;
-const workdir = path.join(PROJECT_DIR, 'artifacts', pkgid);
-const distdir = path.join(PROJECT_DIR, 'dist');
+async function main() {
+  if (!findDpkgBuildpackage()) {
+    console.error('dpkg-buildpackage executable not found');
+    process.exit(1);
+  }
 
-rimraf.sync(workdir);
-fs.mkdirsSync(workdir);
-return copy(distdir, workdir, {
-  dot: true,
-  junk: false,
-  filter: recursiveCopyFilter([
-    '!**/*.changes',
-    '!**/*.deb',
-    '!**/*.dsc',
-    '!**/*.tar.gz',
-  ])
-}).then((results) => {
-  console.log(results.length + ' files copied to ' + workdir);
+  console.log(
+    'Building DEB for ' + pluginInfo.name + ' (' + pluginInfo.id + ') ' + version + '-' + release
+  );
 
-  const debian = path.join(workdir, 'debian');
-  fs.mkdirsSync(debian);
+  let debPath;
 
-  // The templates are rendered below; they must not be copied through as-is.
-  return copy(DEBIAN_DIR, debian, {
-    filter: ['**/*', '!**/*.mustache']
-  }).then((_copyResults) => {
-    console.log('debian/ directory copied');
+  try {
+    ({ debPath } = await buildDeb({
+      distDir,
+      buildRoot,
+      artifactsDir,
+      pkgInfo,
+      pluginInfo,
+      version,
+      release,
+      maintainer,
+      verbose: isDebug
+    }));
+  } catch (err) {
+    console.error('DEB generation failed: ' + err.message);
+    process.exit(1);
+  }
 
-    console.log('* writing control and changelog for ' + maintainer);
-    fs.writeFileSync(path.join(debian, 'control'), renderControl({ pkgInfo: pkginfo, maintainer }));
-    fs.writeFileSync(
-      path.join(debian, 'changelog'),
-      renderChangelog({ pkgInfo: pkginfo, version, release, maintainer })
-    );
+  console.log('Wrote ' + debPath);
+}
 
-    console.log('* running dpkg-buildpackage');
-    // -us -uc: do not sign the .dsc/.changes here. dpkg-buildpackage would sign as the
-    // changelog's maintainer identity, which is not a key we hold; CI signs the built
-    // .deb separately with the OpenNMS release key. Before make-deb.js checked the exit
-    // status, that signing failure (status 25) was discarded and the build looked green.
-    const ret = spawn('dpkg-buildpackage', ['-us', '-uc'], {
-      cwd: workdir,
-      stdio: ['inherit', 'inherit', 'inherit'],
-    });
-    if (ret.error) {
-      console.log('dpkg-buildpackage failed: ' + ret.error.message);
-      process.exit(1);
-    }
-
-    // spawnSync reports a non-zero exit only in `status`, never in `error`.
-    if (ret.status !== 0) {
-      console.log('dpkg-buildpackage exited with status ' + ret.status);
-      process.exit(1);
-    }
-
-    rimraf.sync(workdir);
-
-    process.exit(0);
-  });
-}).catch((error) => {
-  console.log('Copy failed: ' + error);
+// Backstop: anything thrown outside the try above (or from an async rejection)
+// should still report as a build failure rather than an unhandled rejection.
+main().catch((err) => {
+  console.error('DEB generation failed: ' + err.message);
   process.exit(1);
 });

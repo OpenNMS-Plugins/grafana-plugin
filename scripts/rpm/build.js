@@ -136,16 +136,5 @@ function buildRpm({
     .finally(cleanDist);
 }
 
-// Publishes the built rpm where CI's publish step looks for it. Overwrites rather
-// than skipping, so a rebuild at the same version cannot silently ship a stale rpm.
-function copyToArtifacts(rpmPath, artifactsDir) {
-  const target = path.join(artifactsDir, path.basename(rpmPath));
 
-  fs.mkdirSync(artifactsDir, { recursive: true });
-  fs.rmSync(target, { force: true });
-  fs.copyFileSync(rpmPath, target);
-
-  return target;
-}
-
-module.exports = { buildRpm, copyToArtifacts, findRpmbuild };
+module.exports = { buildRpm, findRpmbuild };

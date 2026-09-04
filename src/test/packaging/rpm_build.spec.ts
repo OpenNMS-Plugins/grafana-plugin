@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { execFileSync } from 'child_process'
-import { buildRpm, copyToArtifacts, findRpmbuild } from '../../../scripts/rpm/build'
+import { buildRpm, findRpmbuild } from '../../../scripts/rpm/build'
 
 const pkgInfo = {
   name: 'opennms-grafana-plugin',
@@ -180,37 +180,4 @@ describeIfRpmbuild('buildRpm :: build behaviour', () => {
       build({ pkgInfo: { spec: { ...pkgInfo.spec, buildRequires: ['opg-no-such-build-dependency'] } } })
     ).rejects.toThrow(/rpmbuild/i)
   }, 120000)
-})
-
-describe('copyToArtifacts', () => {
-  beforeEach(() => {
-    workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opg-artifacts-test-'))
-  })
-
-  afterEach(() => fs.rmSync(workDir, { recursive: true, force: true }))
-
-  const writeRpm = (contents: string) => {
-    const rpmPath = path.join(workDir, 'plugin-1.0.0-1.noarch.rpm')
-    fs.writeFileSync(rpmPath, contents)
-    return rpmPath
-  }
-
-  it('should copy the rpm into the artifacts directory, creating it if needed', () => {
-    const artifactsDir = path.join(workDir, 'artifacts')
-
-    const target = copyToArtifacts(writeRpm('one'), artifactsDir)
-
-    expect(target).toEqual(path.join(artifactsDir, 'plugin-1.0.0-1.noarch.rpm'))
-    expect(fs.readFileSync(target, 'utf-8')).toEqual('one')
-  })
-
-  it('should replace an rpm left over from an earlier build', () => {
-    const artifactsDir = path.join(workDir, 'artifacts')
-    fs.mkdirSync(artifactsDir)
-    fs.writeFileSync(path.join(artifactsDir, 'plugin-1.0.0-1.noarch.rpm'), 'stale')
-
-    const target = copyToArtifacts(writeRpm('fresh'), artifactsDir)
-
-    expect(fs.readFileSync(target, 'utf-8')).toEqual('fresh')
-  })
 })
