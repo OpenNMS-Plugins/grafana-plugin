@@ -210,12 +210,17 @@ jobs:
       - run:
           name: Run unit tests
           command: npm run test:ci
-      # Stored before the lint step because CircleCI skips the remaining steps once one
-      # fails: uploading here means a lint failure cannot swallow the test report.
+      # Ordered before the lint step, and `when: always` on both, so the report survives
+      # a failure either side of it. CircleCI skips remaining steps once one fails, and
+      # while store_artifacts is documented as implicitly always and store_test_results
+      # is observed to upload from a failed job, neither is worth depending on silently:
+      # a failing suite is exactly when the report matters most.
       - store_test_results:
           path: test-results
+          when: always
       - store_artifacts:
           path: test-results
+          when: always
       - run:
           name: Run ESLint
           command: npm run lint

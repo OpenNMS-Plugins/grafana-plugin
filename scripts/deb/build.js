@@ -16,19 +16,34 @@ const { stageDist } = require('../stageDist');
 const { renderChangelog, renderControl } = require('./metadata');
 
 // dpkg-buildpackage drives the build, but it is not the whole toolchain: debian/rules
-// runs `dh $@` and debian/control declares Build-Depends: debhelper, and
-// dpkg-buildpackage shells out to fakeroot unless it is run as root. Checking only for
+// runs `dh $@` and debian/control declares Build-Depends: debhelper. Checking only for
 // dpkg-buildpackage let CI into a build it could not finish -- cimg/node carries it but
 // neither of the others -- and the failure surfaced as a bare "exited with status 25".
 const DEB_TOOLS = ['dpkg-buildpackage', 'fakeroot', 'dh'];
 
+// fakeroot is the gain-root command, and dpkg-buildpackage only needs one when it is
+// not already root. deb-build-executor (node:22-trixie) runs as root, where a build
+// with no fakeroot on PATH succeeds, so requiring it there would refuse a working build.
+const GAIN_ROOT_TOOL = 'fakeroot';
+
+function runningAsRoot() {
+  return typeof process.getuid === 'function' && process.getuid() === 0;
+}
+
 /**
  * Returns the names of the deb build tools that are not on PATH, in DEB_TOOLS order.
- * An empty array means the toolchain is complete. `lookup` is injectable so the tests
- * can cover the partial-toolchain cases without depending on what the host has.
+ * An empty array means the toolchain is complete.
+ *
+ * `lookup` and `asRoot` are injectable so the tests can cover the partial-toolchain and
+ * root cases without depending on what the host has or who it runs as.
  */
-function findMissingDebTools(lookup = (tool) => which.sync(tool, { nothrow: true })) {
-  return DEB_TOOLS.filter((tool) => !lookup(tool));
+function findMissingDebTools({
+  lookup = (tool) => which.sync(tool, { nothrow: true }),
+  asRoot = runningAsRoot()
+} = {}) {
+  return DEB_TOOLS.filter((tool) => !(asRoot && tool === GAIN_ROOT_TOOL)).filter(
+    (tool) => !lookup(tool)
+  );
 }
 
 function findDpkgBuildpackage() {

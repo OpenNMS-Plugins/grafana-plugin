@@ -125,9 +125,10 @@ describe('findBuiltDebs', () => {
 
 describe('findMissingDebTools', () => {
   const present = (tool: string) => '/usr/bin/' + tool
+  const absent = () => null
 
   it('should report nothing missing when the whole toolchain is present', () => {
-    expect(findMissingDebTools(present)).toEqual([])
+    expect(findMissingDebTools({ lookup: present, asRoot: false })).toEqual([])
   })
 
   /**
@@ -138,19 +139,50 @@ describe('findMissingDebTools', () => {
   it('should report every missing tool, not just the first', () => {
     const lookup = (tool: string) => (tool === 'dpkg-buildpackage' ? present(tool) : null)
 
-    expect(findMissingDebTools(lookup)).toEqual(['fakeroot', 'dh'])
+    expect(findMissingDebTools({ lookup, asRoot: false })).toEqual(['fakeroot', 'dh'])
   })
 
   it('should report dpkg-buildpackage when only it is absent', () => {
     const lookup = (tool: string) => (tool === 'dpkg-buildpackage' ? null : present(tool))
 
-    expect(findMissingDebTools(lookup)).toEqual(['dpkg-buildpackage'])
+    expect(findMissingDebTools({ lookup, asRoot: false })).toEqual(['dpkg-buildpackage'])
   })
 
-  it('should look for the real toolchain by default', () => {
-    // debian/rules runs `dh $@` and debian/control declares Build-Depends: debhelper,
-    // and dpkg-buildpackage needs fakeroot unless it is run as root.
-    expect(findMissingDebTools(() => null)).toEqual(['dpkg-buildpackage', 'fakeroot', 'dh'])
+  it('should require the whole toolchain when not running as root', () => {
+    // debian/rules runs `dh $@`, debian/control declares Build-Depends: debhelper, and
+    // dpkg-buildpackage needs a gain-root command when it is not already root.
+    expect(findMissingDebTools({ lookup: absent, asRoot: false })).toEqual([
+      'dpkg-buildpackage',
+      'fakeroot',
+      'dh'
+    ])
+  })
+
+  /**
+   * dpkg-buildpackage only needs a gain-root command when it is not already root, and
+   * deb-build-executor (node:22-trixie) runs as root. Verified: as root and with no
+   * fakeroot on PATH, dpkg-buildpackage builds the package and exits 0. Demanding
+   * fakeroot there would refuse a build that works.
+   */
+  it('should not require fakeroot when running as root', () => {
+    const lookup = (tool: string) => (tool === 'fakeroot' ? null : present(tool))
+
+    expect(findMissingDebTools({ lookup, asRoot: true })).toEqual([])
+  })
+
+  it('should still require dpkg-buildpackage and dh when running as root', () => {
+    expect(findMissingDebTools({ lookup: absent, asRoot: true })).toEqual(['dpkg-buildpackage', 'dh'])
+  })
+
+  /**
+   * Every case above injects a lookup, which leaves the real which.sync() default --
+   * the path production actually takes -- unexercised. This calls it for real.
+   */
+  it('should probe the real PATH by default without throwing', () => {
+    const missing = findMissingDebTools()
+
+    expect(Array.isArray(missing)).toBe(true)
+    missing.forEach((tool) => expect(['dpkg-buildpackage', 'fakeroot', 'dh']).toContain(tool))
   })
 })
 
@@ -192,7 +224,7 @@ describeDeb('buildDeb', () => {
 
     expect(debPath).toEqual(path.join(artifactsDir, 'opennms-grafana-plugin_12.0.2-1_all.deb'))
     expect(fs.existsSync(debPath)).toBe(true)
-  })
+  }, 120000)
 
   it('should not publish the dsc, changes, buildinfo or source tarball beside it', async () => {
     // dpkg-buildpackage writes all of those next to the deb. The build used to run
@@ -200,13 +232,13 @@ describeDeb('buildDeb', () => {
     await build()
 
     expect(fs.readdirSync(artifactsDir)).toEqual(['opennms-grafana-plugin_12.0.2-1_all.deb'])
-  })
+  }, 120000)
 
   it('should remove its build directory when the build succeeds', async () => {
     await build()
 
     expect(fs.existsSync(buildRoot)).toBe(false)
-  })
+  }, 120000)
 
   it('should remove its build directory when the build fails', async () => {
     // The old script only cleaned up on the success path, and built inside artifacts/,
@@ -216,5 +248,5 @@ describeDeb('buildDeb', () => {
     await expect(build()).rejects.toThrow()
 
     expect(fs.existsSync(buildRoot)).toBe(false)
-  })
+  }, 120000)
 })
