@@ -15,6 +15,37 @@ const { DEBIAN_DIR } = require('../paths');
 const { stageDist } = require('../stageDist');
 const { renderChangelog, renderControl } = require('./metadata');
 
+// dpkg-buildpackage drives the build, but it is not the whole toolchain: debian/rules
+// runs `dh $@` and debian/control declares Build-Depends: debhelper. Checking only for
+// dpkg-buildpackage let CI into a build it could not finish -- cimg/node carries it but
+// neither of the others -- and the failure surfaced as a bare "exited with status 25".
+const DEB_TOOLS = ['dpkg-buildpackage', 'fakeroot', 'dh'];
+
+// fakeroot is the gain-root command, and dpkg-buildpackage only needs one when it is
+// not already root. deb-build-executor (node:22-trixie) runs as root, where a build
+// with no fakeroot on PATH succeeds, so requiring it there would refuse a working build.
+const GAIN_ROOT_TOOL = 'fakeroot';
+
+function runningAsRoot() {
+  return typeof process.getuid === 'function' && process.getuid() === 0;
+}
+
+/**
+ * Returns the names of the deb build tools that are not on PATH, in DEB_TOOLS order.
+ * An empty array means the toolchain is complete.
+ *
+ * `lookup` and `asRoot` are injectable so the tests can cover the partial-toolchain and
+ * root cases without depending on what the host has or who it runs as.
+ */
+function findMissingDebTools({
+  lookup = (tool) => which.sync(tool, { nothrow: true }),
+  asRoot = runningAsRoot()
+} = {}) {
+  return DEB_TOOLS.filter((tool) => !(asRoot && tool === GAIN_ROOT_TOOL)).filter(
+    (tool) => !lookup(tool)
+  );
+}
+
 function findDpkgBuildpackage() {
   return which.sync('dpkg-buildpackage', { nothrow: true });
 }
@@ -77,11 +108,13 @@ async function buildDeb({
 }) {
   const log = verbose ? (...args) => console.log(...args) : () => {};
 
-  const dpkgBuildpackage = findDpkgBuildpackage();
+  const missingTools = findMissingDebTools();
 
-  if (!dpkgBuildpackage) {
-    throw new Error('make-deb: dpkg-buildpackage executable not found on PATH');
+  if (missingTools.length > 0) {
+    throw new Error('make-deb: not found on PATH: ' + missingTools.join(', '));
   }
+
+  const dpkgBuildpackage = findDpkgBuildpackage();
 
   // buildRoot is ours to own: starting from empty is what makes the deb produced by
   // this build unambiguous below, and it is deliberately not artifacts/ — building
@@ -138,4 +171,4 @@ async function buildDeb({
   }
 }
 
-module.exports = { buildDeb, findBuiltDebs, findDpkgBuildpackage, stageDebTree };
+module.exports = { buildDeb, findBuiltDebs, findMissingDebTools, stageDebTree };

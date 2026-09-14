@@ -104,7 +104,7 @@ commands:
   build-and-sign:
     steps:
       - run:
-          name: Run Build, Tests, and Sign
+          name: Run Build and Sign
           command: |
             export PATH="./node_modules/.bin:${PATH}"
             export NODE_OPTIONS=--openssl-legacy-provider
@@ -167,14 +167,63 @@ jobs:
       - validate-schema
       - build-and-sign
       - save-node-cache
-      - store_test_results:
-          path: coverage
-      - store_artifacts:
-          path: coverage
+      # This job used to store_test_results and store_artifacts from coverage/, but it
+      # never ran the tests and jest was never asked for coverage, so the directory did
+      # not exist. The unit tests and their JUnit output live in the `verify` job now.
       - persist_to_workspace:
           root: ~/
           paths:
             - project
+
+  verify:
+    # The unit tests do not need dist: the packaging specs build their own fixture tree
+    # under the system temp directory, and the rest are plain unit tests. So this runs in
+    # parallel with `build` off `pre-build` rather than queueing behind it, the same way
+    # `build-docs` does, and costs no wall-clock on the critical path.
+    executor: node-executor
+    resource_class: medium
+    steps:
+      - attach_workspace:
+          at: ~/
+      # `build` owns the cache write; this job only restores, as `build-docs` does.
+      - install-node-dependencies
+      - run:
+          name: Install the packaging test toolchain
+          command: |
+            # deb_build.spec.ts and rpm_build.spec.ts drive dpkg-buildpackage and
+            # rpmbuild end to end, and skip themselves when the tools are absent.
+            #
+            # build-essential/debhelper/fakeroot: the list make-deb installs. cimg/node
+            # is Ubuntu-based and already carries dpkg-buildpackage, so the deb suite
+            # does not skip here -- but without these it cannot finish the build.
+            #
+            # rpm: provides rpmbuild on Ubuntu, which is otherwise absent. These specs
+            # cover our spec template and build script -- package naming, metadata,
+            # install paths, ownership, Requires, fixture exclusion -- none of which
+            # turn on the rpm version, so testing against Ubuntu's 4.18 rather than
+            # el9's 4.16 is not worth a second job on rpm-build-executor. Revisit if an
+            # assertion ever depends on rpmbuild's own behaviour.
+            #
+            # apt skips whatever the image already has.
+            sudo apt-get update
+            sudo apt-get -y --no-install-recommends install build-essential debhelper fakeroot rpm
+      - run:
+          name: Run unit tests
+          command: npm run test:ci
+      # Ordered before the lint step, and `when: always` on both, so the report survives
+      # a failure either side of it. CircleCI skips remaining steps once one fails, and
+      # while store_artifacts is documented as implicitly always and store_test_results
+      # is observed to upload from a failed job, neither is worth depending on silently:
+      # a failing suite is exactly when the report matters most.
+      - store_test_results:
+          path: test-results
+          when: always
+      - store_artifacts:
+          path: test-results
+          when: always
+      - run:
+          name: Run ESLint
+          command: npm run lint
 
   build-docs:
     # Antora comes from this repo's own @antora devDependencies, not from an image.
@@ -565,6 +614,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      # Runs alongside `build` rather than after it; the four make-* jobs below require
+      # both, so nothing is packaged or GPG-signed from a tree with a failing suite.
+      - verify:
+          requires:
+            - pre-build
+          filters:
+            tags:
+              only: /^v.*/
       - create-merge-branch:
           context: grafana
           # these all imply "build", plus "make-docker-image" implies "make-tarball"
@@ -585,6 +642,7 @@ workflows:
       - make-tarball:
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
@@ -601,6 +659,7 @@ workflows:
             - "gpg-signing"
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
@@ -609,12 +668,14 @@ workflows:
             - "gpg-signing"
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
       - make-zip:
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/

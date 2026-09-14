@@ -2,6 +2,7 @@
 node_modules
 npm-debug.log
 coverage/
+test-results/
 .aws-config.json
 awsconfig
 /tmp

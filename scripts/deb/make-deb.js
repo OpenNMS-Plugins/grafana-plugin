@@ -15,7 +15,7 @@ const program = require('commander');
 
 const { PROJECT_DIR } = require('../paths');
 const { resolveVersionAndRelease } = require('../packageVersion');
-const { buildDeb, findDpkgBuildpackage } = require('./build');
+const { buildDeb, findMissingDebTools } = require('./build');
 const { resolveMaintainer } = require('./maintainer');
 const pkgInfo = require('../../package.json');
 const pluginInfo = require('../../src/plugin.json');
@@ -43,8 +43,10 @@ const release = program.opts().release;
 const maintainer = resolveMaintainer();
 
 async function main() {
-  if (!findDpkgBuildpackage()) {
-    console.error('dpkg-buildpackage executable not found');
+  const missingTools = findMissingDebTools();
+
+  if (missingTools.length > 0) {
+    console.error('deb build tools not found on PATH: ' + missingTools.join(', '));
     process.exit(1);
   }
 

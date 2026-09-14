@@ -15,5 +15,20 @@ module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...require('./.config/jest.config'),
    // Inform jest to only transform specific node_module packages.
-   transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'opennms'])]
+   transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'opennms'])],
+
+  // CircleCI's store_test_results reads JUnit XML, which jest does not emit on its own.
+  // Gated on CI so a local `npm test` keeps its usual output and leaves no test-results/
+  // behind in the working tree.
+  ...(process.env.CI
+    ? {
+        reporters: [
+          'default',
+          ['jest-junit', {
+            outputDirectory: 'test-results/jest',
+            outputName: 'results.xml',
+          }],
+        ],
+      }
+    : {}),
 };
