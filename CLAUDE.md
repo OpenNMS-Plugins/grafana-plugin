@@ -135,7 +135,15 @@ Scoped keys match on the *requested spec*, not the resolved version, so they do 
 }
 ```
 
-That one is load-bearing: `react-router-dom-v5-compat` hard-pins `react-router` to exactly `6.30.6`, the last of a line with two unpatched CVEs and no 6.x fix. The nested override collapses it onto the root `react-router@7`. It also has to stay aligned with whatever major the root `react-router-dom` is on — when the override sat on `^6` while the root was on `^7`, a from-scratch resolution produced a lockfile that `npm install` accepted and `npm ci` rejected.
+That one is load-bearing: `react-router-dom-v5-compat` hard-pins `react-router` to exactly `6.30.6`, the last of a line with two unpatched CVEs (GHSA-337j-9hxr-rhxg, GHSA-wrjc-x8rr-h8h6) and no 6.x fix. The nested override collapses it onto the root `react-router@7`. Keep its spec identical to the root `react-router-dom` dep and to the `@grafana/ui` / `@grafana/runtime` overrides — currently `^7.18.2`. When it sat on `^6` while the root was on `^7`, a from-scratch resolution produced a lockfile that `npm install` accepted and `npm ci` rejected.
+
+**This override is a known-incomplete workaround.** `react-router-dom-v5-compat@6.30.6` was built against react-router 6 and imports three symbols that react-router 7 no longer exports:
+
+```
+UNSAFE_logV6DeprecationWarnings   UNSAFE_useRoutesImpl   UNSAFE_useRouteId
+```
+
+They back v5-compat's `CompatRouter`, `Routes`/`useRoutes` and `useRouteId`. Webpack externals keep all of this out of `dist` — Grafana serves its own `@grafana/ui` and `react-router` at runtime — but **externals do not affect Jest or Node resolution**. Jest loads `@grafana/ui`'s CJS build, which `require`s v5-compat on every run. It survives only because CJS turns a missing named export into `undefined` rather than erroring, and because nothing in the suite renders those three paths. Under ESM the same imports are a hard link-time failure. So: do not render `CompatRouter` or v5-compat `Routes` in a test, and treat a sudden `undefined is not a function` from that package as this override rather than a regression in your own code. Upgrading to Grafana 13 does **not** fix it — `@grafana/ui@13` still depends on `react-router-dom-v5-compat@^6.26.1`.
 
 Re-check scoped keys when the tree moves: an override whose spec no longer matches any requester is silently inert, not an error. `@xmldom/xmldom` had 0.8 and 0.9 lines live until `x2js` 3.4.5 moved to `^0.9.12`, which left the 0.8 scoped key matching nothing.
 
