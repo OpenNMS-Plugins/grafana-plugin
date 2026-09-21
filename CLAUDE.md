@@ -120,14 +120,24 @@ osv-scanner -L package-lock.json
 
 **Delete `node_modules` too, not just the lockfile.** Regenerating the lockfile alone leaves already-installed packages in place, so npm reuses them and the new overrides silently fail to take effect — you get a lockfile that does not match `overrides`.
 
-When a package has two major lines live in the tree (e.g. `@xmldom/xmldom` 0.8 and 0.9), use npm's scoped key syntax so neither line is force-upgraded across a major:
+When a package has two major lines live in the tree (e.g. `picomatch` 2.x and 4.x), use npm's scoped key syntax so neither line is force-upgraded across a major:
 
 ```json
-"@xmldom/xmldom@^0.8.0": "^0.8.13",
-"@xmldom/xmldom@^0.9.0": "^0.9.10"
+"picomatch@^2.0.0": "^2.3.2",
+"picomatch@^4.0.0": "^4.0.4"
 ```
 
-Scoped keys match on the *requested spec*, not the resolved version, so they do not work against an exact pin — `@grafana/ui` requires `uuid` as `"11.1.0"`, which no range key matches. Use a nested override under the parent in that case.
+Scoped keys match on the *requested spec*, not the resolved version, so they do not work against an exact pin — `@grafana/ui` requires `uuid` as `"11.1.0"`, which no range key matches. Use a nested override under the parent in that case:
+
+```json
+"react-router-dom-v5-compat": {
+  "react-router": "^7.18.0"
+}
+```
+
+That one is load-bearing: `react-router-dom-v5-compat` hard-pins `react-router` to exactly `6.30.6`, the last of a line with two unpatched CVEs and no 6.x fix. The nested override collapses it onto the root `react-router@7`. It also has to stay aligned with whatever major the root `react-router-dom` is on — when the override sat on `^6` while the root was on `^7`, a from-scratch resolution produced a lockfile that `npm install` accepted and `npm ci` rejected.
+
+Re-check scoped keys when the tree moves: an override whose spec no longer matches any requester is silently inert, not an error. `@xmldom/xmldom` had 0.8 and 0.9 lines live until `x2js` 3.4.5 moved to `^0.9.12`, which left the 0.8 scoped key matching nothing.
 
 A full reinstall also re-resolves every `^` range, so it can surface breakage unrelated to the CVE work. Run `npm run build`, `npm run dev`, `npm test` and `npm run typecheck` afterwards — `npm run build` in particular is the only one that exercises `webpack.config.ts` through ts-node.
 

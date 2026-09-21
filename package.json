@@ -113,7 +113,7 @@
     "async": "^3.2.3",
     "lodash.clonedeep": "^4.5.0",
     "lodash.escaperegexp": "^4.1.2",
-    "opennms": "^2.7.0",
+    "opennms": "^2.7.1",
     "parenthesis": "^3.1.8",
     "perfect-scrollbar": "^1.5.5",
     "react": "~18.3.1",
@@ -225,7 +225,7 @@
     "protobufjs": "^7.6.5",
     "protocol-buffers-schema": "^3.6.1",
     "react-router-dom-v5-compat": {
-      "react-router": "^6.30.3",
+      "react-router": "^7.18.0",
       "@remix-run/router": "^1.23.3"
     },
     "recursive-copy": {
