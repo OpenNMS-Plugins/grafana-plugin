@@ -17,6 +17,12 @@ import { GrafanaDatasource } from '../../hooks/useDataSources'
  */
 export interface EntityDataSourceOptions extends DataSourceJsonData {
   path?: string;
+
+  /** Whether to use opennmsBaseUrl to build direct links out to OpenNMS. */
+  useOpenNMSBaseUrl?: boolean;
+
+  /** Base URL of the OpenNMS instance as reachable from the user's browser. */
+  opennmsBaseUrl?: string;
 }
 
 export interface EntityQuery extends DataQuery {

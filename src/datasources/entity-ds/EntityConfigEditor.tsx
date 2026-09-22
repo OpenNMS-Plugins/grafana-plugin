@@ -1,12 +1,23 @@
 import React from 'react'
-import { DataSourcePluginOptionsEditorProps } from '@grafana/data'
-import { DataSourceHttpSettings } from '@grafana/ui'
+import { css } from '@emotion/css'
+import { DataSourcePluginOptionsEditorProps, GrafanaTheme2 } from '@grafana/data'
+import { DataSourceHttpSettings, useStyles2 } from '@grafana/ui'
 import { EntityDataSourceOptions } from './types'
+import { OpenNMSBaseUrlConfig } from './OpenNMSBaseUrlConfig'
 import { ClearFilterData } from '../../components/ClearFilterData'
 
 interface Props extends DataSourcePluginOptionsEditorProps<EntityDataSourceOptions> { }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+  spacer: css`
+      margin-top: ${theme.spacing(1.25)};
+      margin-bottom: ${theme.spacing(1.25)};
+  `,
+})
+
 export const EntityConfigEditor: React.FC<Props> = ({ onOptionsChange, options }) => {
+  const s = useStyles2(getStyles)
+
   return (
     <>
       <DataSourceHttpSettings
@@ -14,6 +25,14 @@ export const EntityConfigEditor: React.FC<Props> = ({ onOptionsChange, options }
           dataSourceConfig={options}
           onChange={onOptionsChange}
       />
+
+      <h3 className={s.spacer}>Additional Options</h3>
+
+      <OpenNMSBaseUrlConfig
+        onOptionsChange={onOptionsChange}
+        options={options}
+      />
+
       <ClearFilterData />
     </>
   )

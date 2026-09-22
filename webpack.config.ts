@@ -6,15 +6,31 @@ import grafanaConfig from './.config/webpack/webpack.config'
 import { DIST_DIR } from './.config/webpack/constants'
 import { getPluginJson } from './.config/webpack/utils'
 
+const { copyIgnorePatterns } = require('./scripts/distContents')
+const { applyCopyIgnore } = require('./scripts/webpack/excludeFromCopy')
+
 const config = async (env): Promise<Configuration> => {
   const baseConfig = await grafanaConfig(env)
   const pluginJson = getPluginJson()
+
+  // The scaffolded config copies src/**/*.json into dist, which drags the jest
+  // fixtures under src/test in with it. `npm run sign` then attests to them in
+  // MANIFEST.txt while the packages strip them, so the signature no longer matches.
+  applyCopyIgnore(baseConfig.plugins, copyIgnorePatterns())
 
   return merge(baseConfig, {
     // Add custom config here...
     output: {
       hashFunction: 'sha256',
     },
+    // Grafana serves flot to plugins from its SystemJS shared-dependency map, the
+    // same way it serves 'jquery' (which .config/bundler/externals.ts already lists).
+    // The alarm-histogram and flow-histogram panels import these for their side
+    // effect, to make Grafana attach flot to the shared jQuery so `$.plot` exists.
+    externals: [
+      'jquery.flot',
+      'jquery.flot.stack',
+    ],
     plugins: [
       // add README.md to datasources, this is what is displayed when clicking the "?" next to
       // a datasource in the query editor.

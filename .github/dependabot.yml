@@ -2,10 +2,10 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
-    target-branch: "release-9.x"
+    target-branch: "release-12.x"
     versioning-strategy: "increase-if-necessary"
     reviewers:
-      - "OpenNMS/dependabot-reviewers-node"
+      - "OpenNMS-Plugins/dependabot-reviewers-node"
     labels:
       - "dependabot"
     commit-message:

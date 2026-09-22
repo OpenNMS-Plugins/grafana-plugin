@@ -1,5 +1,16 @@
 import { Dashboard } from '@grafana/schema'
 
+/**
+ * A Grafana v12 Dashboard as this converter produces it.
+ *
+ * Grafana's generated Dashboard types every 'snapshot' field as required, but only Grafana itself
+ * writes a complete one, and we do not invent fields the source did not have, so the snapshot we
+ * emit may be partial.
+ */
+export type ConvertedDashboard = Omit<Dashboard, 'snapshot'> & {
+  snapshot?: Partial<NonNullable<Dashboard['snapshot']>>
+}
+
 export type DsType = 'entity' | 'performance' | 'flow'
 
 export interface DatasourceMetadata {
@@ -28,7 +39,7 @@ export interface DatasourceMetadata {
 
 export interface ConvertResponse {
   dashboardV9?: any
-  dashboardV12?: Dashboard
+  dashboardV12?: ConvertedDashboard
   json: string
   isError: boolean
   errorMessage?: string

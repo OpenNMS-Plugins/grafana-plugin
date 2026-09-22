@@ -1,4 +1,6 @@
-# OpenNMS Plugin for Grafana [![CircleCI](https://circleci.com/gh/OpenNMS/grafana-plugin.svg?style=svg)](https://circleci.com/gh/OpenNMS/grafana-plugin)
+# OpenNMS Plugin for Grafana
+
+[https://github.com/OpenNMS-Plugins/grafana-plugin](https://github.com/OpenNMS-Plugins/grafana-plugin)
 
 OpenNMS Plugin for Grafana is a Grafana application plugin that allows users to create flexible monitoring dashboards using data from [OpenNMS® Horizon™](https://www.opennms.com/horizon/) and/or [OpenNMS® Meridian™](https://www.opennms.com/meridian/).
 
@@ -66,4 +68,4 @@ We use the OpenNMS Plugin for Grafana project in our [JIRA](https://opennms.atla
 
 ## Changelog
 
-The changelog has moved to [CHANGELOG.md](https://github.com/OpenNMS/grafana-plugin/blob/release-12.x/CHANGELOG.md).
+The changelog has moved to [CHANGELOG.md](https://github.com/OpenNMS-Plugins/grafana-plugin/blob/release-12.x/CHANGELOG.md).

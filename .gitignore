@@ -2,6 +2,7 @@
 node_modules
 npm-debug.log
 coverage/
+test-results/
 .aws-config.json
 awsconfig
 /tmp
@@ -29,6 +30,8 @@ conf/custom.ini
 
 # Antora documentation
 public/
+# xref validator, installed on demand by `npm run validate-xrefs`
+.antora-tools/
 build/
 
 # Not ready yet

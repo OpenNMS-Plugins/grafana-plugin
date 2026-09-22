@@ -1,5 +1,6 @@
 import { convertDashboardFromV8 } from './convert-from-v8/convertFromV8'
 import { convertDashboardToV12 } from './convert-v9-to-v12'
+import { normalizeDashboardV9 } from './normalizeV9'
 import { ConvertOptions, ConvertResponse } from './types'
 import { isDefined } from '../parseUtils'
 
@@ -36,9 +37,24 @@ export const dashboardConvert = (sourceJson: string, sourceVersion: number, targ
     return response
   }
 
-  // return if we already converted from 8 to 9 and target version is '9'
-  if (sourceVersion === 8 && targetVersion === 9) {
-    return response
+  if (targetVersion === 9) {
+    // we already converted from 8 to 9 above
+    if (sourceVersion === 8) {
+      return response
+    }
+
+    // already v9, just normalize it so it can be re-imported
+    if (sourceVersion === 9) {
+      return normalizeDashboardV9(sourceJson, dashboardTitle, options)
+    }
+
+    // 10, 11 or 12 down to 9 is a downgrade, which we do not support
+    return {
+      json: sourceJson,
+      isError: true,
+      errorMessage: `Converting from Version ${sourceVersion} down to Version 9 is not supported`,
+      targetPluginVersion: targetVersion
+    }
   }
 
   // for any target version above 9 we convert it to 12

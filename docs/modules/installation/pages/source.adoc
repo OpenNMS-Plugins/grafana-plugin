@@ -17,7 +17,7 @@ Follow these steps to build the plugin:
 ----
 mkdir -p /var/lib/grafana/plugins
 cd /var/lib/grafana/plugins
-git clone https://github.com/OpenNMS/grafana-plugin.git opennms-opennms-app
+git clone https://github.com/OpenNMS-Plugins/grafana-plugin.git opennms-opennms-app
 ----
 
 . Compile the plugin:

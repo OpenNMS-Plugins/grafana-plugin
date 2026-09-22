@@ -36,4 +36,4 @@ The dashboard is displayed.
 To view a list of your dashboards, click menu:Dashboards[Manage].
 
 IMPORTANT: Predefined dashboards created before April 2023 require conversion before you can use them with {product-name}.
-You must export and <<upgrade-dashboards, convert these dashboards>> before using them.
+You must export and xref:installation:upgrading.adoc#upgrade-dashboards[convert these dashboards] before using them.

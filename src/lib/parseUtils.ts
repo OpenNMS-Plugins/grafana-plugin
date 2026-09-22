@@ -6,33 +6,45 @@ export const isDefined = (obj?: any) => {
   return obj !== undefined
 }
 
+// A Json value may be null, which passes isDefined but cannot have properties read off it.
+// Use this to guard a call that is going to dereference the object.
+export const isDefinedObject = (obj?: any) => {
+  return obj !== undefined && obj !== null && typeof obj === 'object'
+}
+
 export const isNonEmptyArray = (obj?: any) => {
   return isDefined(obj) && Array.isArray(obj) && obj.length > 0
 }
 
 // check if a value is a valid string or numeric value for a given enum
+// Note that TypeScript numeric enums also have reverse mappings, so Object.values()
+// yields both the names and the numbers (e.g. ['dontHide', ..., 0, 1, 2, 3]).
+// Only the numbers are valid values, so exclude the names for numeric enums.
 export const isEnumValueOfType = <T extends Record<string, string | number>>(
   enumObject: T, value: string | number
 ): boolean => {
-  return Object.values(enumObject).includes(value)
+  const values = Object.values(enumObject)
+  const isNumericEnum = values.some(v => typeof v === 'number')
+
+  return values
+    .filter(v => !isNumericEnum || typeof v === 'number')
+    .includes(value)
 }
 
 export const convertToInt = (source?: any, defaultValue?: number) => {
-  let val: number = defaultValue ?? 0
+  const fallback: number = defaultValue ?? 0
 
-  if (source !== undefined) {
-    if (typeof source === 'string') {
-      val = Number.parseInt(source, 10)
-    } else {
-      val = Number(source)
-    }
+  // null has to be treated as absent, not parsed: Number(null) is 0, so a null would come back
+  // as a real 0 rather than the caller's default
+  if (source !== undefined && source !== null) {
+    const val = typeof source === 'string' ? Number.parseInt(source, 10) : Number(source)
 
     if (!Number.isNaN(val)) {
       return val
     }
   }
 
-  return val
+  return fallback
 }
 
 export const convertToNumber = (source?: any, defaultValue?: number) => {

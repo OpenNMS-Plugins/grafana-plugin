@@ -61,7 +61,7 @@ services:
       context: ./
       dockerfile: Dockerfile
       args:
-        OPENNMS_GRAFANA_PLUGIN_GIT_URL: https://github.com/OpenNMS/grafana-plugin.git
+        OPENNMS_GRAFANA_PLUGIN_GIT_URL: https://github.com/OpenNMS-Plugins/grafana-plugin.git
         OPENNMS_GRAFANA_PLUGIN_BRANCH_REF: master
     image: grafana-plugin:master
     volumes:

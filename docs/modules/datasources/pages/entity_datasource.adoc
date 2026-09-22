@@ -5,6 +5,34 @@
 You can use the Entities datasource to retrieve entity model objects (alarms and nodes) from OpenNMS.
 For an example of the Entities datasource in use, see <<panel_configuration:dynamic-dashboard.adoc#pc-filter-panel, Create a Filter panel>>.
 
+== Datasource configuration
+
+In addition to the standard HTTP settings, the Entities datasource has an *Additional Options* section with an *OpenNMS Base URL* setting.
+
+Some panels can link directly to a page in the OpenNMS web UI, such as the *Full Details* link in the Alarm Table panel's alarm detail dialog.
+
+If the datasource uses the default *Server* (proxy) access mode, those links cannot be built from the URL in the HTTP settings.
+Grafana routes datasource requests through its own proxy, and the configured URL only has to be reachable by the Grafana server, which is not necessarily one your browser can reach.
+A Grafana instance running in Docker, for example, is typically configured with a `host.docker.internal` address.
+
+To enable these links, turn on *Enable OpenNMS Base URL* and enter the base URL of your OpenNMS instance as your browser reaches it, including the context path:
+
+[source,]
+----
+http://localhost:8980/opennms
+----
+
+The URL must start with `http://` or `https://`.
+A value without a scheme, such as `localhost:8980/opennms`, cannot be resolved by the browser and is ignored.
+
+Only the host and path are used.
+Any query string or fragment is discarded, so a URL copied from the address bar of the hash-routed OpenNMS UI, such as `http://localhost:8980/opennms/#/`, works as typed.
+
+If the setting is turned off, or the URL is left blank, these links are displayed as a path relative to an OpenNMS instance instead of as a working link.
+
+NOTE: If the datasource uses *Browser* (direct) access mode, your browser makes the API calls itself, so the configured URL is already one it can reach and these links work without this setting.
+Turning the setting on still takes precedence, which lets you point the links at a different address than the one used for API calls.
+
 == Datasource queries
 
 This datasource's behavior changes depending on the specified entity.

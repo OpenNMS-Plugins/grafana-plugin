@@ -1,3 +1,9 @@
+### v12.0.2
+
+Grafana Plugin for OpenNMS version 12.0.2 release contains a bug fix.
+
+* [OPG-521](https://opennms.atlassian.net/browse/OPG-521) Repeating panels and rows show data for every template variable value instead of only their own
+
 ### v12.0.1
 
 Grafana Plugin for OpenNMS version 12.0.1 release contains an enhancement.

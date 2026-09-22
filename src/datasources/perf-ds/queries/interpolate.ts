@@ -1,7 +1,7 @@
-import { ScopedVars, VariableModel } from '@grafana/data'
+import { ScopedVars } from '@grafana/data'
 import { TemplateSrv } from '@grafana/runtime'
 import cloneDeep from 'lodash/cloneDeep'
-import { ALL_SELECTION_VALUE } from 'constants/constants'
+import { resolveVariables } from '../../../lib/variableResolution'
 import { isString } from '../../../lib/utils'
 
 export interface InterpolationArrayVariable {
@@ -14,70 +14,20 @@ export interface InterpolationVariable {
     value: string | string[];
 }
 
-// Our version of @grafana/data VariableOption
-interface TemplateVariableOption {
-    value: string | string[];
-}
-
-// Our version of @grafana/data VariableWithOptions
-interface TemplateSrvVariable {
-    name: string;
-    current: TemplateVariableOption;
-    options: TemplateVariableOption[];
-}
-
 /**
- * Collect any template variables that need to be interpolated, also taking into account scoped variables.
+ * Collect the template variables that need to be interpolated, resolved to the values that apply
+ * to *this* query.
  *
- * Note, in latest Grafana, templateSrv.getVariables() items are VariableWithOptions
- * We don't use all the properties of these, and they may not be present in earlier Grafana versions,
- * so we use the above interface definitions (e.g. InterpolationVariable) to provide some typing information.
- * See: https://github.com/grafana/grafana/blob/main/packages/grafana-data/src/types/templateVars.ts
+ * For a panel or row repeated over a variable, that is the single value belonging to this clone;
+ * otherwise it is every selected value, which interpolate() then fans out into one measurement
+ * source per value. See lib/variableResolution for why reading variable.current directly does not
+ * work under Dashboard Scenes (OPG-521).
  */
 export const collectInterpolationVariables = (templateSrv: TemplateSrv, scopedVars?: ScopedVars): InterpolationVariable[] => {
-    // Reformat the variables to work with our interpolate function
-    const variables = [] as InterpolationVariable[];
-
-    templateSrv.getVariables().forEach((templateVariable: VariableModel) => {
-        const variable = {
-            name: templateVariable.name,
-            value: [] as string[]
-        } as InterpolationArrayVariable
-
-        // If this templateVar exists in scopedVars, we need to look at the scoped values
-        if (scopedVars && scopedVars[variable.name] !== undefined && scopedVars[variable.name] !== null) {
-            variable.value = [scopedVars[variable.name]?.value?.toString()];
-        } else {
-            // Note: templateSrv.getVariables() in Grafana 8.5 returns VariableModel[],
-            // VariableModel does NOT contain 'current' or 'current.value'
-            // But recent Grafana, 9.4.0+, returns TypedVariableModel[], which is actually
-            // instances of DashboardVariableModel, which is SystemVariable<DashboardProps> which
-            // DOES contain 'current' and 'current.value'
-            const templateSrvVariable = (templateVariable as any) as TemplateSrvVariable
-            const currentValue = templateSrvVariable.current.value
-
-            if (isString(currentValue)) {
-                // If currentValue is a single-valued string
-                variable.value = [currentValue as string]
-            } else {
-                // If currentValue is a string[]
-                (currentValue as string[])?.forEach(value => {
-                    if (value === ALL_SELECTION_VALUE) {(
-                        templateSrvVariable.options
-                        .filter(o => o.value !== ALL_SELECTION_VALUE)
-                        .forEach(option => variable.value.push(Array.isArray(option.value) ? (option.value as string[])[0] : option.value as string))
-                    )
-                    } else {
-                        variable.value.push(value);
-                    }
-                })
-            }
-        }
-
-        variables.push(variable);
-    })
-
-    return variables
+    return resolveVariables(templateSrv, scopedVars).map(resolved => ({
+        name: resolved.name,
+        value: resolved.values
+    }))
 }
 
 /**

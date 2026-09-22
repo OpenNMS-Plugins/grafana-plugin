@@ -43,13 +43,25 @@ export interface SourceDatasourceInfo {
 export const getSourceDatasourceInfo = (source: any, datasourceMap: Map<string,DsType>): SourceDatasourceInfo => {
   if (source?.datasource) {
     if (isString(source.datasource) && datasourceMap.has(source.datasource)) {
-      // 1. datasource is a string
+      // 1. datasource is a string naming a template variable we know about
       const dsType = datasourceMap.get(source.datasource) || ''
 
       return {
         isOpenNmsDatasource: true,
         isTemplateVariable: true,
         datasourceType: dsType
+      }
+    } else if (isString(source.datasource)) {
+      // 1b. datasource is a bare plugin id, e.g. 'opennms-helm-entity-datasource'.
+      // Not a variable, so it resolves to the installed datasource rather than being retained.
+      const { datasourceType } = getDatasourceTypeFromPluginId(source.datasource as string)
+
+      if (datasourceType) {
+        return {
+          isOpenNmsDatasource: true,
+          isTemplateVariable: false,
+          datasourceType
+        }
       }
     } else if (!isString(source.datasource) && source.datasource?.type) {
       // 2. datasource is an object with type, and may also have a template variable as uid

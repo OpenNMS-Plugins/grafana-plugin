@@ -5,6 +5,29 @@
 A place to put various notes that may help in development, or discuss odd behaviors.
 
 
+## Testing
+
+Unit tests live in `src/test/react/*.spec.ts` and run with `npm test`.
+
+`test/dashboards/` holds dashboards for manual testing against a real Grafana and OpenNMS. They are *not* bundled into the plugin — only `src/dashboards/` is shipped. Import one via **Dashboards → New → Import** and paste the JSON; each prompts for the datasource it needs, so there are no UIDs to edit.
+
+### `opg-521-repeat-test-dashboard.json`
+
+Covers repeating panels and rows over a multi-value template variable (OPG-521). Needs an OpenNMS Performance datasource and an SNMP node reporting `hrStorageIndex` resources.
+
+Select three or more storage volumes, then watch `POST /rest/measurements` in the browser Network tab:
+
+| Panel | Expected |
+|-------|----------|
+| A. Repeated panel | one request per clone, each with exactly **1** entry in `source` |
+| B. Not repeated, multi-value | **one** request with **N** entries in `source`, N series in the one panel |
+| C. Repeated row | one request per row clone, each with exactly **1** entry in `source` |
+
+Panel B is the regression guard: a repeat fix that pins the variable too aggressively breaks multi-value fan-out, and the panel count alone will not show it. Checking the `source` array length is what distinguishes fixed from broken — the request *count* looks the same either way, because each clone has always had its own `SceneQueryRunner`.
+
+Also worth running with the picker set to **All**, and with **`?scenes=false`** appended to the dashboard URL, which forces the pre-Scenes renderer on Grafana 12 and exercises the legacy interpolation path. That query parameter is gone in Grafana 13.
+
+
 ## swc/core
 
 Seems to be some errors with grafana libraries and `@swc/core`, you may get `Failed to load native bindings` or similar errors.
@@ -19,24 +42,151 @@ https://community.grafana.com/t/build-a-panel-plugin-error/100984/3
 
 
 
-## makerpm.js
+## Packaging layout
 
-This is a script that uses `bbc/speculate` to create RPM `spec` files, and then create an RPM.
+Everything that builds a distributable lives under `scripts/`, one directory per artifact
+type, and each is driven by an `npm run` script rather than by invoking the file directly:
 
-We previously used the `specit` library, but it hasn't been maintained since 2016 or so, and some dependencies were out of date and had security issues.
+| Command | Entry point | Inputs alongside it |
+| --- | --- | --- |
+| `npm run package:rpm` | `scripts/rpm/make-rpm.js` | `spec.mustache` |
+| `npm run package:deb` | `scripts/deb/make-deb.js` | `debian/` |
+| `npm run package:zip` | `scripts/zip/make-zip.js` | — |
 
-`specit` was a fork of `bbc/speculate`, so we decided to use that instead, with some updates. Another option might be to fork `specit` and just update its libraries.
+These used to sit at the repository root (`makerpm.js`, `makedeb.js`, `makezip.js`) with their
+templates under `src/rpm/` and `src/debian/`. The templates in particular do not belong in
+`src/`: webpack sweeps `src/` into `dist` with broad copy globs and `npm run sign` then attests
+everything in `dist` into a signed `MANIFEST.txt`, so a packaging input with a matching
+extension would ship in the plugin and break the signature. See *Package contents* below.
 
-See https://github.com/bbc/speculate for more info.
+## make-rpm.js
 
-Note that the `spec` section in the `package.json` contains options for `speculate`.
+`make-rpm.js` renders the RPM `spec` file from `scripts/rpm/spec.mustache` and then runs
+`rpmbuild`. It is a thin wrapper; the work lives in sibling modules so that it can be unit
+tested:
 
-There's a `const isDebug = false` in the `makerpm.js` code, you can set it to true if you want some additional debug log output, useful for debugging issues
-when running in CircleCI.
+| Module | Responsibility |
+| --- | --- |
+| `scripts/rpm/spec.js` | Renders `scripts/rpm/spec.mustache` into a spec file |
+| `scripts/rpm/archive.js` | Packs the `dist` tree into the source tarball rpmbuild consumes |
+| `scripts/rpm/build.js` | Lays out an rpmbuild tree, runs rpmbuild, returns the built rpm |
 
-Note, we only want the files in `dist` to be part of the RPM package; for example we do *not* want `node_modules` to be included. So we pass the root-level `package.json` but then tell `speculate` that the root directory is `dist`. `speculate` creates files under `dist/SPECS` and `dist/SOURCES`, we then copy those back to the main root directory for `rpmbuild` to work correctly and for the artifacts to be in the right place.
+The `spec` section of `package.json` supplies `specTemplate`, `installDir` and `requires`.
 
-`speculate` will include `node_modules` by default (see [archiver.js](https://github.com/bbc/speculate/blob/master/lib/archiver.js), `REQUIRED_ENTRIES`), but `specit` does not, so we have to do this extra hacky step.
+Set `MAKERPM_DEBUG=1` for verbose output, including rpmbuild's own output, when debugging a
+CircleCI build.
+
+### Why we no longer use speculate
+
+We previously used `specit`, an unmaintained fork of `bbc/speculate`, and then moved to
+`bbc/speculate` itself. **`speculate` 6.x hardcodes its own spec template** (see
+[lib/spec.js](https://github.com/bbc/speculate/blob/master/lib/spec.js)) and silently ignores
+`spec.specTemplate` and `spec.installDir`. `specit` honoured both; `speculate` does not.
+
+That template is written for a systemd Node service, so the RPM it produced installed the
+plugin into `/usr/lib/opennms-grafana-plugin`, created a system user, ran
+`systemctl enable` on a nonexistent service unit and required `nodejs` — none of which is
+correct for a Grafana plugin, and Grafana never saw the plugin at all. Rather than
+post-process someone else's template, we render our own; `speculate` was only contributing a
+small `tar-fs` wrapper beyond that, so it was dropped in favour of `mustache` and `tar-fs`
+directly.
+
+`speculate/lib/validator` (note: `speculate/validator` is not a valid module path) only checks
+that a `package.json` can be required from the directory it is given. That is why it failed
+here — it was being handed `dist`, which has no `package.json` — and it tells us nothing that
+`make-rpm.js` does not already know, so it is not used.
+
+## make-deb.js
+
+`make-deb.js` stages `dist` with a generated `debian/` directory beside it and runs
+`dpkg-buildpackage`. Like the rpm it is a thin wrapper over testable modules:
+
+| Module | Responsibility |
+| --- | --- |
+| `scripts/deb/build.js` | Stages the build tree, runs dpkg-buildpackage, publishes the deb |
+| `scripts/deb/metadata.js` | Renders `debian/control` and the changelog |
+| `scripts/deb/maintainer.js` | Resolves the maintainer identity from `DEBFULLNAME`/`DEBEMAIL` |
+
+`Depends` is derived from the same `package.json` `spec.requires` the rpm's `Requires` comes
+from, so the two cannot disagree about which Grafana the plugin needs.
+
+The build happens in a directory under the system temp directory, **not** under `artifacts/`.
+`dpkg-buildpackage` writes a `.dsc`, a `.changes`, a `.buildinfo` and a source tarball beside
+the `.deb`, and only the `.deb` is signed and published; building in `artifacts/` meant CI
+stored all of them, and left a full copy of `dist` there whenever a build failed.
+
+Set `MAKEDEB_DEBUG=1` for verbose output, including dpkg-buildpackage's own output.
+
+## make-zip.js
+
+`make-zip.js` stages `dist` into a directory named for the plugin id and zips that directory —
+Grafana identifies a plugin by the zip's top-level directory name. `scripts/zip/build.js` holds
+the work.
+
+The zip is named with the raw `package.json` version, so a snapshot build keeps its snapshot
+suffix in the filename. That is deliberate: the rpm and deb split the version into version and
+release because their packaging formats need it for sort order, and a zip has no such
+semantics. Keeping the suffix also distinguishes a snapshot from a release, which a bare
+version with a release number of 0 would not.
+
+Set `MAKEZIP_DEBUG=1` for verbose output, including zip's own output.
+
+## Shared packaging modules
+
+| Module | Responsibility |
+| --- | --- |
+| `scripts/paths.js` | `PROJECT_DIR` and `DEBIAN_DIR`, resolved from the file's own location |
+| `scripts/packageVersion.js` | Derives version and release from `package.json` (rpm and deb) |
+| `scripts/distContents.js` | What belongs in a package built from `dist` (all three) |
+| `scripts/stageDist.js` | Copies `dist` into a staging directory, applying that list (deb and zip) |
+| `scripts/artifacts.js` | Publishes a built package into `artifacts/` (all three) |
+
+All three builders resolve their paths from `scripts/paths.js` rather than `process.cwd()`, so
+they work from any working directory, and each removes its own working tree in a `finally`
+rather than only on the success path.
+
+
+## Package contents
+
+Only the contents of `dist` belong in the package, so the source tarball is rooted at `dist`
+and the spec's `%install` copies the archive root. `scripts/distContents.js` lists what never
+belongs in a distributable, and is used in two places.
+
+The important one is the build. `npm run build` is followed by `npm run sign`, which walks
+`dist` and writes a **signed** `MANIFEST.txt` listing every file it finds. The scaffolded
+webpack config copies `src/**/*.json` into `dist` with no ignore list, so the jest fixtures
+under `src/test` used to land in `dist/test`, get signed into the manifest, and then be
+stripped again by the packaging scripts — leaving a manifest that declared files the package
+did not contain, which `@grafana/plugin-validator` rejects. `webpack.config.ts` therefore
+applies the list as a `CopyWebpackPlugin` ignore so those files never reach `dist` at all.
+`.config/` is scaffolded and webpack-merge concatenates plugin arrays rather than
+reconfiguring the existing plugin, so `scripts/webpack/excludeFromCopy.js` reaches into the
+`CopyWebpackPlugin` instance. It throws if it cannot find one, because silently not excluding
+would break the signature again.
+
+The packaging scripts apply the same list as a second line of defence. That is now redundant
+for `test`, but it still matters for the `SPECS`/`SOURCES` directories the RPM build creates
+inside `dist` while it runs.
+
+## Packaging tests
+
+`src/test/packaging/` covers all three builders: spec rendering and the source archive for the
+rpm, `debian/control` and changelog rendering and build-tree staging for the deb, the shared
+`dist` exclusions and staging, and the resolved packaging paths.
+
+The end-to-end tests build a real package from a fixture `dist` and interrogate the result —
+`rpm -qp` for the rpm, `unzip -Z1` for the zip. Each skips itself when its tool is not on
+`PATH`: `rpmbuild` and `zip` are usually present on a developer machine, `dpkg-buildpackage`
+generally is not, so the deb's end-to-end tests skip outside a Debian build host. To run those,
+use the CI image:
+
+```bash
+docker run --rm -v "$PWD":/work -w /work opennms/build-env:debian-jdk11-b10453 \
+  bash -lc './scripts/deb/make-deb.js --release 1'
+```
+
+Note that the jest suite is not currently run by `.circleci/config.yml` at all, so every one of
+these tests is a local-and-pre-commit check rather than a CI gate.
 
 
 ## grafana/plugin-validator
@@ -79,7 +229,7 @@ If there are any libraries that have something in `FIXED VERSION`, you'll need t
 
 You may be able to fix some transient dependencies, i.e. some libraries failing the `osv-scanner` but aren't direct dependencies.
 
-Use the `npm overrides` mechanism in the `package.json`. Delete the `package-lock.json` and rerun `npm install`.
+Use the `npm overrides` mechanism in the `package.json`. Delete **both** `node_modules` and `package-lock.json`, then rerun `npm install` — regenerating the lockfile alone leaves the already-installed packages in place, npm reuses them, and the new overrides silently do not take effect.
 
 ```
 "overrides": {

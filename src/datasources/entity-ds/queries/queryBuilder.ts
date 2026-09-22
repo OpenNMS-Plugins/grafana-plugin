@@ -1,16 +1,12 @@
-import { TypedVariableModel, VariableOption } from '@grafana/data'
+import { TypedVariableModel } from '@grafana/data'
 import { TemplateSrv } from '@grafana/runtime'
 import { API } from 'opennms'
 import { EntityQuery, EntityQueryRequest, FilterEditorData } from './../types'
 import { ALL_SELECTION_VALUE, EntityTypes } from '../../../constants/constants'
 import { isInteger, trimChar } from '../../../lib/utils'
+import { ResolvedVariable, VariableResolver, createVariableResolver } from '../../../lib/variableResolution'
 import { getAttributeMapping } from './attributeMappings'
 import { getFilterId } from '../EntityHelper'
-
-const isAllVariable = (templateVar, templateSrv) => {
-    return templateVar?.current.value &&
-        templateSrv.isAllValue(templateVar?.current.value)
-}
 
 const isMultiVariable = (templateVar) => {
     return !!(templateVar?.multi || templateVar?.isMulti)
@@ -103,14 +99,14 @@ const subtituteNodeRestriction = (clause: API.Clause) => {
  * quite a few more methods, etc., so we use 'any' instead. See:
  * https://github.com/grafana/grafana/blob/main/public/app/features/templating/template_srv.ts
  */
-const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQuery>, templateSrv: any) => {
+const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQuery>, templateSrv: any, resolver: VariableResolver) => {
     const remove: API.Clause[] = []
     const clausesWithRestrictions = clauses.filter(c => c.restriction)
 
     for (let clause of clausesWithRestrictions) {
         if (clause.restriction instanceof API.NestedRestriction) {
             // this is actually a NestedRestriction, recurse through subclauses
-            substitute(clause.restriction.clauses, request, templateSrv)
+            substitute(clause.restriction.clauses, request, templateSrv, resolver)
         } else if (clause.restriction.value) {
             // clause.restriction.value may be:
             // - a template variable (in $var or ${var} or ${var:text} format)
@@ -120,8 +116,18 @@ const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQue
             const variableName: string = templateSrv.getVariableName(restriction.value) || ''
             const templateVariable: TypedVariableModel | undefined = getTemplateVariable(templateSrv, variableName)
 
+            // Resolve the variable in *this* query's scope. For a repeated panel or row that is the
+            // single value belonging to this clone, not every value selected on the dashboard.
+            const resolved: ResolvedVariable | undefined = templateVariable
+                ? resolver.resolve(templateVariable)
+                : undefined
+
+            // A repeat clone is showing one specific value, so "all" can never apply to it; only an
+            // un-repeated panel gets the "querying everything means no restriction" shortcut.
+            const isMultiValued = isMultiVariable(templateVariable) && !resolved?.isLocalOverride
+
             // Process template variables set to "all"
-            if (isMultiVariable(templateVariable) && isAllVariable(templateVariable, templateSrv)) {
+            if (isMultiValued && resolved?.isAllInDashboardScope) {
                 // if we're querying "all" we just dump the clause altogether
                 remove.push(clause)
                 continue
@@ -130,8 +136,8 @@ const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQue
             let skipSimpleSubstitution = false
 
             // Process multiple selection template variables
-            if (isMultiVariable(templateVariable)) {
-                const currentValues: string | string[] = getCurrentValuesFromMultiValuedTemplateVariables(templateVariable, variableName, restriction.value)
+            if (isMultiValued) {
+                const currentValues: string | string[] = getCurrentValuesFromMultiValuedTemplateVariables(resolved, variableName, restriction.value)
 
                 const normalizedValue = normalizeSingleArrayValue(currentValues)
 
@@ -142,7 +148,7 @@ const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQue
                     // we've turned a single restriction into a nested one, so re-process it as a
                     // collection and skip the simple replacement below
                     clause.restriction = replacement
-                    substitute(clause.restriction.clauses, request, templateSrv)
+                    substitute(clause.restriction.clauses, request, templateSrv, resolver)
                     skipSimpleSubstitution = true
                 }
             }
@@ -163,23 +169,23 @@ const substitute = (clauses: API.Clause[], request: EntityQueryRequest<EntityQue
 }
 
 /**
- * Get the current values from a resolved template variable, accounting for a ':text' specifier on the template variable declaration.
- * @param templateVariable a Grafana template variable object, TypedVariableModel. Should contain a VariableOption 'current' property
+ * Get the values of a multi-valued template variable, accounting for a ':text' specifier on the
+ * template variable reference.
+ * @param resolved the variable as resolved for this query, see lib/variableResolution
  * @param variableName The template variable name, without any decoration
  * @param restrictionValue The value from the restriction clause, should be a template variable reference like '$node', '${node}' or '${node:text}'
- * @returns The current values of the multi-valued template variable
+ * @returns The values of the multi-valued template variable
  */
-const getCurrentValuesFromMultiValuedTemplateVariables = (templateVariable: TypedVariableModel | undefined, variableName: string, restrictionValue: string) => {
-  // OPG-466. If restrictionValue has a format attribute, e.g. '${node:text}', use the 'text'
-  // part of the templateVariable.current values, instead of the 'value' part
+const getCurrentValuesFromMultiValuedTemplateVariables = (resolved: ResolvedVariable | undefined, variableName: string, restrictionValue: string) => {
+  // OPG-466. If restrictionValue has a format attribute, e.g. '${node:text}', use the resolved
+  // 'texts' instead of the 'values'
   const originalValueTrimmed = trimChar(trimChar(restrictionValue, '$'), '{', '}')
   const hasTextFormat = originalValueTrimmed === `${variableName}:text`
-  const currentObj = (templateVariable as any)?.current ? (templateVariable as any)?.current as VariableOption : undefined
 
   let currentValues: string | string[] = []
 
-  if (currentObj) {
-    currentValues = hasTextFormat ? currentObj.text : currentObj.value
+  if (resolved) {
+    currentValues = hasTextFormat ? resolved.texts : resolved.values
   }
 
   return currentValues
@@ -217,8 +223,10 @@ export const buildQueryFilter = (filter: API.Filter, request: EntityQueryRequest
         }
     }
 
-    // Substitute $<variable> or [[variable]] in the restriction value
-    substitute(clonedFilter.clauses, request, templateSrv)
+    // Substitute $<variable> or [[variable]] in the restriction value.
+    // One resolver for the whole tree: substitute() recurses, and a variable referenced by several
+    // clauses must not be re-resolved for each of them.
+    substitute(clonedFilter.clauses, request, templateSrv, createVariableResolver(templateSrv, request?.scopedVars))
 
     // Remove any empty clauses
     // This could happen e.g. if there was a multi-value template variable that has no values selected

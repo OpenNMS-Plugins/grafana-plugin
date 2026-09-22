@@ -1,0 +1,173 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_OPENNMS_PERFORMANCE",
+      "label": "OpenNMS Performance",
+      "description": "Select your OpenNMS Performance datasource",
+      "type": "datasource",
+      "pluginId": "opennms-performance-datasource",
+      "pluginName": "OpenNMS Performance"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "datasource",
+      "id": "opennms-performance-datasource",
+      "name": "OpenNMS Performance",
+      "version": "1.0.0"
+    }
+  ],
+  "title": "OPG-521 Repeat Regression Test",
+  "description": "Verifies that repeated panels and repeated rows query only their own value of a multi-value template variable, without breaking multi-value fan-out in a non-repeated panel.",
+  "tags": ["opg-521", "test"],
+  "editable": true,
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+        "query": "nodeFilter(isSNMP)",
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {},
+        "options": []
+      },
+      {
+        "name": "hrStorageEntry",
+        "label": "Storage volume",
+        "type": "query",
+        "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+        "query": "nodeResources($node, label, hrStorageIndex)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "How to read this dashboard",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "Select **3 or more** storage volumes in the `Storage volume` picker, then open the browser Network tab and filter on `measurements`.\n\n| Panel | Expect after the fix | Would look like this if broken |\n|---|---|---|\n| **A. Repeated panel** | one POST per clone, each with **exactly 1** entry in `source` | one POST per clone, each with **N** entries in `source` (identical payloads, every panel showing every volume) |\n| **B. Not repeated, multi-value** | **one** POST with **N** entries in `source`, N series in the single panel | anything else — this is the fan-out regression guard, it must not change |\n| **C. Repeated row** | one POST per row clone, each with **exactly 1** entry in `source` | as panel A |\n\nPanel titles use `${hrStorageEntry:text}`, which shows the volume label such as `/`. Use `${hrStorageEntry:value}` to see the underlying resource id that the query actually sends.\n\nAlso worth checking: set the picker to **All**, and reload with **`?scenes=false`** appended to the URL to exercise the pre-Scenes code path."
+      }
+    },
+
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "A. Repeated panel — ${hrStorageEntry:text}",
+      "description": "Repeats over hrStorageEntry. Each clone must query only its own volume.",
+      "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+      "repeat": "hrStorageEntry",
+      "repeatDirection": "h",
+      "maxPerRow": 3,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 6 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "custom": {} },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+          "performanceType": { "label": "Attribute", "value": 1 },
+          "attribute": {
+            "node": { "id": "$node", "label": "$node" },
+            "resource": { "id": "$hrStorageEntry", "label": "$hrStorageEntry" },
+            "attribute": { "name": "hrStorageUsed", "label": "hrStorageUsed" },
+            "subAttribute": "",
+            "fallbackAttribute": { "name": "" },
+            "aggregation": { "label": "AVERAGE" },
+            "label": "$hrStorageEntry"
+          },
+          "filterState": {},
+          "stringPropertyState": {}
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "B. NOT repeated — must still fan out to one series per selected volume",
+      "description": "Regression guard. One request, one source entry per selected value, all series in this single panel.",
+      "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "custom": {} },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+          "performanceType": { "label": "Attribute", "value": 1 },
+          "attribute": {
+            "node": { "id": "$node", "label": "$node" },
+            "resource": { "id": "$hrStorageEntry", "label": "$hrStorageEntry" },
+            "attribute": { "name": "hrStorageUsed", "label": "hrStorageUsed" },
+            "subAttribute": "",
+            "fallbackAttribute": { "name": "" },
+            "aggregation": { "label": "AVERAGE" },
+            "label": "$hrStorageEntry"
+          },
+          "filterState": {},
+          "stringPropertyState": {}
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "type": "row",
+      "title": "C. Repeated row — ${hrStorageEntry:text}",
+      "collapsed": false,
+      "repeat": "hrStorageEntry",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "panels": []
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Panel inside repeated row — ${hrStorageEntry:text}",
+      "description": "This panel has no repeat of its own. It must inherit the row clone's value from the scene graph.",
+      "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "fieldConfig": {
+        "defaults": { "unit": "bytes", "custom": {} },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "opennms-performance-datasource", "uid": "${DS_OPENNMS_PERFORMANCE}" },
+          "performanceType": { "label": "Attribute", "value": 1 },
+          "attribute": {
+            "node": { "id": "$node", "label": "$node" },
+            "resource": { "id": "$hrStorageEntry", "label": "$hrStorageEntry" },
+            "attribute": { "name": "hrStorageUsed", "label": "hrStorageUsed" },
+            "subAttribute": "",
+            "fallbackAttribute": { "name": "" },
+            "aggregation": { "label": "AVERAGE" },
+            "label": "$hrStorageEntry"
+          },
+          "filterState": {},
+          "stringPropertyState": {}
+        }
+      ]
+    }
+  ]
+}

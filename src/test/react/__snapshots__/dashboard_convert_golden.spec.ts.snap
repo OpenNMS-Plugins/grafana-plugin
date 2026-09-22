@@ -1,0 +1,1792 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to v9 1`] = `
+{
+  "__inputs": [
+    {
+      "description": "",
+      "label": "OpenNMS Performance",
+      "name": "DS_OPENNMS_PERFORMANCE",
+      "pluginId": "opennms-performance-datasource",
+      "pluginName": "OpenNMS Performance",
+      "type": "datasource",
+    },
+  ],
+  "__requires": [
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "type": "grafana",
+      "version": "8.5.0",
+    },
+    {
+      "id": "opennms-performance-datasource",
+      "name": "OpenNMS Performance",
+      "type": "datasource",
+      "version": "12.0.2",
+    },
+    {
+      "id": "opennms-helm-alarm-table-panel",
+      "name": "Alarm Table",
+      "type": "panel",
+      "version": "",
+    },
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard",
+        },
+        "type": "dashboard",
+      },
+    ],
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "tags": [],
+      "targetBlank": true,
+      "title": "OpenNMS",
+      "type": "link",
+      "url": "https://opennms.com",
+    },
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "opennms-performance-datasource",
+        "uid": "\${datasource}",
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0,
+      },
+      "id": 2,
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false,
+      },
+      "linewidth": 2,
+      "pointradius": 3,
+      "seriesOverrides": [
+        {
+          "alias": "/In/",
+          "stack": "A",
+          "transform": "negative-Y",
+        },
+      ],
+      "targets": [
+        {
+          "attribute": {
+            "aggregation": {
+              "label": "",
+            },
+            "attribute": {
+              "label": "loadavg1",
+              "name": "loadavg1",
+            },
+            "fallbackAttribute": {},
+            "label": "",
+            "node": {
+              "id": "1",
+              "label": "1",
+            },
+            "resource": {
+              "id": "nodeSnmp[]",
+              "label": "nodeSnmp[]",
+            },
+            "subAttribute": undefined,
+          },
+          "datasource": undefined,
+          "filter": {},
+          "filterState": {},
+          "format": undefined,
+          "hide": true,
+          "key": "",
+          "label": "",
+          "performanceState": {},
+          "performanceType": {
+            "label": "Attribute",
+            "value": 1,
+          },
+          "queryType": "",
+          "rawSql": undefined,
+          "refId": "A",
+        },
+      ],
+      "timeFrom": "now-2d",
+      "timeShift": "1d",
+      "title": "Load Average",
+      "type": "graph",
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "load",
+        },
+        {
+          "format": "short",
+        },
+      ],
+    },
+    {
+      "datasource": {
+        "type": "opennms-performance-datasource",
+        "uid": "\${datasource}",
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+          },
+          "mappings": [
+            {
+              "options": {
+                "CLEARED": {
+                  "color": "#eee000",
+                  "index": 1,
+                  "text": "Cleared",
+                },
+                "CRITICAL": {
+                  "color": "#db4345",
+                  "index": 6,
+                  "text": "Critical",
+                },
+                "INDETERMINATE": {
+                  "color": "#999000",
+                  "index": 0,
+                  "text": "Indeterminate",
+                },
+                "MAJOR": {
+                  "color": "#e3692f",
+                  "index": 5,
+                  "text": "Major",
+                },
+                "MINOR": {
+                  "color": "#ee901c",
+                  "index": 4,
+                  "text": "Minor",
+                },
+                "NORMAL": {
+                  "color": "#86b15b",
+                  "index": 2,
+                  "text": "Normal",
+                },
+                "WARNING": {
+                  "color": "#fccc3b",
+                  "index": 3,
+                  "text": "Warning",
+                },
+              },
+              "type": "value",
+            },
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null,
+              },
+              {
+                "color": "red",
+                "value": 80,
+              },
+            ],
+          },
+        },
+        "overrides": [],
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0,
+      },
+      "id": 4,
+      "options": {
+        "alarmTable": {
+          "alarmTableAlarms": {
+            "severityTheme": {
+              "label": "Default",
+              "value": 0,
+            },
+            "styleWithSeverity": {
+              "label": "Off",
+              "value": 2,
+            },
+          },
+          "alarmTableData": {
+            "columns": [],
+          },
+          "alarmTablePaging": {
+            "fontSize": {
+              "label": "100%",
+              "value": 2,
+            },
+            "pauseRefresh": false,
+            "rowsPerPage": 10,
+            "scroll": true,
+          },
+        },
+      },
+      "targets": [
+        {
+          "entityType": "alarm",
+          "refId": "A",
+        },
+      ],
+      "title": "Alarms",
+      "type": "opennms-alarm-table-panel",
+    },
+    {
+      "datasource": {
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 10,
+      "targets": [
+        {
+          "clauses": [],
+          "entityType": "alarm",
+          "refId": "A",
+          "selectType": {
+            "label": undefined,
+          },
+        },
+      ],
+      "title": "Alarms by plugin id",
+      "type": "table",
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 6,
+      "panels": [
+        {
+          "datasource": {
+            "type": "opennms-performance-datasource",
+            "uid": "\${datasource}",
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 10,
+          },
+          "id": 8,
+          "targets": [
+            {
+              "attribute": {
+                "aggregation": {
+                  "label": "",
+                },
+                "attribute": {
+                  "label": "ifHCInOctets",
+                  "name": "ifHCInOctets",
+                },
+                "fallbackAttribute": {},
+                "label": "",
+                "node": {
+                  "id": "2",
+                  "label": "2",
+                },
+                "resource": {
+                  "id": undefined,
+                  "label": undefined,
+                },
+                "subAttribute": undefined,
+              },
+              "datasource": undefined,
+              "filter": {},
+              "filterState": {},
+              "format": undefined,
+              "hide": false,
+              "key": "",
+              "label": "",
+              "performanceState": {},
+              "performanceType": {
+                "label": "Attribute",
+                "value": 1,
+              },
+              "queryType": "",
+              "rawSql": undefined,
+              "refId": "A",
+            },
+          ],
+          "title": "Nested Traffic",
+          "type": "graph",
+        },
+      ],
+      "title": "More Detail",
+      "type": "row",
+    },
+  ],
+  "refresh": "5m",
+  "schemaVersion": 27,
+  "tags": [
+    "opennms",
+    "helm",
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "OpenNMS Performance",
+          "value": "OpenNMS Performance",
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "opennms-performance-datasource",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource",
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "srv01",
+          "value": "1",
+        },
+        "datasource": {
+          "type": "opennms-performance-datasource",
+          "uid": "\${datasource}",
+        },
+        "definition": "nodeFilter(label like '*')",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Node",
+        "multi": false,
+        "name": "node",
+        "options": [],
+        "query": "nodeFilter(label like '*')",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false,
+      },
+    ],
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now",
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+    ],
+    "time_options": [
+      "5m",
+      "1h",
+      "6h",
+      "24h",
+      "7d",
+    ],
+  },
+  "timezone": "",
+  "title": "Helm v8 Sample",
+  "version": 7,
+}
+`;
+
+exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to v12 1`] = `
+{
+  "__inputs": [
+    {
+      "description": "",
+      "label": "OpenNMS Performance",
+      "name": "DS_OPENNMS_PERFORMANCE",
+      "pluginId": "opennms-performance-datasource",
+      "pluginName": "OpenNMS Performance",
+      "type": "datasource",
+    },
+  ],
+  "__requires": [
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "type": "grafana",
+      "version": "8.5.0",
+    },
+    {
+      "id": "opennms-performance-datasource",
+      "name": "OpenNMS Performance",
+      "type": "datasource",
+      "version": "12",
+    },
+    {
+      "id": "opennms-helm-alarm-table-panel",
+      "name": "Alarm Table",
+      "type": "panel",
+      "version": "12",
+    },
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --",
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "refId": "A",
+          "tags": [],
+          "type": "dashboard",
+        },
+        "type": "dashboard",
+      },
+    ],
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "gnetId": "",
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "OpenNMS",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://opennms.com",
+    },
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-performance-datasource",
+        "uid": "\${datasource}",
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0,
+      },
+      "id": 2,
+      "legend": {
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false,
+      },
+      "linewidth": 2,
+      "pointradius": 3,
+      "seriesOverrides": [
+        {
+          "alias": "/In/",
+          "stack": "A",
+          "transform": "negative-Y",
+        },
+      ],
+      "targets": [
+        {
+          "attribute": {
+            "aggregation": {
+              "label": "",
+            },
+            "attribute": {
+              "label": "loadavg1",
+              "name": "loadavg1",
+            },
+            "fallbackAttribute": {},
+            "label": "",
+            "node": {
+              "id": "1",
+              "label": "1",
+            },
+            "resource": {
+              "id": "nodeSnmp[]",
+              "label": "nodeSnmp[]",
+            },
+            "subAttribute": undefined,
+          },
+          "datasource": undefined,
+          "filter": {},
+          "filterState": {},
+          "format": undefined,
+          "hide": true,
+          "key": "",
+          "label": "",
+          "performanceState": {},
+          "performanceType": {
+            "label": "Attribute",
+            "value": 1,
+          },
+          "queryType": "",
+          "rawSql": undefined,
+          "refId": "A",
+        },
+      ],
+      "timeFrom": "now-2d",
+      "timeShift": "1d",
+      "title": "Load Average",
+      "type": "graph",
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "load",
+        },
+        {
+          "format": "short",
+        },
+      ],
+    },
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-performance-datasource",
+        "uid": "\${datasource}",
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+          },
+          "mappings": [
+            {
+              "options": {
+                "CLEARED": {
+                  "color": "#eee000",
+                  "index": 1,
+                  "text": "Cleared",
+                },
+                "CRITICAL": {
+                  "color": "#db4345",
+                  "index": 6,
+                  "text": "Critical",
+                },
+                "INDETERMINATE": {
+                  "color": "#999000",
+                  "index": 0,
+                  "text": "Indeterminate",
+                },
+                "MAJOR": {
+                  "color": "#e3692f",
+                  "index": 5,
+                  "text": "Major",
+                },
+                "MINOR": {
+                  "color": "#ee901c",
+                  "index": 4,
+                  "text": "Minor",
+                },
+                "NORMAL": {
+                  "color": "#86b15b",
+                  "index": 2,
+                  "text": "Normal",
+                },
+                "WARNING": {
+                  "color": "#fccc3b",
+                  "index": 3,
+                  "text": "Warning",
+                },
+              },
+              "type": "value",
+            },
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null,
+              },
+              {
+                "color": "red",
+                "value": 80,
+              },
+            ],
+          },
+        },
+        "overrides": [],
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0,
+      },
+      "id": 4,
+      "options": {
+        "alarmTable": {
+          "alarmTableAlarms": {
+            "severityTheme": {
+              "label": "Default",
+              "value": 0,
+            },
+            "styleWithSeverity": {
+              "label": "Off",
+              "value": 2,
+            },
+          },
+          "alarmTableData": {
+            "columns": [],
+          },
+          "alarmTablePaging": {
+            "fontSize": {
+              "label": "100%",
+              "value": 2,
+            },
+            "pauseRefresh": false,
+            "rowsPerPage": 10,
+            "scroll": true,
+          },
+        },
+      },
+      "pluginVersion": "12",
+      "targets": [
+        {
+          "entityType": "alarm",
+          "refId": "A",
+        },
+      ],
+      "title": "Alarms",
+      "type": "opennms-alarm-table-panel",
+    },
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 10,
+      "targets": [
+        {
+          "clauses": [],
+          "entityType": "alarm",
+          "refId": "A",
+          "selectType": {
+            "label": undefined,
+          },
+        },
+      ],
+      "title": "Alarms by plugin id",
+      "type": "table",
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 6,
+      "panels": [
+        {
+          "datasource": {
+            "apiVersion": undefined,
+            "type": "opennms-performance-datasource",
+            "uid": "\${datasource}",
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 10,
+          },
+          "id": 8,
+          "targets": [
+            {
+              "attribute": {
+                "aggregation": {
+                  "label": "",
+                },
+                "attribute": {
+                  "label": "ifHCInOctets",
+                  "name": "ifHCInOctets",
+                },
+                "fallbackAttribute": {},
+                "label": "",
+                "node": {
+                  "id": "2",
+                  "label": "2",
+                },
+                "resource": {
+                  "id": undefined,
+                  "label": undefined,
+                },
+                "subAttribute": undefined,
+              },
+              "datasource": undefined,
+              "filter": {},
+              "filterState": {},
+              "format": undefined,
+              "hide": false,
+              "key": "",
+              "label": "",
+              "performanceState": {},
+              "performanceType": {
+                "label": "Attribute",
+                "value": 1,
+              },
+              "queryType": "",
+              "rawSql": undefined,
+              "refId": "A",
+            },
+          ],
+          "title": "Nested Traffic",
+          "type": "graph",
+        },
+      ],
+      "title": "More Detail",
+      "type": "row",
+    },
+  ],
+  "refresh": "5m",
+  "schemaVersion": 27,
+  "tags": [
+    "opennms",
+    "helm",
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "OpenNMS Performance",
+          "value": "OpenNMS Performance",
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "opennms-performance-datasource",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource",
+      },
+      {
+        "allValue": "",
+        "current": {
+          "selected": false,
+          "text": "srv01",
+          "value": "1",
+        },
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-performance-datasource",
+          "uid": "\${datasource}",
+        },
+        "definition": "nodeFilter(label like '*')",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Node",
+        "multi": false,
+        "name": "node",
+        "options": [],
+        "query": "nodeFilter(label like '*')",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false,
+      },
+    ],
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now",
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "5m",
+        "from": "now-5m",
+        "to": "now",
+      },
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now",
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now",
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now",
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now",
+      },
+    ],
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+    ],
+  },
+  "timezone": "",
+  "title": "Helm v8 Sample",
+  "version": 7,
+}
+`;
+
+exports[`dashboardConvert :: golden output should convert a Helm v8 dashboard to v12 with every option enabled 1`] = `
+{
+  "__inputs": [
+    {
+      "description": "",
+      "label": "OpenNMS Performance",
+      "name": "DS_OPENNMS_PERFORMANCE",
+      "pluginId": "opennms-performance-datasource",
+      "pluginName": "OpenNMS Performance",
+      "type": "datasource",
+    },
+  ],
+  "__requires": [
+    {
+      "id": "grafana",
+      "name": "Grafana",
+      "type": "grafana",
+      "version": "8.5.0",
+    },
+    {
+      "id": "opennms-performance-datasource",
+      "name": "OpenNMS Performance",
+      "type": "datasource",
+      "version": "12",
+    },
+    {
+      "id": "opennms-helm-alarm-table-panel",
+      "name": "Alarm Table",
+      "type": "panel",
+      "version": "12",
+    },
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "uid": "-- Grafana --",
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "refId": "A",
+          "tags": [],
+          "type": "dashboard",
+        },
+        "type": "dashboard",
+      },
+    ],
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "gnetId": "",
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "tags": [],
+      "targetBlank": true,
+      "title": "OpenNMS",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://opennms.com",
+    },
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-performance-datasource",
+        "uid": "\${datasource}",
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic",
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "load",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false,
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 3,
+            "scaleDistribution": {
+              "type": "linear",
+            },
+            "showPoints": "",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal",
+            },
+            "thresholdsStyle": {
+              "mode": "off",
+            },
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null,
+              },
+              {
+                "color": "red",
+                "value": 80,
+              },
+            ],
+          },
+          "unit": "short",
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/In/",
+            },
+            "properties": [
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "group": "A",
+                  "mode": "normal",
+                },
+              },
+              {
+                "id": "custom.transform",
+                "value": "negative-Y",
+              },
+            ],
+          },
+        ],
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0,
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none",
+        },
+      },
+      "targets": [
+        {
+          "attribute": {
+            "aggregation": {
+              "label": "",
+            },
+            "attribute": {
+              "label": "loadavg1",
+              "name": "loadavg1",
+            },
+            "fallbackAttribute": {},
+            "label": "",
+            "node": {
+              "id": "1",
+              "label": "1",
+            },
+            "resource": {
+              "id": "nodeSnmp[]",
+              "label": "nodeSnmp[]",
+            },
+            "subAttribute": undefined,
+          },
+          "datasource": undefined,
+          "filter": {},
+          "filterState": {},
+          "format": undefined,
+          "hide": false,
+          "key": "",
+          "label": "",
+          "performanceState": {},
+          "performanceType": {
+            "label": "Attribute",
+            "value": 1,
+          },
+          "queryType": "",
+          "rawSql": undefined,
+          "refId": "A",
+        },
+      ],
+      "timeFrom": "now-2d",
+      "timeShift": "1d",
+      "title": "Load Average",
+      "type": "timeseries",
+    },
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-performance-datasource",
+        "uid": "\${datasource}",
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds",
+          },
+          "mappings": [
+            {
+              "options": {
+                "CLEARED": {
+                  "color": "#eee000",
+                  "index": 1,
+                  "text": "Cleared",
+                },
+                "CRITICAL": {
+                  "color": "#db4345",
+                  "index": 6,
+                  "text": "Critical",
+                },
+                "INDETERMINATE": {
+                  "color": "#999000",
+                  "index": 0,
+                  "text": "Indeterminate",
+                },
+                "MAJOR": {
+                  "color": "#e3692f",
+                  "index": 5,
+                  "text": "Major",
+                },
+                "MINOR": {
+                  "color": "#ee901c",
+                  "index": 4,
+                  "text": "Minor",
+                },
+                "NORMAL": {
+                  "color": "#86b15b",
+                  "index": 2,
+                  "text": "Normal",
+                },
+                "WARNING": {
+                  "color": "#fccc3b",
+                  "index": 3,
+                  "text": "Warning",
+                },
+              },
+              "type": "value",
+            },
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null,
+              },
+              {
+                "color": "red",
+                "value": 80,
+              },
+            ],
+          },
+        },
+        "overrides": [],
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0,
+      },
+      "id": 4,
+      "options": {
+        "alarmTable": {
+          "alarmTableAlarms": {
+            "severityTheme": {
+              "label": "Default",
+              "value": 0,
+            },
+            "styleWithSeverity": {
+              "label": "Off",
+              "value": 2,
+            },
+          },
+          "alarmTableData": {
+            "columns": [],
+          },
+          "alarmTablePaging": {
+            "fontSize": {
+              "label": "100%",
+              "value": 2,
+            },
+            "pauseRefresh": false,
+            "rowsPerPage": 10,
+            "scroll": true,
+          },
+        },
+      },
+      "pluginVersion": "12",
+      "targets": [
+        {
+          "entityType": "alarm",
+          "hide": false,
+          "refId": "A",
+        },
+      ],
+      "title": "Alarms",
+      "type": "opennms-alarm-table-panel",
+    },
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 10,
+      "targets": [
+        {
+          "clauses": [],
+          "entityType": "alarm",
+          "hide": false,
+          "refId": "A",
+          "selectType": {
+            "label": undefined,
+          },
+        },
+      ],
+      "title": "Alarms by plugin id",
+      "type": "table",
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 6,
+      "panels": [
+        {
+          "datasource": {
+            "apiVersion": undefined,
+            "type": "opennms-performance-datasource",
+            "uid": "\${datasource}",
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic",
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false,
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear",
+                },
+                "showPoints": "",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "normal",
+                },
+                "thresholdsStyle": {
+                  "mode": "off",
+                },
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null,
+                  },
+                  {
+                    "color": "red",
+                    "value": 80,
+                  },
+                ],
+              },
+              "unit": "",
+            },
+            "overrides": [],
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 10,
+          },
+          "id": 8,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": false,
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none",
+            },
+          },
+          "targets": [
+            {
+              "attribute": {
+                "aggregation": {
+                  "label": "",
+                },
+                "attribute": {
+                  "label": "ifHCInOctets",
+                  "name": "ifHCInOctets",
+                },
+                "fallbackAttribute": {},
+                "label": "",
+                "node": {
+                  "id": "2",
+                  "label": "2",
+                },
+                "resource": {
+                  "id": undefined,
+                  "label": undefined,
+                },
+                "subAttribute": undefined,
+              },
+              "datasource": undefined,
+              "filter": {},
+              "filterState": {},
+              "format": undefined,
+              "hide": false,
+              "key": "",
+              "label": "",
+              "performanceState": {},
+              "performanceType": {
+                "label": "Attribute",
+                "value": 1,
+              },
+              "queryType": "",
+              "rawSql": undefined,
+              "refId": "A",
+            },
+          ],
+          "title": "Nested Traffic",
+          "type": "timeseries",
+        },
+      ],
+      "title": "More Detail",
+      "type": "row",
+    },
+  ],
+  "refresh": "5m",
+  "schemaVersion": 27,
+  "tags": [
+    "opennms",
+    "helm",
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "OpenNMS Performance",
+          "value": "OpenNMS Performance",
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "opennms-performance-datasource",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource",
+      },
+      {
+        "allValue": "",
+        "current": {
+          "selected": false,
+          "text": "srv01",
+          "value": "1",
+        },
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-performance-datasource",
+          "uid": "\${datasource}",
+        },
+        "definition": "nodeFilter(label like '*')",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Node",
+        "multi": false,
+        "name": "node",
+        "options": [],
+        "query": "nodeFilter(label like '*')",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false,
+      },
+    ],
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now",
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "5m",
+        "from": "now-5m",
+        "to": "now",
+      },
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now",
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now",
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now",
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now",
+      },
+    ],
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+    ],
+  },
+  "timezone": "",
+  "title": "Helm v8 Sample",
+  "version": 8,
+}
+`;
+
+exports[`dashboardConvert :: golden output should convert an OPG v9 dashboard to v12 1`] = `
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "grafana",
+          "uid": "-- Grafana --",
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "refId": "A",
+          "tags": [],
+          "type": "dashboard",
+        },
+        "type": "dashboard",
+      },
+      {
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-entity-datasource",
+          "uid": "onms-entity",
+        },
+        "enable": true,
+        "filter": {
+          "exclude": false,
+          "ids": [
+            3,
+            7,
+          ],
+        },
+        "iconColor": "red",
+        "name": "Major Alarms",
+        "target": {
+          "entityType": "alarm",
+          "featuredAttributes": true,
+          "limit": 100,
+          "matchAny": false,
+          "refId": "A",
+          "tags": [],
+          "type": "",
+        },
+      },
+    ],
+  },
+  "description": "Exercises the v9 shapes the converter has to handle",
+  "editable": false,
+  "fiscalYearStartMonth": 3,
+  "graphTooltip": 2,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "opennms",
+      ],
+      "targetBlank": false,
+      "title": "Related",
+      "tooltip": "",
+      "type": "dashboards",
+      "url": "",
+    },
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-performance-datasource",
+        "uid": "onms-perf",
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+        },
+        "overrides": [],
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0,
+      },
+      "id": 1,
+      "maxDataPoints": 300,
+      "options": {
+        "legend": {
+          "showLegend": true,
+        },
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "attribute": "loadavg1",
+          "nodeId": "1",
+          "refId": "A",
+          "type": "attribute",
+        },
+        {
+          "datasource": {
+            "apiVersion": undefined,
+            "type": "opennms-performance-datasource",
+            "uid": "onms-perf",
+          },
+          "hide": true,
+          "refId": "B",
+          "type": "expression",
+        },
+      ],
+      "title": "Load",
+      "transparent": false,
+      "type": "timeseries",
+    },
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": "opennms-entity-datasource",
+        "uid": "onms-entity",
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0,
+      },
+      "id": 2,
+      "options": {
+        "alarmTable": {
+          "pageSize": 10,
+        },
+      },
+      "pluginVersion": "12",
+      "targets": [
+        {
+          "entityType": "alarm",
+          "refId": "A",
+        },
+      ],
+      "title": "Alarms",
+      "type": "opennms-alarm-table-panel",
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 8,
+      },
+      "id": 3,
+      "panels": [],
+      "repeat": "node",
+      "title": "Per Node",
+      "type": "row",
+    },
+    {
+      "datasource": {
+        "apiVersion": undefined,
+        "type": undefined,
+        "uid": "\${datasource}",
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 9,
+      },
+      "id": 4,
+      "repeat": "node",
+      "repeatDirection": "v",
+      "targets": [
+        {
+          "nodeId": "$node",
+          "refId": "A",
+          "type": "attribute",
+        },
+      ],
+      "title": "Node $node",
+      "type": "timeseries",
+    },
+  ],
+  "preload": false,
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": [
+    "opennms",
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "OpenNMS Performance",
+          "value": "onms-perf",
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "opennms-performance-datasource",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource",
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": [
+            "srv01",
+            "srv02",
+          ],
+          "value": [
+            "1",
+            "2",
+          ],
+        },
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-entity-datasource",
+          "uid": "onms-entity",
+        },
+        "definition": "nodeFilter(label like '*')",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "node",
+        "options": [],
+        "query": "nodeFilter(label like '*')",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query",
+      },
+      {
+        "baseFilters": [],
+        "datasource": {
+          "apiVersion": undefined,
+          "type": "opennms-entity-datasource",
+          "uid": "onms-entity",
+        },
+        "filters": [
+          {
+            "key": "node.label",
+            "operator": "=",
+            "value": "srv01",
+          },
+        ],
+        "name": "Filters",
+        "type": "adhoc",
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "prod",
+          "value": "prod",
+        },
+        "hide": 2,
+        "name": "env",
+        "query": "prod",
+        "skipUrlSync": false,
+        "type": "constant",
+      },
+    ],
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now",
+  },
+  "timepicker": {
+    "hidden": false,
+    "refresh_intervals": [
+      "10s",
+      "1m",
+      "5m",
+    ],
+  },
+  "timezone": "utc",
+  "title": "OPG v9 Sample",
+  "version": 12,
+  "weekStart": "sunday",
+}
+`;

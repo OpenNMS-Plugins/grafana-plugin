@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from 'react'
 import { PanelProps } from '@grafana/data'
+import $ from 'jquery'
+import 'jquery.flot'
+import 'jquery.flot.stack'
 import { UnitInfo } from './FlowHistogramConstants'
 import {
     FlowHistogramElement,
@@ -17,6 +20,7 @@ interface Props extends PanelProps<FlowHistogramControlOptions> { }
 
 export const FlowHistogramControl: React.FC<Props> = ({ data, height, width, options }) => {
     const ref: any = useRef(undefined)
+    const legendRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         if (validateFlowHistogramPanelData(data?.series)) {
@@ -26,8 +30,7 @@ export const FlowHistogramControl: React.FC<Props> = ({ data, height, width, opt
 
           $.plot(ref.current, plotData, plotConfig)
 
-          // TODO: remove this fix once flot library is updated in grafana. Use container option in plotConfig instead
-          setLegend(options)
+          setLegend(ref.current, legendRef.current, options)
         }
     }, [data, width, height, ref, options])
 
@@ -70,7 +73,8 @@ export const FlowHistogramControl: React.FC<Props> = ({ data, height, width, opt
                         <p style={getStyleFor(FlowHistogramElement.GraphAxisLabelUnit, height, width, options)}>{UnitInfo(options, data?.series).units}</p>
                     </div>
                 </div>
-                <div className={(options.flowHistogramOptions.position.label === 'Under Graph' ? 'flow-histogram-legend-bottom' : 'flow-histogram-legend-right')}
+                <div ref={legendRef}
+                    className={(options.flowHistogramOptions.position.label === 'Under Graph' ? 'flow-histogram-legend-bottom' : 'flow-histogram-legend-right')}
                     style={getStyleFor(FlowHistogramElement.Legend, height, width, options)} />
             </div>
         </>

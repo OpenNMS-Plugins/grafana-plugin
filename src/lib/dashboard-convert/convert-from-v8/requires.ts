@@ -38,7 +38,7 @@ export const parseRequires = (source: any[], datasourceMap: Map<string,DsType>, 
 }
 
 const isOpenNmsDatasource = (s: any) => {
-  return s.type === 'datasource' && s.id?.startsWith('opennms-')
+  return s?.type === 'datasource' && s.id?.startsWith('opennms-')
 }
 
 const parseSource = (s: any, datasourceMap: Map<string,DsType>, dsMetas: DatasourceMetadata[]) => {

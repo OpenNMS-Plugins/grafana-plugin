@@ -1,0 +1,132 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": { "limit": 100, "matchAny": false, "tags": [], "type": "dashboard" },
+        "type": "dashboard"
+      },
+      {
+        "datasource": { "type": "opennms-entity-datasource", "uid": "onms-entity" },
+        "enable": true,
+        "iconColor": "red",
+        "name": "Major Alarms",
+        "filter": { "exclude": false, "ids": [3, 7] },
+        "target": { "refId": "A", "entityType": "alarm", "featuredAttributes": true }
+      }
+    ]
+  },
+  "description": "Exercises the v9 shapes the converter has to handle",
+  "editable": false,
+  "fiscalYearStartMonth": 3,
+  "graphTooltip": 2,
+  "id": 41,
+  "links": [
+    { "asDropdown": true, "icon": "dashboard", "includeVars": true, "keepTime": true, "tags": ["opennms"], "targetBlank": false, "title": "Related", "tooltip": "", "type": "dashboards", "url": "" }
+  ],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "opennms-performance-datasource", "uid": "onms-perf" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "maxDataPoints": 300,
+      "options": { "legend": { "showLegend": true } },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        { "refId": "A", "type": "attribute", "nodeId": "1", "attribute": "loadavg1" },
+        { "refId": "B", "datasource": { "type": "opennms-performance-datasource", "uid": "onms-perf" }, "type": "expression", "hide": true }
+      ],
+      "title": "Load",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "opennms-entity-datasource", "uid": "onms-entity" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "alarmTable": { "pageSize": 10 } },
+      "targets": [{ "refId": "A", "entityType": "alarm" }],
+      "title": "Alarms",
+      "type": "opennms-alarm-table-panel"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 8 },
+      "id": 3,
+      "panels": [],
+      "repeat": "node",
+      "title": "Per Node",
+      "type": "row"
+    },
+    {
+      "datasource": { "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 9 },
+      "id": 4,
+      "repeat": "node",
+      "repeatDirection": "v",
+      "targets": [{ "refId": "A", "type": "attribute", "nodeId": "$node" }],
+      "title": "Node $node",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": ["opennms"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": true, "text": "OpenNMS Performance", "value": "onms-perf" },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "opennms-performance-datasource",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": { "selected": false, "text": ["srv01", "srv02"], "value": ["1", "2"] },
+        "datasource": { "type": "opennms-entity-datasource", "uid": "onms-entity" },
+        "definition": "nodeFilter(label like '*')",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Node",
+        "multi": true,
+        "name": "node",
+        "options": [],
+        "query": "nodeFilter(label like '*')",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "type": "query"
+      },
+      {
+        "datasource": { "type": "opennms-entity-datasource", "uid": "onms-entity" },
+        "filters": [{ "key": "node.label", "operator": "=", "value": "srv01" }],
+        "baseFilters": [],
+        "name": "Filters",
+        "type": "adhoc"
+      },
+      { "current": { "selected": false, "text": "prod", "value": "prod" }, "hide": 2, "name": "env", "query": "prod", "skipUrlSync": false, "type": "constant" }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": { "hidden": false, "refresh_intervals": ["10s", "1m", "5m"] },
+  "timezone": "utc",
+  "title": "OPG v9 Sample",
+  "uid": "opgv9abcd",
+  "version": 12,
+  "weekStart": "sunday"
+}

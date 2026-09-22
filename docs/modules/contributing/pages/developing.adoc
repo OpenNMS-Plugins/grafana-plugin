@@ -3,7 +3,7 @@
 
 :description: Learn how to contribute code to the {product-name} that lets you create flexible dashboards to visualize and interact with data stored by OpenNMS.
 
-You can contribute code to the {product-name} project via https://github.com/OpenNMS/grafana-plugin[GitHub].
+You can contribute code to the {product-name} project via https://github.com/OpenNMS-Plugins/grafana-plugin[GitHub].
 This section describes the codebase and how to prepare your development environment.
 
 == Codebase
@@ -30,7 +30,7 @@ allow_loading_unsigned_plugins = opennms-opennms-app
 . Use Git to check out the repository:
 +
 [source, shell]
-git clone https://github.com/OpenNMS/grafana-plugin.git opennms-grafana-plugin
+git clone https://github.com/OpenNMS-Plugins/grafana-plugin.git opennms-grafana-plugin
 
 . Navigate to your plugin directory:
 +

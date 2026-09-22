@@ -1,4 +1,4 @@
-import { DataFrame, Field, FieldType, rangeUtil, SelectableValue } from '@grafana/data'
+import { DataFrame, Field, FieldType, rangeUtil, ScopedVars, SelectableValue } from '@grafana/data'
 import { Model } from 'opennms'
 import { ClientDelegate } from 'lib/client_delegate'
 import { dscpLabel, dscpSelectOptions } from '../../lib/tos_helper'
@@ -55,11 +55,11 @@ import { OnmsMeasurementResource } from '../../lib/api_types'
  * @param queryItems All of the queries
  * @returns An object with all the query values, in easy to parse formats for later steps in the process.
  */
-export const buildFullQueryData = (queryItems: FlowQueryData[], templateSrv: any): FlowParsedQueryData => {
+export const buildFullQueryData = (queryItems: FlowQueryData[], templateSrv: any, scopedVars?: ScopedVars): FlowParsedQueryData => {
     // convert the template variables into their selected values for each query.
     // withDscp, withApplication, withConversation and withHost should allow an array of strings 
     // that are passed as parameter from template functions
-    queryItems = queryItems.map(item => convertTemplateVariables(item, templateSrv))
+    queryItems = queryItems.map(item => convertTemplateVariables(item, templateSrv, scopedVars))
 
     const fullData: FlowParsedQueryData = []
     for (let queryData of queryItems) {
@@ -1104,19 +1104,25 @@ export const getFilteredNodes = async ({ client, simpleRequest }, exporterNodes?
 
 /**
  * Converts functionParameters and parameterOptions to template variables if they are present.
+ *
+ * scopedVars must be passed through from the query request. Under Dashboard Scenes it carries the
+ * __sceneObject handle that lets templateSrv resolve a repeated panel's or row's own value; without
+ * it, interpolation falls back to dashboard scope and every repeat renders the same data (OPG-521).
+ *
  * @param item a FlowQueryData instance
  * @param templateSrv grafana service to replace template variables
+ * @param scopedVars scoped variables from the query request
  * @returns FlowQueryData
  */
-export const convertTemplateVariables = (item: FlowQueryData, templateSrv) => {
+export const convertTemplateVariables = (item: FlowQueryData, templateSrv, scopedVars?: ScopedVars) => {
     item.functions?.forEach((f, idx) => {
         if (item.functionParameters[idx]) {
-            item.functionParameters[idx] = templateSrv.replace(item.functionParameters[idx])
+            item.functionParameters[idx] = templateSrv.replace(item.functionParameters[idx], scopedVars)
         }
 
         if (item.parameterOptions[idx] && item.parameterOptions[idx].value) {
-            item.parameterOptions[idx].value = templateSrv.replace(item.parameterOptions[idx].value)
-            item.parameterOptions[idx].label = templateSrv.replace(item.parameterOptions[idx].label)
+            item.parameterOptions[idx].value = templateSrv.replace(item.parameterOptions[idx].value, scopedVars)
+            item.parameterOptions[idx].label = templateSrv.replace(item.parameterOptions[idx].label, scopedVars)
         }
     })
 

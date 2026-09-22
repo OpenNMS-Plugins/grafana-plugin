@@ -27,8 +27,10 @@ export const getAlarmIdFromRow = (row: Element, frame: DataFrame) => {
     const dataIndexCell = row?.children?.[columnIndex] || null
     const text = dataIndexCell?.textContent
 
+    // Number('') and Number(null) are both 0, which is an integer, so a blank
+    // cell would otherwise read as the invalid alarm id 0. Alarm ids start at 1.
     const alarmId = Number(text)
-    return Number.isInteger(alarmId) ? alarmId : -1
+    return Number.isInteger(alarmId) && alarmId > 0 ? alarmId : -1
   }
 
   return -1

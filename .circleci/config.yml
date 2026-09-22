@@ -2,21 +2,24 @@ version: 2.1
 
 executors:
 
-  build-executor-centos:
+  # Builds the RPM. opennms/build-env has no current RHEL-family tag -- the last one
+  # was CentOS 8 with Node 16, both long EOL -- so this tracks Rocky Linux 9 and
+  # installs the build tooling in the job. Nothing here needs a JDK.
+  rpm-build-executor:
     docker:
-      - image: opennms/build-env:11.0.14_9-3.8.7-b9528
+      - image: rockylinux/rockylinux:9
 
-  build-executor-debian:
+  # Builds the DEB. The old opennms/build-env:debian-jdk11 tag was Debian 11
+  # (bullseye) with Node 18, which is older than this plugin's engines range
+  # (>=22 <25). The official Node image on Debian 13 (trixie) gives us Node 22 and
+  # dpkg out of the box; debhelper is installed in the job.
+  deb-build-executor:
     docker:
-      - image: opennms/build-env:debian-jdk11-b10453
+      - image: node:22-trixie
 
   node-executor:
     docker:
-      - image: cimg/node:22.22
-
-  docs-executor:
-    docker:
-      - image: opennms/antora:3.1.4-b10433
+      - image: cimg/node:22.23.2
 
 orbs:
   cloudsmith: cloudsmith/cloudsmith@1.0.4
@@ -101,7 +104,7 @@ commands:
   build-and-sign:
     steps:
       - run:
-          name: Run Build, Tests, and Sign
+          name: Run Build and Sign
           command: |
             export PATH="./node_modules/.bin:${PATH}"
             export NODE_OPTIONS=--openssl-legacy-provider
@@ -164,28 +167,97 @@ jobs:
       - validate-schema
       - build-and-sign
       - save-node-cache
-      - store_test_results:
-          path: coverage
-      - store_artifacts:
-          path: coverage
+      # This job used to store_test_results and store_artifacts from coverage/, but it
+      # never ran the tests and jest was never asked for coverage, so the directory did
+      # not exist. The unit tests and their JUnit output live in the `verify` job now.
       - persist_to_workspace:
           root: ~/
           paths:
             - project
 
-  build-docs:
-    executor: docs-executor
+  verify:
+    # The unit tests do not need dist: the packaging specs build their own fixture tree
+    # under the system temp directory, and the rest are plain unit tests. So this runs in
+    # parallel with `build` off `pre-build` rather than queueing behind it, the same way
+    # `build-docs` does, and costs no wall-clock on the critical path.
+    executor: node-executor
+    resource_class: medium
     steps:
       - attach_workspace:
           at: ~/
+      # `build` owns the cache write; this job only restores, as `build-docs` does.
+      - install-node-dependencies
+      - run:
+          name: Install the packaging test toolchain
+          command: |
+            # deb_build.spec.ts and rpm_build.spec.ts drive dpkg-buildpackage and
+            # rpmbuild end to end, and skip themselves when the tools are absent.
+            #
+            # build-essential/debhelper/fakeroot: the list make-deb installs. cimg/node
+            # is Ubuntu-based and already carries dpkg-buildpackage, so the deb suite
+            # does not skip here -- but without these it cannot finish the build.
+            #
+            # rpm: provides rpmbuild on Ubuntu, which is otherwise absent. These specs
+            # cover our spec template and build script -- package naming, metadata,
+            # install paths, ownership, Requires, fixture exclusion -- none of which
+            # turn on the rpm version, so testing against Ubuntu's 4.18 rather than
+            # el9's 4.16 is not worth a second job on rpm-build-executor. Revisit if an
+            # assertion ever depends on rpmbuild's own behaviour.
+            #
+            # apt skips whatever the image already has.
+            sudo apt-get update
+            sudo apt-get -y --no-install-recommends install build-essential debhelper fakeroot rpm
+      - run:
+          name: Run unit tests
+          command: npm run test:ci
+      # Ordered before the lint step, and `when: always` on both, so the report survives
+      # a failure either side of it. CircleCI skips remaining steps once one fails, and
+      # while store_artifacts is documented as implicitly always and store_test_results
+      # is observed to upload from a failed job, neither is worth depending on silently:
+      # a failing suite is exactly when the report matters most.
+      - store_test_results:
+          path: test-results
+          when: always
+      - store_artifacts:
+          path: test-results
+          when: always
+      - run:
+          name: Run ESLint
+          command: npm run lint
+
+  build-docs:
+    # Antora comes from this repo's own @antora devDependencies, not from an image.
+    # opennms/antora is Alpine 3.18 on Node 16 in every tag, newest included, and
+    # Antora 3.2 requires Node >= 20, so that image can no longer run it at all: the
+    # CLI resolves @antora/site-generator from the playbook directory, loaded the
+    # repo's copy, and died in its pino dependency.
+    executor: node-executor
+    steps:
+      - attach_workspace:
+          at: ~/
+      # Antora is a devDependency now, and this job requires only pre-build, which
+      # checks out but never installs. The old opennms/antora image carried Antora
+      # globally so the workspace contents did not matter; using this repo's own copy
+      # means they do. Installing here rather than adding `requires: build` keeps the
+      # docs building in parallel with the plugin instead of queueing behind it.
+      - install-node-dependencies
       - run:
           name: Validate Xrefs in docs
           command: |
-            NODE_PATH="$(npm -g root)" antora --generator @antora/xref-validator local-site.yml
+            # validate-xrefs installs @antora/xref-validator itself: it is not on
+            # npmjs.org, only a GitLab tarball, so it cannot be a devDependency. The
+            # pinned commit lives in package.json so CI and a local run stay identical.
+            npm run validate-xrefs
       - run:
           name: Generate HTML output for documentation
           command: |
-            NODE_PATH="$(npm -g root)" antora --stacktrace generate local-site.yml
+            npm run docs
+      - run:
+          name: Validate anchors in the generated docs
+          command: |
+            # Antora validates the page half of an xref target and never the #anchor
+            # half, so this reads the site npm run docs just built and has to follow it.
+            npm run validate-anchors
       - store_artifacts:
           path: build/site.zip
           destination: site.zip
@@ -231,7 +303,7 @@ jobs:
             fi
 
   make-tarball:
-    executor: build-executor-centos
+    executor: node-executor
     resource_class: small
     steps:
       - attach_workspace:
@@ -253,7 +325,7 @@ jobs:
             - ./project/version.tag
 
   make-zip:
-    executor: build-executor-centos
+    executor: node-executor
     resource_class: small
     steps:
       - attach_workspace:
@@ -261,7 +333,7 @@ jobs:
       - run:
           name: Create Plugin ZIP File
           command: |
-            ./makezip.js
+            npm run package:zip
       - store_artifacts:
           path: ./artifacts
       - persist_to_workspace:
@@ -300,17 +372,19 @@ jobs:
           paths:
             - ./project/artifacts
   make-rpm:
-    executor: build-executor-centos
+    executor: rpm-build-executor
     resource_class: small
     steps:
       - attach_workspace:
           at: ~/
       - run:
-          name: Update Repo list
+          name: Install RPM build tooling
           command: |
-            sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/CentOS-*.repo
-            sed -i s/^#.*baseurl=http/baseurl=http/g /etc/yum.repos.d/CentOS-*.repo
-            sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS-*.repo
+            # Rocky 9 carries no node; rpm-sign comes from the orb step below. tar,
+            # which the spec's %setup shells out to, is in the base image and is a
+            # declared dependency of rpm-build, so it does not need listing here.
+            dnf -y module enable nodejs:22
+            dnf -y --setopt=install_weak_deps=False install nodejs npm rpm-build
       - sign-packages/install-rpm-dependencies:
           skip_if_forked_pr: true
       - sign-packages/setup-env:
@@ -322,7 +396,7 @@ jobs:
             if [ "$(grep -c -- -SNAPSHOT package.json)" -eq 0 ]; then
               RELEASE=1
             fi
-            ./makerpm.js --release "$RELEASE"
+            npm run package:rpm -- --release "$RELEASE"
       - sign-packages/sign-rpms:
           skip_if_forked_pr: true
           gnupg_key: opennms@opennms.org
@@ -335,11 +409,22 @@ jobs:
             - ./project/artifacts
 
   make-deb:
-    executor: build-executor-debian
+    executor: deb-build-executor
     resource_class: small
     steps:
       - attach_workspace:
           at: ~/
+      - run:
+          name: Install DEB build tooling
+          command: |
+            # This apt-get update is also what makes the orb step below work. Debian 13
+            # ships its sources as deb822 in /etc/apt/sources.list.d/debian.sources and
+            # has no /etc/apt/sources.list at all, and the orb pins
+            # -o Dir::Etc::sourcelist=sources.list -o Dir::Etc::sourceparts=- so on its
+            # own it refreshes nothing and cannot find gnupg2 or debsigs. It passes
+            # -o APT::Get::List-Cleanup=0, so the lists this leaves behind survive.
+            apt-get update
+            apt-get -y --no-install-recommends install build-essential debhelper fakeroot
       - sign-packages/install-deb-dependencies:
           skip_if_forked_pr: true
       - sign-packages/setup-env:
@@ -351,7 +436,7 @@ jobs:
             if [ "$(grep -c -- -SNAPSHOT package.json)" -eq 0 ]; then
               RELEASE=1
             fi
-            ./makedeb.js --release "$RELEASE"
+            npm run package:deb -- --release "$RELEASE"
       - sign-packages/sign-debs:
           skip_if_forked_pr: true
           gnupg_key: opennms@opennms.org
@@ -529,6 +614,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      # Runs alongside `build` rather than after it; the four make-* jobs below require
+      # both, so nothing is packaged or GPG-signed from a tree with a failing suite.
+      - verify:
+          requires:
+            - pre-build
+          filters:
+            tags:
+              only: /^v.*/
       - create-merge-branch:
           context: grafana
           # these all imply "build", plus "make-docker-image" implies "make-tarball"
@@ -549,6 +642,7 @@ workflows:
       - make-tarball:
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
@@ -565,6 +659,7 @@ workflows:
             - "gpg-signing"
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
@@ -573,12 +668,14 @@ workflows:
             - "gpg-signing"
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
       - make-zip:
           requires:
             - build
+            - verify
           filters:
             tags:
               only: /^v.*/
@@ -599,7 +696,7 @@ workflows:
           context:
             - "cloudsmith-publish-account"
             - "docker-publish-account"
-            - "Service Principal"
+          #  - "Service Principal"
           requires:
             - validate-packages
           filters:
@@ -611,7 +708,7 @@ workflows:
           context:
             - "cloudsmith-publish-account"
             - "docker-publish-account"
-            - "Service Principal"
+          #  - "Service Principal"
           requires:
             - validate-packages
           filters:

@@ -5,6 +5,15 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "target": "es5",
+      "esModuleInterop": true
+    },
+    "transpileOnly": true
+  },
   "exclude": [
     "node_modules"
   ]

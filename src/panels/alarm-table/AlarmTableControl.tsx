@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AppEvents, DataFrame, PanelProps } from '@grafana/data'
 import { getAppEvents } from '@grafana/runtime'
-import { ContextMenu, Modal, Pagination, Tab, TabContent, Table, TabsBar, TextLink } from '@grafana/ui'
+import { ContextMenu, Modal, Pagination, Tab, TabContent, Table, TabsBar } from '@grafana/ui'
 import { AlarmTableMenu } from './AlarmTableMenu'
+import { AlarmDetailsLink } from './modal/AlarmDetailsLink'
 import { AlarmTableModalContent } from './modal/AlarmTableModalContent'
 import { AlarmTableSelectionStyles } from './AlarmTableSelectionStyles'
 import { AlarmTableControlProps } from './AlarmTableTypes'
@@ -216,11 +217,7 @@ export const AlarmTableControl: React.FC<PanelProps<AlarmTableControlProps>> = (
                   renderMenuItems={() => <AlarmTableMenu state={alarmControlState} actions={actions} />}
               />}
               <Modal isOpen={detailsModal} title='Alarm Detail' onDismiss={() => setDetailsModal(false)}>
-                  { alarm?.detailsPage &&
-                    <TextLink href={alarm.detailsPage} external={true} style={{ marginBottom: 12, display: 'inline-block' }}>
-                    Full Details
-                    </TextLink>
-                  }
+                  <AlarmDetailsLink alarm={alarm} client={client} />
 
                   <TabsBar>
                       <Tab label='Overview' active={tabActive === 0} onChangeTab={() => tabClick(0)} />

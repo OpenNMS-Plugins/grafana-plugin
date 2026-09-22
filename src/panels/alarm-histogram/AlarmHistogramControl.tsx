@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { PanelProps } from '@grafana/data'
 import $ from 'jquery'
+import 'jquery.flot'
 import { useAlarmHooks } from './alarmhooks'
 
 type SeriesSize = 'sm' | 'md' | 'lg'

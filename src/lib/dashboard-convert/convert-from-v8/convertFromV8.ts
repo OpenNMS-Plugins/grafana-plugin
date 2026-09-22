@@ -54,12 +54,18 @@ export const convertDashboardFromV8 = (sourceJson: string, dashboardTitle: strin
   const parsedTemplating = parseTemplating(templating, datasourceMap, dsMetas)
   dashboard.templating = parsedTemplating
 
+  // Annotations are deliberately not rewritten. Every OPG datasource, and every Helm one before
+  // them, declares "annotations": false in its plugin.json and implements no annotationQuery, so
+  // no annotation can be backed by one and there is no legacy ref here to convert.
   const panels = source.panels || []
   const convertedPanels = convertPanels(panels, datasourceMap, dsMetas, options.unhideAllQueries, options.convertGraphToTimeSeries)
   dashboard.panels = convertedPanels
 
-  // remove uid, Grafana will create a new unique one when user imports the Dashboard json
+  // 'id' and 'uid' identify the dashboard within the Grafana instance it came from. Drop the uid
+  // and null the id, the way Grafana's own export for sharing externally does, so the importing
+  // instance assigns its own. The v9 to v12 path does the same.
   delete dashboard.uid
+  dashboard.id = null
 
   if (dashboardTitle) {
     dashboard.title = dashboardTitle

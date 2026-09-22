@@ -1,4 +1,5 @@
 import { API, Client, DAO, Model, Rest, GrafanaError } from 'opennms'
+import { OpenNMSLink, resolveOpenNMSLink } from './externalLinks'
 import { isString } from './utils'
 
 export class ClientDelegate {
@@ -9,6 +10,8 @@ export class ClientDelegate {
     timeout?: number
     client: Client
     clientWithMetadata?: Promise<Client>
+    useOpenNMSBaseUrl?: boolean
+    opennmsBaseUrl?: string
 
     constructor(settings: any, public backendSrv: any) {
         this.type = settings.type
@@ -19,6 +22,10 @@ export class ClientDelegate {
         if (settings.jsonData && settings.jsonData.timeout) {
             this.timeout = parseInt(settings.jsonData.timeout,10) * 1000
         }
+
+        // Optional, used only to build links out to a running OpenNMS instance; see getOpenNMSLink
+        this.useOpenNMSBaseUrl = settings.jsonData?.useOpenNMSBaseUrl
+        this.opennmsBaseUrl = settings.jsonData?.opennmsBaseUrl
 
         let authConfig = undefined
 
@@ -38,6 +45,22 @@ export class ClientDelegate {
         this.client = new Client(http)
         this.clientWithMetadata = undefined
      }
+
+    /**
+     * Resolve a url produced by opennms-js, such as Alarm.detailsPage, into a link for display.
+     *
+     * Those urls are built against this datasource's url, which is not reachable from the user's
+     * browser, so they are re-rooted onto the user-configured OpenNMS Base URL when there is one.
+     * Returns a link flagged isAbsolute: false when no base url is configured, and undefined when
+     * there is no url to resolve.
+     */
+    getOpenNMSLink(url?: string): OpenNMSLink | undefined {
+        return resolveOpenNMSLink(url, {
+            datasourceUrl: this.url,
+            baseUrl: this.opennmsBaseUrl,
+            enabled: this.useOpenNMSBaseUrl
+        })
+    }
 
     decorateError(err) {
         let ret = err

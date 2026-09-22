@@ -21,7 +21,7 @@ export const useAlarm = (series: DataFrame[], soloAlarmId: number, client: Clien
 
     useEffect(() => {
         const updateAlarm = async () => {
-            if (alarmId !== undefined && alarmId >= 0) {
+            if (alarmId !== undefined && alarmId > 0) {
               const returnedAlarm = await client?.getAlarm(alarmId)
               setAlarm(returnedAlarm)
             }
