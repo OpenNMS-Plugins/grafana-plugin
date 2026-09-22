@@ -2,6 +2,7 @@
 
 Grafana Plugin for OpenNMS version 12.0.2 release contains a bug fix.
 
+* [OPG-517](https://opennms.atlassian.net/browse/OPG-517) Link the Alarm Table detail dialog to the OpenNMS alarm page
 * [OPG-521](https://opennms.atlassian.net/browse/OPG-521) Repeating panels and rows show data for every template variable value instead of only their own
 
 ### v12.0.1
